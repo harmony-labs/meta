@@ -9,3 +9,12 @@ anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 loop_lib = { path = "../loop_lib" }
+[workspace]
+members = [
+    "loop",
+    "loop_lib",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
