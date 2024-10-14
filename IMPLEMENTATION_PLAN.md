@@ -17,7 +17,7 @@
 4. Build basic CLI interface
    - Use a CLI argument parsing library (e.g., clap)
    - Implement basic command-line interface
-   - Ensure color output from child command is retained in parent process (potentially by using `std::process::Command`)
+   - Ensure color output from child command is retained in parent process (using `std::process::Command`)
 
 5. Implement core commands
    - `meta [command]`: Execute a command in all specified directories
@@ -40,39 +40,48 @@
    - Implement detailed error messages
    - Add color-coded output for better readability
 
+9. Implement `.looprc` functionality
+   - Add support for a `.looprc` file to customize behavior
+   - Implement `--init` command to create a default `.looprc` file
+   - Add ignore functionality to skip specified directories
+
+10. Add directory filtering options
+    - Implement `--include`, `--include-only`, `--exclude`, `--exclude-only` flags
+    - Add support for `--include-pattern` and `--exclude-pattern` with regular expressions
+
 ## Phase 3: Polish and Distribution
 
-9. Write comprehensive tests
-   - Unit tests for core functions
-   - Integration tests for CLI functionality
+11. Write comprehensive tests
+    - Unit tests for core functions
+    - Integration tests for CLI functionality
 
-10. Set up CI/CD pipeline
+12. Set up CI/CD pipeline
     - Configure GitHub Actions for automated testing and building
     - Set up automated releases for multiple platforms
 
-11. Create documentation
+13. Create documentation
     - Write a comprehensive README
     - Create man pages for the tool
 
-12. Prepare for distribution
+14. Prepare for distribution
     - Set up binary releases on GitHub
     - Investigate distribution through package managers (e.g., Homebrew, Chocolatey)
 
 ## Phase 4: Future Enhancements (Post-Initial Release)
 
-13. Consider implementing a plugin system
+15. Consider implementing a plugin system
     - Research best practices for plugin systems in Rust
     - Design and implement a basic plugin architecture
 
-14. Add more built-in commands
-    - Analyze most-used commands from the original `meta` tool
+16. Add more built-in commands
+    - Analyze most-used commands from the original `meta` and `loop` tools
     - Implement additional built-in commands based on user feedback
 
-15. Optimize performance
+17. Optimize performance
     - Profile the application to identify bottlenecks
     - Implement performance improvements
 
-16. Enhance user experience
+18. Enhance user experience
     - Add interactive mode for certain commands
     - Implement command suggestions for mistyped commands
 
