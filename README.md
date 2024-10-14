@@ -1,6 +1,6 @@
-# meta-rs
+# meta
 
-`meta-rs` is a Rust implementation of the `meta` tool for managing multi-project systems and libraries. It allows you to execute commands across multiple repositories defined in a `.meta` file.
+`meta` is a Rust implementation of the `meta` tool for managing multi-project systems and libraries. It allows you to execute commands across multiple repositories defined in a `.meta` file.
 
 ## Features
 
@@ -11,7 +11,7 @@
 
 ## Installation
 
-Download the latest release for your platform from the [GitHub Releases](https://github.com/yourusername/meta-rs/releases) page.
+Download the latest release for your platform from the [GitHub Releases](https://github.com/yourusername/meta/releases) page.
 
 ## Usage
 
@@ -26,10 +26,10 @@ Download the latest release for your platform from the [GitHub Releases](https:/
 }
 ```
 
-2. Run commands using the `meta-rs` tool:
+2. Run commands using the `meta` tool:
 
 ```
-meta-rs git status
+meta git status
 ```
 
 This will run `git status` in the root directory and all directories specified in the `.meta` file.
