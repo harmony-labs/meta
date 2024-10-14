@@ -1,6 +1,6 @@
 [workspace]
-
 members = [
     "loop",
     "loop_lib",
 ]
+resolver = "2"

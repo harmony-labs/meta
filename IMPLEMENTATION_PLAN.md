@@ -11,6 +11,11 @@
 2. Implement core `loop` functionality
    - Set up error handling and logging
    - Implement `.looprc` file parsing
+      - Example: ```json
+        {
+          "ignore": [ ".git" ]
+        }
+        ```
    - Develop command execution logic
    - Build CLI interface using clap or structopt
    - Implement directory filtering options (--include, --exclude, etc.)
