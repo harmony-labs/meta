@@ -1,4 +1,4 @@
-# Implementation Plan for meta-rs
+# Implementation Plan for meta
 
 ## Phase 1: Core Functionality
 
@@ -17,21 +17,24 @@
 4. Build basic CLI interface
    - Use a CLI argument parsing library (e.g., clap)
    - Implement basic command-line interface
+   - Ensure color output from child command is retained in parent process (potentially by using `std::process::Command`)
 
 5. Implement core commands
-   - `meta-rs exec`: Execute a command in all specified directories
-   - `meta-rs list`: List all projects defined in the `.meta` file
+   - `meta [command]`: Execute a command in all specified directories
+   - `meta --list`: List all projects defined in the `.meta` file
 
 ## Phase 2: Enhanced Functionality
 
 6. Implement common Git commands
-   - `meta-rs git status`
-   - `meta-rs git pull`
-   - `meta-rs git push`
+   - `meta git status`
+   - `meta git pull`
+   - `meta git push`
 
 7. Add parallel execution option
    - Implement multi-threading for running commands in parallel
    - Add a `--parallel` flag to enable parallel execution
+   - Show spinner and summary of each command being run
+   - Show combined output when done, retaining color from child processes
 
 8. Improve error handling and reporting
    - Implement detailed error messages
@@ -73,4 +76,4 @@
     - Add interactive mode for certain commands
     - Implement command suggestions for mistyped commands
 
-This implementation plan provides a structured approach to developing the `meta-rs` tool, focusing on core functionality first and then expanding to more advanced features. The plan can be adjusted as development progresses and new requirements or challenges arise.
+This implementation plan provides a structured approach to developing the `meta` tool, focusing on core functionality first and then expanding to more advanced features. The plan can be adjusted as development progresses and new requirements or challenges arise.
