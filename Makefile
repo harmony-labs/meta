@@ -51,7 +51,7 @@ run:
 	cargo run
 
 install: 
-	cargo install --path meta
+	cargo install --path .
 
 test: 
 	cargo test
