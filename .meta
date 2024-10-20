@@ -1,0 +1,8 @@
+{
+	"ignore": [".git"],
+	"projects": {
+		"loop": "git@github.com:mateodelnorte/loop.git",  
+		"loop_lib": "git@github.com:mateodelnorte/loop_lib.git", 
+		"meta": "git@github.com:mateodelnorte/meta.git"
+	}
+}

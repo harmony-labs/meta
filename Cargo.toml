@@ -2,5 +2,6 @@
 members = [
     "loop",
     "loop_lib",
+    'meta',
 ]
 resolver = "2"

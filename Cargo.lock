@@ -246,6 +246,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
+name = "meta"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "loop_lib",
+ "rayon",
+ "serde",
+ "serde_json",
+ "walkdir",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

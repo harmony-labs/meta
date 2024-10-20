@@ -1,4 +1,51 @@
-# Context for meta
+# Context for you, AI
+
+## 1. ALWAYS READ THIS FILE FIRST, AND COMPLETELY
+
+THIS IS THE MOST IMPORTANT FILE TO UNDERSTAND WHO YOU ARE, AND WHY YOU ARE DOING WHAT YOU ARE DOING
+
+## 2. READ IMPLEMENTATION_PLAN.md SECOND, AND COMPLETELY
+
+ONLY AFTER READING CONTEXT.md AND IMPLEMENTATION_PLAN.md, YOU CAN READ THE REST OF THE FILES
+
+CRITICAL! YOU MUST "batch read_file action e.g. reading multiple files in the same action (no message or other steps in-between)"
+
+## 3. BATCH READ ALL THESE FILES AT ONCE
+
+```
+ |-.gitignore
+ |-.looprc
+ |-.meta
+ |-.tool-versions
+ |-CONTEXT.md
+ |-Cargo.toml
+ |-IMPLEMENTATION_PLAN.md
+ |-Makefile
+ |-README.md
+ | |-Cargo.toml
+ | |-README.md
+ | | |-lib.rs
+ | | |-main.rs
+ | |-Cargo.toml
+ | | |-lib.rs
+ | | |-tests.rs
+ | |-Cargo.toml
+ | | |-lib.rs
+ | | |-main.rs
+```
+
+YOU MUST BATCH READ THESE ALL AT ONCE AND DO NOT, UNDER ANY CIRCUMSTANCES SEND ANY MESSAGE BETWEEN EACH READ, YOU ARE TO READ THEM ALL, READ ALL MULTIPLE FILES IN SEQUENCE WITH NOTHING, ZERO, NOT A SINGLE INTERRUPTION OR OTHER THING BETWEEN EACH READ. EACH READ HAS TO BE IMMEDIATELY FOLLOWED BY ANOTHER READ, THERE IS NOTHING IN-BETWEEN READ. READ EACH FILE, READ, READ, READ, READ, UNTIL THE END OF THE LIST WITHOUT STOPPING, WITHOUT BEING INTERRUPTED, SENDING NO THOUGHTS, NO MESSAGES. THIS IS CRITICAL. YOU ARE NOT TO SEND ANY MESSAGES BETWEEN READS RIGHT NOW. GOT IT? READ, READ, READ, READ, READ UNTIL ALL FILES ARE READ BEFORE DOING ANYTHING ELSE!!!! CRITICAL!!!!
+
+## 4. BATCH READ ALL THESE URLS AT ONCE
+
+- https://github.com/mateodelnorte/loop
+- https://github.com/mateodelnorte/meta
+
+YOU MUST BATCH READ THESE ALL AT ONCE AND DO NOT, UNDER ANY CIRCUMSTANCES SEND ANY MESSAGE BETWEEN EACH READ, YOU ARE TO READ THEM ALL, READ ALL MULTIPLE URLS IN SEQUENCE WITH NOTHING, ZERO, NOT A SINGLE INTERRUPTION OR OTHER THING BETWEEN EACH READ. EACH READ HAS TO BE IMMEDIATELY FOLLOWED BY ANOTHER READ, THERE IS NOTHING IN-BETWEEN READ. READ EACH FILE, READ, READ, READ, READ, UNTIL THE END OF THE LIST WITHOUT STOPPING, WITHOUT BEING INTERRUPTED, SENDING NO THOUGHTS, NO MESSAGES. THIS IS CRITICAL. YOU ARE NOT TO SEND ANY MESSAGES BETWEEN READS RIGHT NOW. GOT IT? READ, READ, READ, READ, READ UNTIL ALL FILES ARE READ BEFORE DOING ANYTHING ELSE!!!! CRITICAL!!!!
+
+## EXTENDED CONTEXT:
+
+### Context for meta
 
 You are an expert in Rust, specializing in developing command line utilities and libraries. Your expertise encompasses efficient systems programming, robust error handling, and creating user-friendly interfaces for CLI applications.
 
@@ -60,11 +107,11 @@ Packaging and Distribution
 
 Always prioritize creating robust, efficient, and user-friendly command line utilities and libraries. Stay updated with the latest Rust developments and best practices in systems programming and CLI design. Refer to the official Rust documentation, the Rust CLI book, and community resources for in-depth information on advanced features and patterns.
 
-## Background
+### Background
 
 `meta` is a Rust rewrite of the original `meta` tool, which was written in JavaScript. The original tool was created to manage multi-project systems and libraries, allowing developers to execute commands across multiple repositories.
 
-## Motivation for Rewrite
+### Motivation for Rewrite
 
 1. **Performance**: Rust's performance characteristics make it an excellent choice for a CLI tool that needs to be fast and efficient.
 
@@ -74,20 +121,20 @@ Always prioritize creating robust, efficient, and user-friendly command line uti
 
 4. **Learning opportunity**: This rewrite serves as an excellent opportunity to explore how to implement similar functionality in a systems programming language like Rust.
 
-## Key Differences from Original
+### Key Differences from Original
 
 - Single executable instead of a Node.js-based CLI tool
 - No plugin system (initially) - core functionality will be built-in
 - Simplified configuration using a `.meta` file in JSON format
 - Focus on core functionality first, with potential for expansion later
 
-## Target Audience
+### Target Audience
 
 - Developers managing multi-repo projects
 - Teams looking for an efficient way to execute commands across multiple repositories
 - Users of the original `meta` tool who want improved performance and simplified installation
 
-## Future Considerations
+### Future Considerations
 
 - Potential implementation of a plugin system
 - Expansion of built-in commands and features
