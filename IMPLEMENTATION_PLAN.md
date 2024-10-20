@@ -28,8 +28,8 @@ AI INSTRUCTIONS:
    - √: Implement directory filtering options (--include, --exclude, etc.)
    - √: Ensure color output from child commands is retained
 
-3. Develop `meta` functionality
-   - Implement `.meta` file parsing
+3. √ Develop `meta` functionality
+   - √ Implement `.meta` file parsing
       - Example `.meta` file:
         ```json
         {
@@ -41,7 +41,7 @@ AI INSTRUCTIONS:
           }
         }
         ```
-   - Create logic to pass directory list, command, and options to `loop` / `loop_lib`
+   - √ Create logic to pass directory list, command, and options to `loop` / `loop_lib`
 
 4. Integrate `loop` library into `meta`
    - Use `loop` as a dependency in `meta`
