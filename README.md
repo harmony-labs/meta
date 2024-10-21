@@ -5,7 +5,7 @@
 ## Features
 
 - Execute any command across multiple directories
-- Easily manage multi-repo projects
+- Easily manage multi-repo projects with directory filtering options
 - Lightweight and fast Rust implementation
 - Available as a downloadable executable from GitHub releases
 

@@ -49,11 +49,6 @@ AI INSTRUCTIONS:
 
 ## Phase 2: Enhanced Functionality
 
-5. Implement common Git commands in `loop`
-   - `loop git status`
-   - `loop git pull`
-   - `loop git push`
-
 6. Add parallel execution option to `loop`
    - Implement multi-threading for running commands in parallel
    - Add a `--parallel` flag to enable parallel execution
