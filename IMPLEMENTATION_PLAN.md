@@ -48,6 +48,9 @@ AI INSTRUCTIONS:
    - √ Implement `meta` commands using `loop` functionality (done via leveraging `loop_lib` as a library)
 
 5. Create a `meta` plugin system
+   - Implement a plugin system in `meta` to load plugins from a `.meta-plugins` directory.
+   - Create a `meta-git` plugin to add new subcommands for interacting with git repositories.
+   - Ensure the plugin system is flexible and can be extended with additional plugins in the future.
    - Plugins are compiled rust libraries that can be added to the `meta` command
    - A plugin system in `meta` will check for the existence of plugins in a `.meta-plugins` folder in the current directory, or in the user's home directory
    - Plugins can add new sub commands to `meta` for interacting with specific functionality
