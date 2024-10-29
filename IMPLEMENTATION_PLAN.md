@@ -47,33 +47,20 @@ AI INSTRUCTIONS:
    - √ Use `loop` as a dependency in `meta` (done via leveraging `loop_lib` as a library)
    - √ Implement `meta` commands using `loop` functionality (done via leveraging `loop_lib` as a library)
 
-## Phase 2: Enhanced Functionality
-
-6. Add parallel execution option to `loop`
-   - Implement multi-threading for running commands in parallel
-   - Add a `--parallel` flag to enable parallel execution
-   - Show spinner and summary of each command being run
-   - Show combined output when done, retaining color from child processes
-
-7. Improve error handling and reporting in both `loop` and `meta`
-   - Implement detailed error messages
-   - Add color-coded output for better readability
-
-8. Extend `meta` functionality
-   - Implement `meta`-specific features that leverage `loop`
-   - Ensure `meta` correctly handles `loop` options like directory filtering
-
-## Phase 3: Testing and Documentation
-
-9. Write comprehensive tests
-   - Unit tests for core functions in both `loop` and `meta`
-   - Integration tests for CLI functionality
-   - Tests for the interaction between `meta` and `loop`
-
-10. Create documentation
-    - Write comprehensive READMEs for both `loop` and `meta`
-    - Document the API for using `loop` as a library
-    - Create man pages for both tools
+5. Create a `meta` plugin system
+   - Plugins are compiled rust libraries that can be added to the `meta` command
+   - A plugin system in `meta` will check for the existence of plugins in a `.meta-plugins` folder in the current directory, or in the user's home directory
+   - Plugins can add new sub commands to `meta` for interacting with specific functionality
+   - A new `meta-git` folder will be created with a `Cargo.toml` file and a `src/lib.rs` file
+   - The `meta-git` plugin will be able to add new sub commands to `meta` for interacting with git repositories
+   - The `meta-git` will add a `meta git clone [repo]` command that clones a git repository, checks for the existence of a `.meta` file, and clones all the projects specified in the `.meta` file into the current directory
+   A new `meta-project` folder will be created with a `Cargo.toml` file and a `src/lib.rs` file
+   - The `meta-project` plugin will be able to add new sub commands to `meta` for interacting with projects
+   - `meta project update` will update all the projects specified in the `.meta` file. It will clone any resitories that are listed in `.meta`'s `projects` object, but are not currently cloned.
+   - `meta project sync` will sync all the projects specified in the `.meta` file. It will start a wizard to step the user through the process of syncing each project. 
+      - If a project is not currently cloned, it will ask the user if they want to clone it. If yes, it will clone the project.
+      - If a project was removed from the `.meta` file, it will ask the user if they want to remove it. If yes, it will remove the project. (This will be checked by checking for untracked folders in the project directory, specifically if those folders are git repositories but are not listed in the `.meta` file). 
+      - If a project is listed in `.meta` but is not listed in `.gitignore`, it will ask the user if they want to add it to `.gitignore`.
 
 ## Phase 4: Polish and Distribution
 
