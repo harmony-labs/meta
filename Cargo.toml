@@ -3,5 +3,6 @@ members = [
     "loop",
     "loop_lib",
     'meta',
+    'meta-git',
 ]
 resolver = "2"
