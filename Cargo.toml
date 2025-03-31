@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "loop",
+    "loop-cli",
     "loop_lib",
-    'meta',
-    'meta-git',
+    'meta-cli',
+    'meta-git-cli',
 ]
 resolver = "2"
