@@ -50,7 +50,7 @@ imported/
 .aider*
 
 # child repositories
-loop/
+loop-cli/
 loop_lib/
-meta/
-meta-git/
+meta-cli/
+meta-git-cli/
