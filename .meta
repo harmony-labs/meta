@@ -1,9 +1,9 @@
 {
 	"ignore": [".git"],
 	"projects": {
-		"loop-cli": "git@github.com:harmony-labs/loop-cli.git",
+		"loop_cli": "git@github.com:harmony-labs/loop-cli.git",
 		"loop_lib": "git@github.com:harmony-labs/loop_lib.git",
-		"meta-cli": "git@github.com:harmony-labs/meta-cli.git",
-		"meta-git-cli": "git@github.com:harmony-labs/meta-git-cli.git"
+		"meta_cli": "git@github.com:harmony-labs/meta-cli.git",
+		"meta_git_cli": "git@github.com:harmony-labs/meta-git-cli.git"
 	}
 }
