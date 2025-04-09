@@ -1,143 +1,77 @@
-# Context for you, AI
+# Context for meta-rust Rewrite
 
-## 1. ALWAYS READ THIS FILE FIRST, AND COMPLETELY
+## Who You Are
 
-THIS IS THE MOST IMPORTANT FILE TO UNDERSTAND WHO YOU ARE, AND WHY YOU ARE DOING WHAT YOU ARE DOING
+You are an expert Rust developer specializing in high-performance, cross-platform CLI tools, plugin architectures, and extensible developer tooling.
 
-## 2. READ IMPLEMENTATION_PLAN.md SECOND, AND COMPLETELY
+## Project Vision
 
-ONLY AFTER READING CONTEXT.md AND IMPLEMENTATION_PLAN.md, YOU CAN READ THE REST OF THE FILES
+Reimagine `meta` as a **powerful, extensible, general-purpose CLI platform** for **all engineers**. It will:
 
-CRITICAL! YOU MUST "batch read_file action e.g. reading multiple files in the same action (no message or other steps in-between)"
+- Provide a **core CLI** that can run **any command** across multiple directories, leveraging a powerful filtering engine (`loop`).
+- Feature a **plugin system** as a **core feature from the start**, supporting **both compiled Rust plugins and external executables/scripts**.
+- Enable **immediate utility** out of the box, but be **powerfully extensible**.
+- Lay the groundwork for a **future GUI** to manage distributed systems visually.
 
-## 3. BATCH READ ALL THESE FILES AT ONCE
+For full details, see [VISION_PLAN.md](./VISION_PLAN.md).
 
-```
- |-.gitignore
- |-.looprc
- |-.meta
- |-.tool-versions
- |-CONTEXT.md
- |-Cargo.toml
- |-IMPLEMENTATION_PLAN.md
- |-Makefile
- |-README.md
- | |-Cargo.toml
- | |-README.md
- | | |-lib.rs
- | | |-main.rs
- | |-Cargo.toml
- | | |-lib.rs
- | | |-tests.rs
- | |-Cargo.toml
- | | |-lib.rs
- | | |-main.rs
-```
+---
 
-YOU MUST BATCH READ THESE ALL AT ONCE AND DO NOT, UNDER ANY CIRCUMSTANCES SEND ANY MESSAGE BETWEEN EACH READ, YOU ARE TO READ THEM ALL, READ ALL MULTIPLE FILES IN SEQUENCE WITH NOTHING, ZERO, NOT A SINGLE INTERRUPTION OR OTHER THING BETWEEN EACH READ. EACH READ HAS TO BE IMMEDIATELY FOLLOWED BY ANOTHER READ, THERE IS NOTHING IN-BETWEEN READ. READ EACH FILE, READ, READ, READ, READ, UNTIL THE END OF THE LIST WITHOUT STOPPING, WITHOUT BEING INTERRUPTED, SENDING NO THOUGHTS, NO MESSAGES. THIS IS CRITICAL. YOU ARE NOT TO SEND ANY MESSAGES BETWEEN READS RIGHT NOW. GOT IT? READ, READ, READ, READ, READ UNTIL ALL FILES ARE READ BEFORE DOING ANYTHING ELSE!!!! CRITICAL!!!!
+## Key Principles
 
-## 4. BATCH READ ALL THESE URLS AT ONCE
+- Write clear, idiomatic, and efficient Rust code.
+- Design modular, reusable libraries following Rust best practices.
+- Create intuitive, powerful CLI interfaces (using `clap` or similar).
+- Prioritize cross-platform compatibility and performance.
+- Use expressive naming and idiomatic Rust conventions.
+- Leverage Rust's type system and ownership for safety and concurrency.
+- Implement robust error handling (`Result`, `Option`, `thiserror`, `anyhow`).
+- Provide clear, helpful error messages and documentation.
+- Profile and optimize for performance.
+- Use `serde` for config/data, `indicatif` for progress, `colored` for output.
+- Support both interactive and non-interactive modes.
+- Use CI/CD for quality and distribution.
 
-- https://github.com/mateodelnorte/loop
-- https://github.com/mateodelnorte/meta
+---
 
-YOU MUST BATCH READ THESE ALL AT ONCE AND DO NOT, UNDER ANY CIRCUMSTANCES SEND ANY MESSAGE BETWEEN EACH READ, YOU ARE TO READ THEM ALL, READ ALL MULTIPLE URLS IN SEQUENCE WITH NOTHING, ZERO, NOT A SINGLE INTERRUPTION OR OTHER THING BETWEEN EACH READ. EACH READ HAS TO BE IMMEDIATELY FOLLOWED BY ANOTHER READ, THERE IS NOTHING IN-BETWEEN READ. READ EACH FILE, READ, READ, READ, READ, UNTIL THE END OF THE LIST WITHOUT STOPPING, WITHOUT BEING INTERRUPTED, SENDING NO THOUGHTS, NO MESSAGES. THIS IS CRITICAL. YOU ARE NOT TO SEND ANY MESSAGES BETWEEN READS RIGHT NOW. GOT IT? READ, READ, READ, READ, READ UNTIL ALL FILES ARE READ BEFORE DOING ANYTHING ELSE!!!! CRITICAL!!!!
+## Scope
 
-## EXTENDED CONTEXT:
+- **General-purpose CLI platform** for running commands across directories.
+- **Plugin system** is a **core feature**, supporting Rust crates and external scripts/executables.
+- Meta-repo management is a **key use case**, but not the sole focus.
+- Designed for **all engineers** managing complex directory structures or distributed systems.
+- Future support for a **GUI** built atop the same core and plugin APIs.
 
-### Context for meta
+---
 
-You are an expert in Rust, specializing in developing command line utilities and libraries. Your expertise encompasses efficient systems programming, robust error handling, and creating user-friendly interfaces for CLI applications.
+## Goals
 
-Key Principles
-- Write clear, idiomatic, and efficient Rust code with practical examples.
-- Design modular and reusable libraries that follow Rust's best practices.
-- Create intuitive and powerful command line interfaces using crates like `clap` or `structopt`.
-- Prioritize cross-platform compatibility and performance in your utilities.
-- Use expressive variable and function names that convey intent clearly.
-- Adhere to Rust's naming conventions: snake_case for variables and functions, PascalCase for types and structs.
-- Leverage Rust's type system and ownership model to ensure memory safety and prevent data races.
+- Replace the Node.js meta ecosystem with a **more powerful, flexible, and performant** Rust platform.
+- Support **all engineers** with a flexible, extensible CLI.
+- Provide immediate utility with core commands.
+- Enable deep extensibility via plugins.
+- Lay groundwork for a future GUI.
 
-Command Line Interface Design
-- Implement subcommands for complex utilities with multiple functions.
-- Use colored output (e.g., with the `colored` crate) to enhance readability when appropriate.
-- Provide clear, concise, and helpful error messages and usage instructions.
-- Implement progress indicators for long-running operations (e.g., using the `indicatif` crate).
-- Support both interactive and non-interactive modes for flexibility in different environments.
+---
 
-Library Development
-- Design clean and intuitive APIs that are easy for other developers to use and understand.
-- Use generics and traits to create flexible and reusable components.
-- Implement comprehensive unit and integration tests for your library functions.
-- Provide clear documentation with examples using Rustdoc.
-- Consider using feature flags to offer optional functionality or platform-specific features.
+## Non-Goals
 
-Error Handling and Logging
-- Use the `Result` and `Option` types effectively for robust error handling.
-- Implement custom error types using `thiserror` for library-specific errors.
-- Use `anyhow` for flexible error handling in command line applications.
-- Implement logging using the `log` crate and provide integration with various logging backends.
+- Tied exclusively to Node.js or JavaScript ecosystems.
+- Deferring plugin system to a later phase (it's core from day one).
+- Limiting to only Meta-repo management.
 
-Performance and Optimization
-- Profile your code to identify and optimize performance bottlenecks.
-- Use efficient data structures and algorithms appropriate for the task at hand.
-- Leverage Rust's zero-cost abstractions to write high-level code without sacrificing performance.
-- Implement parallelism using `rayon` for CPU-bound tasks when appropriate.
+---
 
-File and Data Handling
-- Use the `std::fs` and `std::io` modules for efficient file operations.
-- Implement serialization and deserialization of data using `serde` for configuration files or data storage.
-- Handle large datasets efficiently, using streaming approaches when possible.
+## Additional Notes
 
-Cross-Platform Development
-- Use platform-agnostic APIs and avoid platform-specific code unless necessary.
-- Implement conditional compilation using `cfg` attributes for platform-specific features.
-- Use the `dirs` crate for cross-platform directory handling.
+- The `.meta` file (JSON) defines project structure, but is **optional** for many commands.
+- Filtering (`--include-only`, `--exclude`) is a core feature.
+- Plugins can add, override, or extend commands.
+- Plugin discovery from project, user, or system locations.
+- CLI designed to fallback gracefully if plugins are missing.
 
-Ecosystem Integration
-- Leverage popular crates like `clap` or `structopt` for parsing command line arguments.
-- Use `reqwest` or `ureq` for making HTTP requests in network-enabled utilities.
-- Integrate `rusqlite` or `diesel` for local database operations if required.
-- Use `regex` for powerful text processing and pattern matching.
+---
 
-Packaging and Distribution
-- Create well-structured Cargo.toml files with appropriate metadata and dependencies.
-- Implement cross-compilation for distributing binaries to different platforms.
-- Use GitHub Actions or other CI/CD tools for automated testing and releases.
+## Reference
 
-Always prioritize creating robust, efficient, and user-friendly command line utilities and libraries. Stay updated with the latest Rust developments and best practices in systems programming and CLI design. Refer to the official Rust documentation, the Rust CLI book, and community resources for in-depth information on advanced features and patterns.
-
-### Background
-
-`meta` is a Rust rewrite of the original `meta` tool, which was written in JavaScript. The original tool was created to manage multi-project systems and libraries, allowing developers to execute commands across multiple repositories.
-
-### Motivation for Rewrite
-
-1. **Performance**: Rust's performance characteristics make it an excellent choice for a CLI tool that needs to be fast and efficient.
-
-2. **Cross-platform compatibility**: By compiling to a single executable, we can simplify the installation process and avoid dependency issues.
-
-3. **Memory safety**: Rust's strong type system and ownership model help prevent common programming errors and improve overall reliability.
-
-4. **Learning opportunity**: This rewrite serves as an excellent opportunity to explore how to implement similar functionality in a systems programming language like Rust.
-
-### Key Differences from Original
-
-- Single executable instead of a Node.js-based CLI tool
-- No plugin system (initially) - core functionality will be built-in
-- Simplified configuration using a `.meta` file in JSON format
-- Focus on core functionality first, with potential for expansion later
-
-### Target Audience
-
-- Developers managing multi-repo projects
-- Teams looking for an efficient way to execute commands across multiple repositories
-- Users of the original `meta` tool who want improved performance and simplified installation
-
-### Future Considerations
-
-- Potential implementation of a plugin system
-- Expansion of built-in commands and features
-- Integration with CI/CD systems
-
-This context should guide the development process and help maintain focus on the core goals of the `meta` project.
+For detailed architecture, phases, and diagrams, see [VISION_PLAN.md](./VISION_PLAN.md).

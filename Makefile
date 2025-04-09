@@ -5,16 +5,45 @@ include Makefile.context.mk
 build: 
 	cargo build
 
-install:
-	cargo install --path .
+build-plugins:
+	cargo build --release -p meta_git_cli
+	mkdir -p .meta-plugins
+	cp target/release/libmeta_git_cli.dylib .meta-plugins/meta-git-cli.dylib
+
+clean:
+	cargo clean
+
+clean-plugins:
+	rm -rf .meta-plugins
+
+install: rebuild-plugins
+	cargo install --path meta_cli
+
+rebuild-plugins: clean-plugins build-plugins
 
 release: 
 	cargo build --release
+
+rm-meta:
+	rm -rf meta
 
 run: 
 	cargo run
 
 test: 
-	cargo test
+	cargo test --workspace --tests
 
-.PHONY: install build run test release
+test-meta-git-clone: rm-meta
+	cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git
+
+test-meta-git-clone-depth-1-recursive: rm-meta
+	cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git --depth 1 --recursive
+
+test-meta-git-clone-parallel-recursive: rm-meta
+	cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git --parallel 4 --recursive
+
+integration-test:
+	cargo build -p meta
+	META_CLI_PATH=target/debug/meta CARGO_BIN_EXE_meta=target/debug/meta cargo test --workspace --tests
+
+.PHONY: install build run test release integration-test

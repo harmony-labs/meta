@@ -1,9 +1,11 @@
 {
-	"ignore": [".git"],
-	"projects": {
-		"loop_cli": "git@github.com:harmony-labs/loop-cli.git",
-		"loop_lib": "git@github.com:harmony-labs/loop_lib.git",
-		"meta_cli": "git@github.com:harmony-labs/meta-cli.git",
-		"meta_git_cli": "git@github.com:harmony-labs/meta-git-cli.git"
-	}
+  "projects": {
+	"loop_cli": "git@github.com:harmony-labs/loop_cli.git",
+    "loop_lib": "git@github.com:harmony-labs/loop_lib.git",
+    "meta_cli": "git@github.com:harmony-labs/meta_cli.git",
+    "meta_git_cli": "git@github.com:harmony-labs/meta_git_cli.git",
+    "meta_plugin_api": "git@github.com:harmony-labs/meta_plugin_api.git",
+    "meta_project_cli": "git@github.com:harmony-labs/meta_project_cli.git",
+    "meta_rust_cli": "git@github.com:harmony-labsmeta_rust_climeta.git"
+  }
 }
