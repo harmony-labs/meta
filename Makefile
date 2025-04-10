@@ -30,8 +30,8 @@ rm-meta:
 run: 
 	cargo run
 
-test: 
-	cargo test --workspace --tests
+test:
+	cargo test --workspace
 
 test-meta-git-clone: rm-meta
 	cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git
