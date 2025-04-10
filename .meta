@@ -6,6 +6,6 @@
     "meta_git_cli": "git@github.com:harmony-labs/meta_git_cli.git",
     "meta_plugin_api": "git@github.com:harmony-labs/meta_plugin_api.git",
     "meta_project_cli": "git@github.com:harmony-labs/meta_project_cli.git",
-    "meta_rust_cli": "git@github.com:harmony-labsmeta_rust_climeta.git"
+    "meta_rust_cli": "git@github.com:harmony-labs/meta_rust_cli.git"
   }
 }
