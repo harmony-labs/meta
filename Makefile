@@ -1,3 +1,4 @@
+RUST_BACKTRACE ?= full
 RUST_LOG ?= trace
 
 include Makefile.context.mk
@@ -33,19 +34,19 @@ run:
 	cargo run
 
 test:
-	RUST_LOG=$(RUST_LOG) cargo test --workspace
+	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) cargo test --workspace
 
 test-meta-git-clone: rm-meta
-	RUST_LOG=$(RUST_LOG) cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git
+	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git
 
 test-meta-git-clone-depth-1-recursive: rm-meta
-	RUST_LOG=$(RUST_LOG) cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git --depth 1 --recursive
+	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git --depth 1 --recursive
 
 test-meta-git-clone-parallel-recursive: rm-meta
-	RUST_LOG=$(RUST_LOG) cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git --parallel 4 --recursive
+	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git --parallel 4 --recursive
 
 integration-test:
 	cargo build -p meta
-	RUST_LOG=$(RUST_LOG) META_CLI_PATH=target/debug/meta CARGO_BIN_EXE_meta=target/debug/meta cargo test --workspace --tests
+	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) META_CLI_PATH=target/debug/meta CARGO_BIN_EXE_meta=target/debug/meta cargo test --workspace --tests
 
 .PHONY: install build run test release integration-test
