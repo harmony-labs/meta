@@ -212,9 +212,12 @@ cargo install meta
 
 - Plugins can be **compiled Rust crates** or **external executables/scripts**.
 - Plugins are **discovered automatically** from:
-  - `.meta-plugins` in your project
-  - Your home directory
+  - `.meta-plugins` in the current directory
+  - `.meta-plugins` in each parent directory up to the filesystem root
+  - `.meta-plugins` in your home directory
   - System PATH
+
+  When you run `meta` with the `--verbose` flag, it will print every location searched for plugins and indicate when a plugin directory is found and loaded. If a plugin fails to load, a clear error message (including the path and error) will be printed, but discovery will continue for other plugins.
 - Plugins can **add, override, or extend** commands.
 - Example plugin commands:
   - `meta git clone` — clone the meta repo and **all child repos in parallel**, with an interactive multi-progress UI showing per-repo status.
