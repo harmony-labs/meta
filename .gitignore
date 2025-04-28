@@ -54,6 +54,7 @@ loop_cli/
 loop_lib/
 meta_cli/
 meta_git_cli/
+meta_git_lib/
 meta_plugin_api/
 meta_project_cli/
 meta_rust_cli/

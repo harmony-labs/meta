@@ -564,12 +564,22 @@ dependencies = [
  "indicatif",
  "log",
  "meta",
+ "meta_git_lib",
  "meta_plugin_api",
  "ratatui",
  "rayon",
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "meta_git_lib"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "console",
+ "indicatif",
 ]
 
 [[package]]
@@ -587,7 +597,9 @@ dependencies = [
  "anyhow",
  "clap",
  "colored",
+ "meta_git_lib",
  "meta_plugin_api",
+ "serde_json",
 ]
 
 [[package]]
