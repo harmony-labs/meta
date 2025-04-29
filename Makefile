@@ -5,11 +5,13 @@ include Makefile.context.mk
 
 .DEFAULT_GOAL := build-all-and-install
 
+build-all-and-install-and-copy-plugins: build-all install copy-plugins-to-home
+
 build-all-and-install: build-all install
 
 build-all: build build-plugins
 
-build: 
+build:
 	cargo build
 
 build-plugins:
@@ -19,7 +21,7 @@ build-plugins:
 	cp target/release/libmeta_git_cli.dylib .meta-plugins/meta-git-cli.dylib
 	cp target/release/libmeta_project_cli.dylib .meta-plugins/meta-project-cli.dylib
 
-clean:
+clean: clean-plugins
 	cargo clean
 
 clean-plugins:
