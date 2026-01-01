@@ -28,7 +28,7 @@ clean-plugins:
 	rm -rf .meta-plugins
 
 copy-plugins-to-home:
-	cp -r .meta-plugins ~/.meta-plugins
+	cp -r .meta-plugins/ ~/.meta-plugins/
 
 install:
 	cargo install --path meta_cli
@@ -59,5 +59,8 @@ test-meta-git-clone-parallel-recursive: rm-meta
 integration-test:
 	cargo build -p meta
 	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) META_CLI_PATH=target/debug/meta CARGO_BIN_EXE_meta=target/debug/meta cargo test --workspace --tests
+
+uninstall:
+	cargo uninstall -p meta
 
 .PHONY: install build run test release integration-test
