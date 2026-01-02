@@ -1,13 +1,11 @@
 {
   "projects": {
-	"loop_cli": "git@github.com:harmony-labs/loop_cli.git",
+    "loop_cli": "git@github.com:harmony-labs/loop_cli.git",
     "loop_lib": "git@github.com:harmony-labs/loop_lib.git",
     "meta_cli": "git@github.com:harmony-labs/meta_cli.git",
-    "meta_git": "git@github.com:harmony-labs/meta_git.git",
     "meta_git_cli": "git@github.com:harmony-labs/meta_git_cli.git",
     "meta_git_lib": "git@github.com:harmony-labs/meta_git_lib.git",
     "meta_mcp": "git@github.com:harmony-labs/meta_mcp.git",
-    "meta_plugin_api": "git@github.com:harmony-labs/meta_plugin_api.git",
     "meta_project_cli": "git@github.com:harmony-labs/meta_project_cli.git",
     "meta_rust_cli": "git@github.com:harmony-labs/meta_rust_cli.git"
   }

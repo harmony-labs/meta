@@ -17,11 +17,11 @@ build:
 build-plugins:
 	cargo build --release -p meta_git_cli
 	cargo build --release -p meta_project_cli
-	cargo build --release -p meta-git
+	cargo build --release -p meta_rust_cli
 	mkdir -p .meta-plugins
-	cp target/release/libmeta_git_cli.dylib .meta-plugins/meta-git-cli.dylib
-	cp target/release/libmeta_project_cli.dylib .meta-plugins/meta-project-cli.dylib
 	cp target/release/meta-git .meta-plugins/meta-git
+	cp target/release/meta-project .meta-plugins/meta-project
+	cp target/release/meta-rust .meta-plugins/meta-rust
 
 clean: clean-plugins
 	cargo clean

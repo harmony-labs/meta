@@ -907,16 +907,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "561d97a539a36e26a9a5fad1ea11a3039a67714694aaa379433e580854bc3dc5"
 
 [[package]]
-name = "libloading"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b67380fd3b2fbe7527a606e18729d21c6f3951633d0500574c4dc22d2d638b9f"
-dependencies = [
- "cfg-if",
- "winapi",
-]
-
-[[package]]
 name = "libredox"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1008,10 +998,8 @@ dependencies = [
  "colored",
  "env_logger",
  "flate2",
- "libloading",
  "log",
  "loop_lib",
- "meta_plugin_api",
  "predicates 2.1.5",
  "rayon",
  "serde",
@@ -1023,21 +1011,6 @@ dependencies = [
  "ureq",
  "walkdir",
  "zip",
-]
-
-[[package]]
-name = "meta-git"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "console",
- "env_logger",
- "indicatif",
- "log",
- "rayon",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -1063,9 +1036,7 @@ dependencies = [
  "indicatif",
  "log",
  "loop_lib",
- "meta",
  "meta_git_lib",
- "meta_plugin_api",
  "ratatui",
  "rayon",
  "serde",
@@ -1085,23 +1056,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "meta_plugin_api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "thiserror",
-]
-
-[[package]]
 name = "meta_project_cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "clap",
  "colored",
  "meta_git_lib",
- "meta_plugin_api",
+ "serde",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]
@@ -1109,9 +1072,9 @@ name = "meta_rust_cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "clap",
  "colored",
- "meta_plugin_api",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
