@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
@@ -54,12 +54,17 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu
+          mkdir -p .cargo
+          cat >> .cargo/config.toml << EOF
+          [target.aarch64-unknown-linux-gnu]
+          linker = "aarch64-linux-gnu-gcc"
+          EOF
 
-      - name: Build release binary
-        run: cargo build --release --target ${{ matrix.target }} -p meta
-
-      - name: Build meta-git plugin
-        run: cargo build --release --target ${{ matrix.target }} -p meta-git
+      - name: Build release binaries
+        run: |
+          cargo build --release --target ${{ matrix.target }} -p meta
+          cargo build --release --target ${{ matrix.target }} -p meta_git_cli
+          cargo build --release --target ${{ matrix.target }} -p meta-mcp
 
       - name: Package (Unix)
         if: runner.os != 'Windows'
@@ -67,6 +72,7 @@ jobs:
           mkdir -p dist
           cp target/${{ matrix.target }}/release/${{ matrix.binary_name }} dist/
           cp target/${{ matrix.target }}/release/meta-git dist/
+          cp target/${{ matrix.target }}/release/meta-mcp dist/
           cd dist
           tar -czvf ../${{ matrix.asset_name }} *
           cd ..
@@ -78,6 +84,7 @@ jobs:
           mkdir dist
           copy target\${{ matrix.target }}\release\${{ matrix.binary_name }} dist\
           copy target\${{ matrix.target }}\release\meta-git.exe dist\
+          copy target\${{ matrix.target }}\release\meta-mcp.exe dist\
           cd dist
           7z a -tzip ..\${{ matrix.asset_name }} *
           cd ..
