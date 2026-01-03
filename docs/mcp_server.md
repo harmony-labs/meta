@@ -1,6 +1,6 @@
 # Meta MCP Server
 
-The Meta MCP (Model Context Protocol) server provides AI agents with structured access to multi-repository operations. It exposes 28 tools across core operations, git workflows, build/test orchestration, code discovery, and AI-dominance features.
+The Meta MCP (Model Context Protocol) server provides AI agents with structured access to multi-repository operations. It exposes 29 tools across core operations, git workflows, build/test orchestration, code discovery, and AI-dominance features.
 
 ## Installation
 
@@ -138,6 +138,46 @@ Switch branches across repositories.
 - `branch` (required): Branch name
 - `create` (optional): Create new branch
 - `tag` (optional): Filter by tag
+
+#### meta_git_multi_commit
+Create commits with different messages for each repository. Useful for tailored commit messages.
+
+**Parameters:**
+- `commits` (required): Array of commit objects
+
+**Commit Object:**
+```json
+{
+  "project": "project-name",  // Use "." for root repo
+  "message": "Commit message for this project"
+}
+```
+
+**Example:**
+```json
+{
+  "name": "meta_git_multi_commit",
+  "arguments": {
+    "commits": [
+      {"project": ".", "message": "feat: add new meta feature"},
+      {"project": "api-service", "message": "fix: resolve API bug"},
+      {"project": "web-app", "message": "chore: update dependencies"}
+    ]
+  }
+}
+```
+
+**Returns:**
+```json
+{
+  "results": [
+    {"project": ".", "success": true, "message": "feat: add new meta feature"},
+    {"project": "api-service", "success": true, "message": "fix: resolve API bug"},
+    {"project": "web-app", "success": false, "message": "chore: update dependencies", "error": "nothing to commit"}
+  ],
+  "summary": {"total": 3, "succeeded": 2, "failed": 1}
+}
+```
 
 ---
 
