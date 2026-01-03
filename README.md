@@ -1,297 +1,412 @@
 # meta
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/yourusername/meta/ci.yml?branch=main)](https://github.com/yourusername/meta/actions)
-[![Version](https://img.shields.io/github/v/release/yourusername/meta)](https://github.com/yourusername/meta/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/harmony-labs/meta/release.yml?branch=main)](https://github.com/harmony-labs/meta/actions)
+[![Version](https://img.shields.io/github/v/release/harmony-labs/meta)](https://github.com/harmony-labs/meta/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Crates.io](https://img.shields.io/crates/v/meta)](https://crates.io/crates/meta)
-[![Docs](https://img.shields.io/badge/docs-online-blue)](https://docs.rs/meta)
 
-`meta` is a **powerful, extensible, general-purpose CLI platform** built in Rust. It enables engineers to **run any command across many directories** with ease, and extend functionality via a flexible plugin system.
-
----
-
-![meta CLI Screenshot](docs/assets/meta-cli-screenshot.png)
-<!-- If no screenshot is available, replace with: -->
-<!-- ![meta CLI Screenshot Placeholder](https://via.placeholder.com/800x200?text=meta+CLI+Screenshot) -->
+`meta` is a **powerful, extensible multi-repository management CLI** built in Rust. It enables engineers to **run any command across many repositories** with ease, and extend functionality via a flexible plugin system.
 
 ---
 
 ## Table of Contents
 
 - [Key Features](#key-features)
-- [How It Works](#how-it-works)
-- [Multi-Repo Clone UI](#multi-repo-clone-ui)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Extending meta with Plugins](#extending-meta-with-plugins)
-- [Loop System](docs/loop.md)
-  - [loop_cli](loop_cli/README.md)
-  - [loop_lib](loop_lib/README.md)
-  - [Loop Advanced Usage](docs/loop_advanced_usage.md)
-  - [Loop Architecture](docs/loop_architecture_overview.md)
-  - [Loop FAQ](docs/loop_faq_troubleshooting.md)
-  - [Loop Visual Assets](docs/assets/loop_README.md)
-- [Advanced Usage Guide](docs/advanced_usage.md)
-- [Plugin Development Guide](docs/plugin_development.md)
-- [Architecture Overview](docs/architecture_overview.md)
+- [Configuration](#configuration)
+  - [Simple Format (Legacy)](#simple-format-legacy)
+  - [Extended Format](#extended-format)
+  - [YAML Support](#yaml-support)
+- [Commands](#commands)
+- [Filtering](#filtering)
+- [Plugins](#plugins)
+- [MCP Server (AI Integration)](#mcp-server-ai-integration)
+- [Loop System](#loop-system)
+- [Documentation](#documentation)
 - [Roadmap](#roadmap)
-- [Contributing](docs/contributing.md)
-- [FAQ / Troubleshooting](docs/faq_troubleshooting.md)
-- [Visual Assets](docs/assets/README.md)
-- [Community & Support](#community--support)
-- [Security Policy](#security-policy)
-- [Acknowledgments](#acknowledgments)
+- [Contributing](#contributing)
 - [License](#license)
 
----
-### Documentation
-
-- **[Advanced Usage Guide](docs/advanced_usage.md):** Power-user features, filtering, scripting, and customization.
-- **[Plugin Development Guide](docs/plugin_development.md):** How to create, test, and publish plugins.
-- **[Architecture Overview](docs/architecture_overview.md):** System design, key modules, and extensibility.
-- **[FAQ / Troubleshooting](docs/faq_troubleshooting.md):** Common issues and solutions.
-- **[Contribution Guide](docs/contributing.md):** How to contribute to the project.
-- **[Visual Assets](docs/assets/README.md):** Screenshots, diagrams, and GIFs for documentation.
 ---
 
 ## Key Features
 
-- **Run any command** across multiple directories using a fast, portable Rust CLI.
-- **Loop-powered core**: commands like `meta git status` work out of the box, running `git status` in all relevant directories.
-- **Slim, powerful plugins**: extend or override commands for complex workflows (e.g., `meta git clone`, `meta git update`).
-- **Filtering options**: target specific directories with `--include-only` and `--exclude`.
-- **Cross-platform**: works on macOS, Linux, and Windows.
-- **Immediate utility**, but **powerfully extensible**.
-
----
-
-## Loop System
-
-The **loop** system is a powerful CLI utility included with meta for running any shell command in multiple repositories or directories in parallel. It is ideal for monorepos and multi-package projects, making repetitive tasks like dependency management, testing, and code generation fast and easy.
-
-- By default, `loop` runs your command in all child repositories of the current directory.
-- You can use expressive CLI options or a `.looprc` config file to control exactly where your command will run.
-- Developers can also use the underlying [loop_lib](loop_lib/README.md) Rust library to leverage loop's capabilities programmatically, including directory filtering and config parsing.
-
-**Example usage:**
-```sh
-loop git status
-loop npm install
-loop cargo test
-```
-
-- To include or exclude specific directories, use CLI options (see [loop_cli/README.md](loop_cli/README.md)).
-- To set persistent defaults, create a `.looprc` file in your project root.
-
-**Loop Documentation:**
-- [Loop Overview](docs/loop.md)
-- [Loop Advanced Usage](docs/loop_advanced_usage.md)
-- [Loop Architecture](docs/loop_architecture_overview.md)
-- [Loop FAQ / Troubleshooting](docs/loop_faq_troubleshooting.md)
-- [Loop Visual Assets](docs/assets/loop_README.md)
-- [loop_cli – CLI Usage](loop_cli/README.md)
-- [loop_lib – Rust Library](loop_lib/README.md)
-
----
-
-## How It Works
-
-- Define your project structure in an optional `.meta` JSON file:
-
-```json
-{
-  "projects": {
-    "repo1": "./path/to/repo1",
-    "repo2": "./path/to/repo2"
-  }
-}
-```
-
-- Run commands across all projects:
-
-```bash
-meta git status
-meta pwd
-meta ls -la
-```
-
-- The **loop engine** executes these commands in all specified directories.
-
-- Use **filters** to narrow scope:
-
-```bash
-meta git status --include-only repo1,repo2
-meta npm install --exclude legacy-repo
-```
-
----
-
-## Multi-Repo Clone UI
-
-The `meta git clone` command provides:
-
-- **Parallel cloning** of all child repositories.
-- **Live, per-repo spinners** showing current git output.
-- **Styled, emoji-prefixed phase messages** for resolving, fetching, linking, and cloning.
-- **Graceful skipping** of existing directories.
-- Built with **Indicatif** and **Console** libraries for a polished CLI experience.
-
-Example output:
-
-```
-[1/4] 🔍  Resolving meta manifest...
-[2/4] 🚚  Fetching meta repository...
-[3/4] 🔗  Linking child repositories...
-[4/4] 📃  Cloning child repositories...
-[1/12] ⠄ Cloning plugins/meta-init
-[2/12] ⠄ Cloning plugins/meta-exec
-[1/12]   Cloned plugins/meta-init
-[2/12]   Cloned plugins/meta-exec
-...
-```
+- **Run any command** across multiple repositories using a fast, portable Rust CLI
+- **Project tags** for filtering (`--tag backend,api`)
+- **YAML and JSON** configuration support
+- **Nested meta repos** with `--recursive` flag
+- **JSON output** mode for scripting (`--json`)
+- **Plugin system** with auto-discovery
+- **MCP server** for AI agent integration (29 tools)
+- **Multi-repo git operations** including per-repo commit messages
+- **Cross-platform**: works on macOS, Linux, and Windows
 
 ---
 
 ## Installation
 
-Download the latest release for your platform from the [GitHub Releases](https://github.com/yourusername/meta/releases) page.
-
-Or install from source:
+### Via Install Script (Recommended)
 
 ```bash
-cargo install meta
+curl -fsSL https://raw.githubusercontent.com/harmony-labs/meta/main/install.sh | bash
+```
+
+### Via Homebrew (macOS/Linux)
+
+```bash
+brew install harmony-labs/tap/meta-cli
+```
+
+### From Source
+
+```bash
+cargo install --git https://github.com/harmony-labs/meta
 ```
 
 ---
 
 ## Quick Start
 
-1. **Install meta** (see [Installation](#installation)).
-2. **Initialize your meta project** (optional):
+1. **Clone a meta repository:**
 
    ```bash
-   meta init
+   meta git clone https://github.com/org/meta-repo.git
    ```
 
-3. **Add your repositories** to `.meta`:
+   This clones the meta repo and all child repositories defined in its `.meta` file.
 
-   ```json
-   {
-     "projects": {
-       "repo1": "./path/to/repo1",
-       "repo2": "./path/to/repo2"
-     }
-   }
-   ```
-
-4. **Run a command across all repos**:
+2. **Run commands across all repos:**
 
    ```bash
    meta git status
+   meta git pull
+   meta npm install
+   meta cargo test
    ```
 
-5. **Clone all child repos**:
+3. **Filter by tags:**
 
    ```bash
-   meta git clone
+   meta git pull --tag backend
+   meta npm test --tag frontend,shared
    ```
 
-6. **See help for more commands**:
+4. **See help:**
 
    ```bash
    meta --help
+   meta git --help
    ```
 
-![meta CLI in action](docs/assets/meta-cli-demo.gif)
-<!-- If no GIF is available, use a placeholder: -->
-<!-- ![meta CLI Demo Placeholder](https://via.placeholder.com/800x200?text=meta+CLI+Demo) -->
+---
+
+## Configuration
+
+Meta projects are configured via a `.meta` file (JSON) or `.meta.yaml`/`.meta.yml` (YAML) in the repository root.
+
+### Simple Format (Legacy)
+
+The original format maps project names to repository URLs:
+
+```json
+{
+  "projects": {
+    "api-service": "git@github.com:org/api-service.git",
+    "web-app": "git@github.com:org/web-app.git",
+    "shared-utils": "git@github.com:org/shared-utils.git"
+  }
+}
+```
+
+This format is still fully supported and works seamlessly.
+
+### Extended Format
+
+The extended format supports tags, custom paths, and dependency tracking:
+
+```json
+{
+  "projects": {
+    "api-service": {
+      "repo": "git@github.com:org/api-service.git",
+      "tags": ["backend", "rust"]
+    },
+    "web-app": {
+      "repo": "git@github.com:org/web-app.git",
+      "path": "apps/web",
+      "tags": ["frontend", "typescript"]
+    },
+    "shared-utils": {
+      "repo": "git@github.com:org/shared-utils.git",
+      "tags": ["shared"]
+    }
+  }
+}
+```
+
+**Extended format fields:**
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `repo` | Yes | Git repository URL |
+| `path` | No | Custom clone path (defaults to project name) |
+| `tags` | No | Array of tags for filtering |
+
+### YAML Support
+
+YAML configuration is supported via `.meta.yaml` or `.meta.yml`:
+
+```yaml
+projects:
+  api-service:
+    repo: git@github.com:org/api-service.git
+    tags:
+      - backend
+      - rust
+
+  web-app:
+    repo: git@github.com:org/web-app.git
+    path: apps/web
+    tags:
+      - frontend
+      - typescript
+
+  shared-utils: git@github.com:org/shared-utils.git  # Simple format also works
+```
+
+**File priority:** `.meta.yaml` > `.meta.yml` > `.meta`
+
+### Mixed Format
+
+You can mix simple and extended formats in the same file:
+
+```yaml
+projects:
+  # Extended format with tags
+  api-service:
+    repo: git@github.com:org/api-service.git
+    tags: [backend]
+
+  # Simple format (legacy)
+  legacy-app: git@github.com:org/legacy-app.git
+```
 
 ---
 
-## Extending meta with Plugins
+## Commands
 
-- Plugins can be **compiled Rust crates** or **external executables/scripts**.
-- Plugins are **discovered automatically** from:
-  - `.meta-plugins` in the current directory
-  - `.meta-plugins` in each parent directory up to the filesystem root
-  - `.meta-plugins` in your home directory
-  - System PATH
+### Core Commands
 
-  When you run `meta` with the `--verbose` flag, it will print every location searched for plugins and indicate when a plugin directory is found and loaded. If a plugin fails to load, a clear error message (including the path and error) will be printed, but discovery will continue for other plugins.
-- Plugins can **add, override, or extend** commands.
-- Example plugin commands:
-  - `meta git clone` — clone the meta repo and **all child repos in parallel**, with an interactive multi-progress UI showing per-repo status.
-  - `meta git update` — pull latest changes across all repos.
-  - `meta project sync` — interactive sync wizard.
-  - `meta cargo build` — run `cargo build` only in directories with a `Cargo.toml`.
-  - `meta cargo test` — run tests across all Rust crates.
+| Command | Description |
+|---------|-------------|
+| `meta <command>` | Run any command across all repositories |
+| `meta git status` | Git status for all repos |
+| `meta git pull` | Pull latest changes |
+| `meta git push` | Push commits |
+| `meta npm install` | Install npm dependencies |
+| `meta cargo test` | Run Rust tests |
 
-Most commands **just work** via the loop engine. Plugins are for **specialized orchestration** with interactive feedback.
+### Git Plugin Commands
+
+| Command | Description |
+|---------|-------------|
+| `meta git clone <url>` | Clone meta repo and all child repos |
+| `meta git update` | Pull changes and clone missing repos |
+| `meta git setup-ssh` | Configure SSH multiplexing |
+| `meta git commit --edit` | Per-repo commit messages via editor |
+| `meta git commit -m "msg"` | Same message across all repos |
+
+### Plugin Management
+
+| Command | Description |
+|---------|-------------|
+| `meta plugin list` | List installed plugins |
+| `meta plugin install <name>` | Install a plugin |
+| `meta plugin uninstall <name>` | Remove a plugin |
 
 ---
 
-## Plugin Development Guide
+## Filtering
 
-For a detailed guide on writing plugins, see [Plugin Help & Clone Design](docs/plugin_help_and_clone_design.md).
+### By Tag
+
+```bash
+# Single tag
+meta git pull --tag backend
+
+# Multiple tags (OR logic)
+meta npm test --tag frontend,shared
+```
+
+### By Directory
+
+```bash
+# Include only specific directories
+meta git status --include-only api-service,web-app
+
+# Exclude directories
+meta npm install --exclude legacy-app
+```
+
+### Recursive Processing
+
+```bash
+# Process nested meta repositories
+meta git status --recursive
+
+# Limit recursion depth
+meta git pull --recursive --depth 2
+```
+
+---
+
+## Plugins
+
+Plugins extend meta with specialized functionality. They are discovered automatically from:
+
+- `.meta-plugins/` in the current directory
+- `.meta-plugins/` in parent directories
+- `~/.meta-plugins/`
+- System PATH (binaries named `meta-*`)
+
+### Built-in Plugins
+
+| Plugin | Commands | Description |
+|--------|----------|-------------|
+| `git` | `clone`, `status`, `update`, `commit`, `setup-ssh` | Git operations |
+| `project` | `check`, `sync`, `update` | Project management |
+| `rust` | `build`, `test` | Rust/Cargo commands |
+
+### Plugin Help
+
+```bash
+meta git --help
+meta project --help
+```
+
+---
+
+## MCP Server (AI Integration)
+
+Meta includes an MCP (Model Context Protocol) server for AI agent integration, exposing 29 tools for multi-repo operations.
+
+### Setup
+
+Add to Claude Desktop's `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "meta": {
+      "command": "meta-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+### Available Tools
+
+**Core:** `meta_list_projects`, `meta_exec`, `meta_get_config`, `meta_get_project_path`
+
+**Git:** `meta_git_status`, `meta_git_pull`, `meta_git_push`, `meta_git_fetch`, `meta_git_diff`, `meta_git_branch`, `meta_git_add`, `meta_git_commit`, `meta_git_checkout`, `meta_git_multi_commit`
+
+**Build:** `meta_detect_build_systems`, `meta_run_tests`, `meta_build`, `meta_clean`
+
+**Discovery:** `meta_search_code`, `meta_get_file_tree`, `meta_list_plugins`
+
+**AI Features:** `meta_query_repos`, `meta_workspace_state`, `meta_analyze_impact`, `meta_execution_order`, `meta_snapshot_create`, `meta_snapshot_list`, `meta_snapshot_restore`, `meta_batch_execute`
+
+See [docs/mcp_server.md](docs/mcp_server.md) for full documentation.
+
+---
+
+## Loop System
+
+The **loop** system is the underlying engine that runs commands across directories. It can be used standalone:
+
+```bash
+loop git status
+loop npm install
+loop cargo test
+```
+
+Configure with `.looprc`:
+
+```
+--include repo1,repo2
+--exclude legacy
+--parallel
+```
+
+See [docs/loop.md](docs/loop.md) for details.
+
+---
+
+## Documentation
+
+- **[MCP Server Guide](docs/mcp_server.md)** - AI agent integration
+- **[Plugin Development](docs/plugin_development.md)** - Writing plugins
+- **[Architecture Overview](docs/architecture_overview.md)** - System design
+- **[Advanced Usage](docs/advanced_usage.md)** - Power-user features
+- **[FAQ / Troubleshooting](docs/faq_troubleshooting.md)** - Common issues
+- **[Loop System](docs/loop.md)** - Loop engine details
+
+---
+
+## CLI Reference
+
+```
+Usage: meta [OPTIONS] [COMMAND]...
+
+Arguments:
+  [COMMAND]...  Command to run across repositories
+
+Options:
+  -c, --config <FILE>       Path to .meta config file
+  -t, --tag <TAGS>          Filter by tag(s), comma-separated
+  -i, --include <DIRS>      Include only these directories
+  -e, --exclude <DIRS>      Exclude these directories
+  -r, --recursive           Process nested meta repos
+      --depth <N>           Max recursion depth
+      --json                Output in JSON format
+  -v, --verbose             Verbose output
+  -s, --silent              Silent mode
+  -h, --help                Print help
+  -V, --version             Print version
+```
 
 ---
 
 ## Roadmap
 
-- Core CLI + plugin system (in progress)
-- Foundational plugins (`meta-git`, `meta-npm`, `meta-project`)
-- Cross-platform builds and distribution
-- Future: GUI for visual management
+- [x] Core CLI + plugin system
+- [x] Git plugin with parallel clone
+- [x] YAML configuration support
+- [x] Project tags and filtering
+- [x] JSON output mode
+- [x] Nested meta repos (`--recursive`)
+- [x] MCP server for AI agents (29 tools)
+- [x] Multi-commit support (`meta git commit --edit`)
+- [x] Plugin help system
+- [ ] Dependency graph visualization
+- [ ] Query DSL for advanced filtering
+- [ ] GUI for visual management
 
-See [VISION_PLAN.md](.context/VISION_PLAN.md) for full details.
+See [.context/VISION_PLAN.md](.context/VISION_PLAN.md) for full details.
 
 ---
 
 ## Contributing
 
-Contributions welcome! Please see our [Contributing Guide](CONTRIBUTING.md).
+Contributions welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
 ## Community & Support
 
-- **Chat:** [Discord](https://discord.gg/your-invite) | [Gitter](https://gitter.im/yourusername/meta)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/meta/discussions)
-- **Issue Tracker:** [GitHub Issues](https://github.com/yourusername/meta/issues)
-- **Twitter:** [@yourusername](https://twitter.com/yourusername)
-
----
-
-## Security Policy
-
-If you discover a security vulnerability, please **do not open a public issue**. Instead, report it privately by emailing [security@yourdomain.com](mailto:security@yourdomain.com). We will respond promptly and coordinate a fix.
-
----
-
-## FAQ / Troubleshooting
-
-**Q: meta command not found?**
-A: Ensure `$HOME/.cargo/bin` is in your PATH, or use the full path to the binary.
-
-**Q: How do I add a new plugin?**
-A: Place the plugin binary or script in `.meta-plugins` or a directory in your PATH.
-
-**Q: Why does meta not find my repos?**
-A: Check your `.meta` file for correct paths and structure.
-
-**Q: How do I run a command only in some repos?**
-A: Use `--include-only repo1,repo2` or `--exclude repo3`.
-
-**Q: Where can I get more help?**
-A: See [Community & Support](#community--support).
-
----
-
-## Acknowledgments
-
-- [Indicatif](https://github.com/console-rs/indicatif) and [Console](https://github.com/console-rs/console) for CLI UI.
-- [Rust](https://www.rust-lang.org/) and the Rust community.
-- All contributors and plugin authors.
+- **Issues:** [GitHub Issues](https://github.com/harmony-labs/meta/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/harmony-labs/meta/discussions)
 
 ---
 
