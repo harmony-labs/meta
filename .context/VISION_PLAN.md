@@ -1,189 +1,245 @@
-# Vision and Architecture Plan for `meta` Rust Rewrite
+# Vision and Architecture Plan for meta
 
 ## Overview
 
-Reimagine `meta` as a **highly-performant, portable, and extensible CLI platform** for **all engineers**. It will:
+`meta` is a **powerful, extensible multi-repository management CLI** built in Rust. It enables engineers to **run any command across many repositories** with ease, and extend functionality via a flexible plugin system.
 
-- Provide a **core CLI** that can run **any command** across multiple directories, leveraging a powerful filtering engine (`loop`).
-- Feature a **plugin system** as a **core feature from the start**, supporting **both compiled Rust plugins and external executables/scripts**.
-- Enable **immediate utility** out of the box, but be **powerfully extensible**.
-- Lay the groundwork for a **future GUI** to manage distributed systems visually.
+**Current Status:** Production-ready (v0.1.x) with core features complete.
 
 ---
 
-## Key Architectural Principles
+## Implementation Status
 
-### Core CLI (`meta`)
-- Built on top of a **loop** engine that iterates directories and executes commands.
-- Supports **native subcommands** (e.g., `meta pwd`) without requiring explicit `exec`.
-- Provides **filtering** (`--include-only`, `--exclude`) to target subsets of directories.
-- Reads a `.meta` file (JSON) to define project structure, but **not limited** to Meta-repo workflows.
+### Completed Features
 
-### Plugin System
-- **Core feature from day one**.
-- Supports **compiled Rust dynamic libraries** *and* **external executables/scripts**.
-- Plugins can **add, override, or extend** subcommands.
-- Plugin discovery from:
-  - `.meta-plugins` directory in project
-  - User's home directory
-  - System PATH (for executables/scripts)
-- Example: `meta git clone` handled by `meta-git` plugin, `meta npm install` by `meta-npm`.
-
-### Extensibility
-- Encourage community and internal development of plugins.
-- Plugins can be distributed as crates, binaries, or scripts.
-- CLI designed to **fallback gracefully** if a plugin is missing.
-
-### Future GUI
-- CLI-first, but architecture supports a **future GUI**.
-- GUI will interface with the same core libraries and plugin APIs.
-- Enables visual management of distributed systems, slices, and workflows.
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Core CLI | ✅ Done | Run commands across repos |
+| Loop engine | ✅ Done | Directory iteration, filtering |
+| JSON output (`--json`) | ✅ Done | Scripting support |
+| Project tags (`--tag`) | ✅ Done | Filter by tags |
+| YAML configuration | ✅ Done | `.meta.yaml` / `.meta.yml` |
+| Nested meta repos (`--recursive`) | ✅ Done | Process nested repos |
+| Subprocess plugin system | ✅ Done | JSON over stdin/stdout |
+| Plugin discovery | ✅ Done | `.meta-plugins/`, PATH |
+| Plugin help system | ✅ Done | Structured help info |
+| Git plugin | ✅ Done | clone, status, update, commit, setup-ssh |
+| Project plugin | ✅ Done | check, sync, update |
+| Rust plugin | ✅ Done | cargo build, cargo test |
+| Multi-commit support | ✅ Done | Per-repo commit messages |
+| MCP server | ✅ Done | 29 tools for AI agents |
+| GitHub Actions release | ✅ Done | All platforms |
+| Homebrew formula | ✅ Done | `meta-cli` to avoid conflicts |
+| Install script | ✅ Done | Cross-platform |
 
 ---
 
-## Updated Context Summary
+## Architecture
 
-- **Who you are**: Expert Rust CLI and systems developer.
-- **Project vision**: As above.
-- **Design principles**:
-  - Idiomatic, modular Rust
-  - Intuitive CLI UX
-  - Extensible plugin architecture
-  - Cross-platform, portable binaries
-  - Robust error handling, clear messaging
-- **Scope**:
-  - General-purpose CLI platform
-  - Meta-repo management as a **use case**, not the sole focus
-  - Plugin system **core from start**
-  - GUI as **future phase**
-- **Goals**:
-  - Replace Node.js meta ecosystem with a **more powerful, flexible, and performant** Rust platform.
-  - Support **all engineers** managing complex directory structures or distributed systems.
-- **Non-goals**:
-  - Tied to Node.js ecosystem
-  - Plugin system as an afterthought
+### High-Level Design
 
----
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        meta CLI                              │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────────────┐ │
+│  │ Parsing │→ │ Config  │→ │ Filter  │→ │ Plugin Manager  │ │
+│  │ (clap)  │  │ (.meta) │  │ (tags)  │  │ (subprocess)    │ │
+│  └─────────┘  └─────────┘  └─────────┘  └─────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                      Loop Engine                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │ Directory   │→ │ Filter      │→ │ Parallel Execution  │  │
+│  │ Discovery   │  │ Application │  │ (per directory)     │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                     Plugins (Subprocess)                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────────┐  │
+│  │ meta-git │  │ meta-    │  │ meta-    │  │ Custom      │  │
+│  │          │  │ project  │  │ rust     │  │ Plugins     │  │
+│  └──────────┘  └──────────┘  └──────────┘  └─────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
 
-## Implementation Phases
+### Crate Structure
 
-### Phase 1: Core CLI + Plugin System
-- Implement **loop** core for directory iteration and command execution.
-- Design **plugin API** supporting:
-  - Rust dynamic libraries (dlopen)
-  - External executables/scripts (PATH discovery)
-- Implement **plugin discovery and dispatch**.
-- Support **native commands** (e.g., `meta pwd`) and **plugin commands** seamlessly.
-- Implement `.meta` file parsing for project structure, but **not required** for all commands.
+```
+meta/                          # Meta repository (this repo)
+├── meta_cli/                  # Main CLI binary
+├── meta_git_cli/              # Git plugin binary
+├── meta_git_lib/              # Shared git library
+├── meta_project_cli/          # Project plugin binary
+├── meta_rust_cli/             # Rust plugin binary
+├── meta_mcp/                  # MCP server binary
+├── loop_cli/                  # Loop engine CLI
+└── loop_lib/                  # Core loop engine library
+```
 
-### Phase 2: Foundational Plugins
-- `meta-git`: clone, status, checkout, update
-- `meta-npm`, `meta-yarn`: install, update
-- `meta-exec`: fallback for arbitrary commands (if needed)
-- `meta-project`: sync, update, manage projects
+### Plugin Protocol
 
-### Phase 3: Polish & Distribution
-- Cross-platform builds
-- CI/CD pipelines
-- Package manager distribution (Homebrew, Chocolatey, etc.)
-- Documentation and examples
+Plugins communicate with meta via subprocess execution and JSON:
 
-### Phase 4: Future Enhancements
-- Performance optimizations
-- Interactive modes
-- Command suggestions
-- **GUI development**
+**Discovery:**
+```bash
+meta-git --meta-plugin-info
+```
 
----
+**Response:**
+```json
+{
+  "name": "git",
+  "version": "0.1.0",
+  "commands": ["git clone", "git status", "git update", "git commit"],
+  "description": "Git operations for meta repositories",
+  "help": {
+    "usage": "meta git <command> [args...]",
+    "commands": {
+      "clone": "Clone a meta repository and all child repos",
+      "status": "Show git status for all repos",
+      "update": "Pull latest changes and clone missing repos",
+      "commit": "Commit changes with per-repo messages"
+    },
+    "examples": [
+      "meta git clone https://github.com/org/meta-repo.git",
+      "meta git status",
+      "meta git commit --edit"
+    ],
+    "note": "To run raw git commands: meta exec -- git <command>"
+  }
+}
+```
 
-## High-Level Architecture Diagram
-
-```mermaid
-flowchart TD
-    subgraph Core CLI
-        A[meta binary]
-        B[loop engine]
-        C[Plugin Manager]
-    end
-
-    subgraph Plugins
-        D[Compiled Rust plugins]
-        E[External executables/scripts]
-    end
-
-    subgraph User
-        F[Engineer runs 'meta <command>']
-    end
-
-    F --> A
-    A --> B
-    A --> C
-    C --> D
-    C --> E
-    B -->|Executes command| D
-    B -->|Executes command| E
+**Execution:**
+```bash
+echo '{"command":"status","args":[],"projects":["a","b"],"cwd":"/path","options":{}}' | meta-git --meta-plugin-exec
 ```
 
 ---
 
-## Plugin Architecture Details
+## MCP Server (AI Integration)
 
-### Plugin API Design
-- Support **both**:
-  - **Compiled Rust dynamic libraries** loaded via `libloading`, exposing a minimal, stable C-compatible ABI.
-  - **External executables/scripts** invoked via CLI conventions (e.g., `meta-<plugin>`), with well-defined argument/output protocols.
-- **Plugin metadata**:
-  - For Rust plugins: via manifest file (`plugin.toml`) or exported metadata function.
-  - For external plugins: via help output or sidecar file.
-- Design ABI and CLI protocols to be **minimal and stable** for long-term compatibility.
+The MCP server exposes 29 tools for AI agent integration:
 
-### Plugin Capabilities
-- Initially, plugins **add or override commands**.
-- Future support may include **intercepting or modifying** command dispatch via hooks/middleware.
+### Core Tools
+- `meta_list_projects` - List all projects in workspace
+- `meta_exec` - Execute command across repos
+- `meta_get_config` - Get meta configuration
+- `meta_get_project_path` - Get absolute path for project
 
-### Plugin Discovery Precedence
-1. Project-local `.meta-plugins` directory (highest priority)
-2. User-level plugin directory (e.g., `~/.meta/plugins`)
-3. System PATH (lowest priority)
+### Git Tools
+- `meta_git_status`, `meta_git_pull`, `meta_git_push`, `meta_git_fetch`
+- `meta_git_diff`, `meta_git_branch`, `meta_git_add`, `meta_git_commit`
+- `meta_git_checkout`, `meta_git_multi_commit`
 
-### Security Considerations
-- Plugins run with **full user permissions**.
-- Users are responsible for plugin trust.
-- Optionally warn on untrusted external scripts.
-- Future: consider plugin signing or permission prompts.
+### Build Tools
+- `meta_detect_build_systems` - Detect Cargo/npm/make per repo
+- `meta_run_tests` - Run tests across repos
+- `meta_build`, `meta_clean` - Build/clean projects
 
-### GUI Scope
-- The GUI will be a **child repo** within the `meta-rust` meta repo.
-- It will interface with CLI core and plugins via APIs or CLI commands.
-- Allows independent development and release cycles.
+### Discovery Tools
+- `meta_search_code` - Search code across all repos
+- `meta_get_file_tree` - Get file tree for repos
+- `meta_list_plugins` - List installed plugins
 
----
-
-## Installation and Distribution Plan
-
-### Core CLI (`meta`)
-- **macOS**: Distribute via **Homebrew tap** (custom or official).
-- **Linux**: Provide prebuilt binaries on GitHub Releases; optionally `.deb`/`.rpm` packages; Linuxbrew support.
-- **Windows**: Provide prebuilt `.zip` binaries; optionally distribute via **Scoop** or **Chocolatey**.
-
-### Plugins
-- Distribute as **precompiled Rust dynamic libraries** or **standalone executables/scripts**.
-- Users install via:
-  - `meta plugin install <plugin>` command (downloads and places in plugin directory).
-  - Or via package managers (Homebrew, Scoop, etc.).
-- Plugin manager CLI:
-  - `meta plugin list`
-  - `meta plugin search`
-  - `meta plugin install <name>`
-  - `meta plugin remove <name>`
-
-### Goals
-- **Simple, cross-platform installation** for both core CLI and plugins.
-- Avoid complex build steps for users.
-- Enable plugin discovery and management via CLI.
+### AI Features
+- `meta_query_repos` - Query repos by state/criteria
+- `meta_workspace_state` - Current workspace state summary
+- `meta_analyze_impact` - Impact analysis for changes
+- `meta_execution_order` - Topological sort for builds
+- `meta_snapshot_create/list/restore` - Workspace snapshots
+- `meta_batch_execute` - Batch command execution
 
 ---
 
-## Summary
+## Future Roadmap
 
-This plan establishes `meta` as a **powerful, extensible, general-purpose CLI platform** built in Rust, with a plugin system at its core, immediate utility, and a clear path toward a future GUI.
+### Near-Term Priorities
+
+1. **Query DSL** - Advanced filtering with state-aware queries
+   - `meta query "dirty:true AND tag:backend"`
+   - `meta query "modified_after:24h AND branch:main"`
+
+2. **Dependency Tracking** - Understand project relationships
+   - Extended `.meta` schema with `provides`/`depends_on`
+   - Impact analysis before changes
+   - Topological sort for build ordering
+
+3. **Documentation** - Comprehensive guides
+   - MCP tools reference
+   - Plugin development guide
+   - Agent workflow patterns
+
+### Long-Term Vision
+
+1. **Smart Execution Engine**
+   - Dependency-aware ordering
+   - Adaptive parallelism
+   - Automatic retry with backoff
+   - Failure isolation
+
+2. **GUI Development**
+   - Visual project management
+   - Dependency graph visualization
+   - Real-time status monitoring
+
+3. **Ecosystem Expansion**
+   - Plugin registry/marketplace
+   - Community plugins
+   - Cloud integrations
+
+---
+
+## Why meta Beats Alternatives
+
+### vs Git Submodules
+| Problem | meta's Advantage |
+|---------|------------------|
+| Detached HEAD complexity | Simple linear model - all repos are peers |
+| Nested .git state issues | No nested state to track |
+| No batch operations | Parallel execution built-in |
+
+### vs Lerna/Nx/Turborepo
+| Limitation | meta's Advantage |
+|-----------|------------------|
+| JS/TS ecosystem only | Language-agnostic by design |
+| Complex dependency graphs | Simple repos + tags model |
+| Build-centric philosophy | Git-first, builds are plugins |
+| Heavy configuration | Minimal .meta config |
+
+### meta's Unique Position
+1. **Conceptual simplicity** - Easy mental model for users and AI agents
+2. **Language agnostic** - Plugins in any language
+3. **MCP-native** - Designed for AI from day one
+4. **Git-centric** - Build on universally known concepts
+
+---
+
+## Key Design Decisions
+
+### Why Subprocess Plugins (not Dynamic Libraries)
+
+The original vision called for compiled Rust dynamic libraries (dlopen). We chose subprocess-based plugins instead because:
+
+1. **Simplicity** - No ABI compatibility concerns
+2. **Language agnostic** - Plugins can be written in any language
+3. **Safety** - Plugins run in separate processes
+4. **Debugging** - Easier to test and debug plugins independently
+5. **Distribution** - Plugins are standalone executables
+
+### Why JSON Protocol
+
+1. **Universal** - Every language has JSON support
+2. **Debuggable** - Human-readable for troubleshooting
+3. **Extensible** - Easy to add new fields without breaking compatibility
+4. **Typed** - Can use serde for strong typing in Rust
+
+---
+
+## Reference
+
+- [README.md](../README.md) - User documentation
+- [docs/mcp_server.md](../docs/mcp_server.md) - MCP server reference
+- [docs/plugin_development.md](../docs/plugin_development.md) - Plugin development guide

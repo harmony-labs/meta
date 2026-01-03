@@ -1,4 +1,4 @@
-# Context for meta-rust Rewrite
+# Context for meta
 
 ## Who You Are
 
@@ -6,72 +6,121 @@ You are an expert Rust developer specializing in high-performance, cross-platfor
 
 ## Project Vision
 
-Reimagine `meta` as a **powerful, extensible, general-purpose CLI platform** for **all engineers**. It will:
+`meta` is a **powerful, extensible multi-repository management CLI** built in Rust. It enables engineers to **run any command across many repositories** with ease, and extend functionality via a flexible plugin system.
 
-- Provide a **core CLI** that can run **any command** across multiple directories, leveraging a powerful filtering engine (`loop`).
-- Feature a **plugin system** as a **core feature from the start**, supporting **both compiled Rust plugins and external executables/scripts**.
-- Enable **immediate utility** out of the box, but be **powerfully extensible**.
-- Lay the groundwork for a **future GUI** to manage distributed systems visually.
+**Current Status:** Production-ready with all core features implemented.
 
-For full details, see [VISION_PLAN.md](./VISION_PLAN.md).
+---
+
+## Key Features (Implemented)
+
+### Core CLI
+- Run any command across multiple repositories
+- Project tags for filtering (`--tag backend,api`)
+- YAML and JSON configuration support (`.meta`, `.meta.yaml`, `.meta.yml`)
+- Nested meta repos with `--recursive` flag
+- JSON output mode for scripting (`--json`)
+- Directory filtering (`--include-only`, `--exclude`)
+
+### Plugin System
+- **Subprocess-based plugins** - executables that communicate via JSON over stdin/stdout
+- Plugin auto-discovery from `.meta-plugins/` directories and system PATH
+- Built-in plugins: `git`, `project`, `rust`
+- Structured help system with usage, commands, examples
+
+### MCP Server (AI Integration)
+- 29 tools for AI agent integration via Model Context Protocol
+- Core, Git, Build, Discovery, and AI-specific tools
+- Enables autonomous multi-repo operations by AI agents
+
+### Distribution
+- Cross-platform binaries (macOS x64/arm64, Linux x64/arm64, Windows x64)
+- Homebrew formula (`brew install harmony-labs/tap/meta-cli`)
+- Install script for quick setup
+- GitHub Actions release workflow
 
 ---
 
 ## Key Principles
 
-- Write clear, idiomatic, and efficient Rust code.
-- Design modular, reusable libraries following Rust best practices.
-- Create intuitive, powerful CLI interfaces (using `clap` or similar).
-- Prioritize cross-platform compatibility and performance.
-- Use expressive naming and idiomatic Rust conventions.
-- Leverage Rust's type system and ownership for safety and concurrency.
-- Implement robust error handling (`Result`, `Option`, `thiserror`, `anyhow`).
-- Provide clear, helpful error messages and documentation.
-- Profile and optimize for performance.
-- Use `serde` for config/data, `indicatif` for progress, `colored` for output.
-- Support both interactive and non-interactive modes.
-- Use CI/CD for quality and distribution.
+- Write clear, idiomatic, and efficient Rust code
+- Design modular, reusable libraries following Rust best practices
+- Create intuitive, powerful CLI interfaces (using `clap`)
+- Prioritize cross-platform compatibility and performance
+- Use expressive naming and idiomatic Rust conventions
+- Leverage Rust's type system and ownership for safety and concurrency
+- Implement robust error handling (`Result`, `Option`, `thiserror`, `anyhow`)
+- Provide clear, helpful error messages and documentation
 
 ---
 
-## Scope
+## Architecture
 
-- **General-purpose CLI platform** for running commands across directories.
-- **Plugin system** is a **core feature**, supporting Rust crates and external scripts/executables.
-- Meta-repo management is a **key use case**, but not the sole focus.
-- Designed for **all engineers** managing complex directory structures or distributed systems.
-- Future support for a **GUI** built atop the same core and plugin APIs.
+### Crate Structure
+
+| Crate | Purpose |
+|-------|---------|
+| `meta_cli` | Main CLI binary and plugin orchestration |
+| `meta_git_cli` | Git plugin (clone, status, update, commit, setup-ssh) |
+| `meta_git_lib` | Shared git library used by plugins and MCP |
+| `meta_project_cli` | Project management plugin |
+| `meta_rust_cli` | Rust/Cargo plugin |
+| `meta_mcp` | MCP server for AI agent integration |
+| `loop_cli` | Loop engine CLI |
+| `loop_lib` | Core loop engine library |
+
+### Plugin Protocol
+
+Plugins are subprocess executables that respond to:
+- `--meta-plugin-info` → Returns JSON with name, version, commands, description, help
+- `--meta-plugin-exec` → Receives JSON request on stdin, executes command
+
+```json
+// Plugin Info Response
+{
+  "name": "git",
+  "version": "0.1.0",
+  "commands": ["git clone", "git status", "git update"],
+  "description": "Git operations for meta repositories",
+  "help": {
+    "usage": "meta git <command> [args...]",
+    "commands": {"clone": "Clone a meta repository"},
+    "examples": ["meta git clone <url>"],
+    "note": "Optional note"
+  }
+}
+```
 
 ---
 
-## Goals
+## Configuration
 
-- Replace the Node.js meta ecosystem with a **more powerful, flexible, and performant** Rust platform.
-- Support **all engineers** with a flexible, extensible CLI.
-- Provide immediate utility with core commands.
-- Enable deep extensibility via plugins.
-- Lay groundwork for a future GUI.
+### Extended Format (Recommended)
+```yaml
+projects:
+  api-service:
+    repo: git@github.com:org/api-service.git
+    path: services/api  # Optional custom path
+    tags: [backend, rust]
+  web-app:
+    repo: git@github.com:org/web-app.git
+    tags: [frontend, typescript]
+```
 
----
+### Simple Format (Legacy)
+```json
+{
+  "projects": {
+    "api-service": "git@github.com:org/api-service.git",
+    "web-app": "git@github.com:org/web-app.git"
+  }
+}
+```
 
-## Non-Goals
-
-- Tied exclusively to Node.js or JavaScript ecosystems.
-- Deferring plugin system to a later phase (it's core from day one).
-- Limiting to only Meta-repo management.
-
----
-
-## Additional Notes
-
-- The `.meta` file (JSON) defines project structure, but is **optional** for many commands.
-- Filtering (`--include-only`, `--exclude`) is a core feature.
-- Plugins can add, override, or extend commands.
-- Plugin discovery from project, user, or system locations.
-- CLI designed to fallback gracefully if plugins are missing.
+File priority: `.meta.yaml` > `.meta.yml` > `.meta`
 
 ---
 
 ## Reference
 
-For detailed architecture, phases, and diagrams, see [VISION_PLAN.md](./VISION_PLAN.md).
+For roadmap and future plans, see [VISION_PLAN.md](./VISION_PLAN.md).
