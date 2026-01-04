@@ -1052,9 +1052,13 @@ name = "meta_git_lib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "console",
  "dirs",
  "indicatif",
+ "serde",
+ "serde_json",
+ "tempfile",
 ]
 
 [[package]]
