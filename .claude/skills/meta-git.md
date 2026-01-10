@@ -1,97 +1,132 @@
 # Meta Git Skill
 
-This is a **meta repository** - a workspace containing multiple child git repositories. Use `meta git` commands instead of plain `git` when operating across the workspace.
+Git operations across multiple repositories. One command operates on ALL repos in the workspace.
 
-## When to Use Meta Git
+## The Core Insight
 
-**Always use `meta git` when:**
-- Checking status across all repos: `meta git status`
-- Committing changes that span multiple repos
-- Pushing/pulling changes across the workspace
-- Creating branches for multi-repo features
+**Use `meta git` instead of `git`** when you want to operate across the workspace:
 
-**Use plain `git` only when:**
-- Operating on a single specific repo
-- The root meta repo only (`.` directory)
-
-## Essential Commands
-
-### Check Status Across All Repos
 ```bash
-meta git status
-```
-Shows git status for every repo in the workspace. Use this before committing to see what's changed where.
+# Instead of running git status in each repo...
+meta git status    # Shows status for ALL repos at once
 
-### Commit and Push All Repos
-```bash
-# Commit in each repo with the same message
-meta git add .
-meta git commit -m "feat: description"
-
-# Push all repos
-meta git push
+# Instead of committing in each repo...
+meta git commit -m "feat: update"    # Commits in ALL dirty repos
 ```
 
-### Clone a Meta Repo (with all children)
-```bash
-meta git clone <meta-repo-url>
-```
-Clones the parent repo and all child repos defined in `.meta`.
+## Cloning a Meta Repo
 
-### Update All Repos
 ```bash
+# Clone meta repo and all child repos defined in .meta
+meta git clone <url>
+
+# Clone recursively (if child repos are also meta repos)
+meta git clone <url> --recursive
+
+# Control parallelism
+meta git clone <url> --parallel 8
+
+# Shallow clone
+meta git clone <url> --depth 1
+```
+
+**How it works**: Meta clones the parent, reads `.meta`, then queues and clones all children in parallel. With `--recursive`, it repeats for any child that has its own `.meta`.
+
+## Updating All Repos
+
+```bash
+# Pull latest + clone any missing repos
 meta git update
 ```
-Clones any missing repos and pulls latest changes in parallel.
 
-### Snapshot Before Risky Operations
+This is the "sync workspace" command - ensures you have all repos at latest.
+
+## Snapshots (Critical for Batch Operations)
+
+Before making sweeping changes, create a snapshot:
+
 ```bash
-# Save current state
+# Save current state of ALL repos
 meta git snapshot create before-refactor
 
-# Do risky work...
+# See what snapshots exist
+meta git snapshot list
 
-# Restore if needed
+# Preview what restore would do
+meta git snapshot restore before-refactor --dry-run
+
+# Actually restore (auto-stashes uncommitted work)
 meta git snapshot restore before-refactor
 ```
 
-## Filtering by Project
+**What snapshots capture per repo:**
+- Current SHA
+- Branch name
+- Dirty status
 
-Use `--tag`, `--include`, or `--exclude` to target specific repos:
+**On restore**: If a repo has uncommitted changes, meta automatically stashes them before checking out the snapshot state.
+
+## Common Git Operations
+
+All standard git commands work:
 
 ```bash
-# Only backend repos
-meta --tag backend git status
-
-# Exclude a specific repo
-meta --exclude meta_mcp git push
+meta git pull
+meta git push
+meta git fetch
+meta git checkout -b feature/new-thing
+meta git add .
+meta git diff
+meta git log --oneline -5
 ```
 
-## Important Behaviors
+## Filtering
 
-1. **Output ordering**: Repos report back in parallel, so output order may vary
-2. **Failure handling**: One repo failing doesn't stop others
-3. **Root repo**: The root meta repo (`.`) is included in all operations
+Target specific repos:
 
-## Common Workflows
-
-### Before Starting Work
 ```bash
-meta git status          # Check for uncommitted changes
-meta git pull            # Get latest from all remotes
+# By tag
+meta --tag backend git status
+
+# By name
+meta --include api,web git push
+
+# Exclude repos
+meta --exclude legacy git pull
+```
+
+## Workflow Patterns
+
+### Starting Work
+```bash
+meta git status              # What's the current state?
+meta git snapshot create wip # Save state before changes
+meta git pull                # Get latest
 ```
 
 ### After Making Changes
 ```bash
-meta git status          # Review what changed
-meta git add .           # Stage in all repos
-meta git commit -m "..."  # Commit with shared message
-meta git push            # Push all repos
+meta git status              # Review changes across repos
+meta git add .               # Stage in all repos
+meta git commit -m "feat: ..." # Commit with shared message
+meta git push                # Push all repos
 ```
 
-### Safe Batch Operations
+### Safe Batch Refactoring
 ```bash
 meta git snapshot create before-changes
-# ... make changes ...
-meta git snapshot restore before-changes  # if something goes wrong
+# ... make changes across repos ...
+meta git status              # Review
+# If something went wrong:
+meta git snapshot restore before-changes
 ```
+
+## SSH Optimization
+
+For faster parallel operations:
+
+```bash
+meta git setup-ssh
+```
+
+Configures SSH connection multiplexing for reuse across parallel git operations.
