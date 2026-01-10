@@ -1,64 +1,52 @@
 # Meta Build Skill
 
-Execute build and test commands across multiple repositories using the `meta` CLI tool.
+Execute build and test commands across the meta workspace.
 
-## Triggers
-- /meta-build
-- /meta-test
+## Building This Project
 
-## Commands
-
-### /meta-build [command]
-Execute a build command across all repositories.
+This is a Cargo workspace. Build commands work from the root:
 
 ```bash
-meta exec -- <build-command>
+# Build everything
+cargo build
+cargo build --release
+
+# Build specific crate
+cargo build -p meta
+cargo build -p meta_git_cli
+cargo build -p meta-mcp
+
+# Run all tests
+cargo test
+
+# Using make
+make build
+make test
 ```
 
-### /meta-test [command]
-Execute a test command across all repositories.
+## Cross-Repo Commands
+
+To run arbitrary commands across all child repos:
 
 ```bash
-meta exec -- <test-command>
-```
-
-## MCP Tools Available
-
-When using the meta-mcp server, these tools are available:
-
-- `meta_exec` - Execute any command across projects
-- `meta_detect_build_systems` - Detect build systems per project (Cargo, npm, make, go, maven, gradle, python)
-
-## Tag Filtering
-
-All commands support filtering by tag:
-
-```bash
-# Build only backend repos
-meta --tag backend exec -- <build-command>
-
-# Test only frontend repos
-meta --tag frontend exec -- <test-command>
-```
-
-## Examples
-
-### Execute build across all repos
-```bash
+# Run make in each repo
 meta exec -- make build
-```
 
-### Execute tests across all repos
-```bash
+# Run tests in each repo
 meta exec -- make test
+
+# With JSON output for parsing
+meta --json exec -- cargo test
 ```
 
-### Execute with JSON output for parsing
-```bash
-meta --json exec -- make test
-```
+## Filtering
 
-### Execute on specific tagged projects
+Target specific repos with tags or include/exclude:
+
 ```bash
-meta --tag backend exec -- make build
+# Only repos tagged 'backend'
+meta --tag backend exec -- cargo build
+
+# Exclude specific repo
+meta --exclude meta_mcp exec -- cargo test
 ```

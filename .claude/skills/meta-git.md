@@ -1,112 +1,97 @@
-# Meta Git Operations Skill
+# Meta Git Skill
 
-Multi-repo git operations using the `meta` CLI tool.
+This is a **meta repository** - a workspace containing multiple child git repositories. Use `meta git` commands instead of plain `git` when operating across the workspace.
 
-## Triggers
-- /meta-git
-- /sync-repos
-- /multi-repo-status
+## When to Use Meta Git
 
-## Commands
+**Always use `meta git` when:**
+- Checking status across all repos: `meta git status`
+- Committing changes that span multiple repos
+- Pushing/pulling changes across the workspace
+- Creating branches for multi-repo features
 
-### /meta-git status
-Show git status across all repositories in the meta workspace.
+**Use plain `git` only when:**
+- Operating on a single specific repo
+- The root meta repo only (`.` directory)
 
+## Essential Commands
+
+### Check Status Across All Repos
 ```bash
-meta --json git status
+meta git status
 ```
+Shows git status for every repo in the workspace. Use this before committing to see what's changed where.
 
-### /meta-git sync
-Pull latest changes and push local commits across all repos.
-
+### Commit and Push All Repos
 ```bash
-# Pull all repos
-meta git pull
+# Commit in each repo with the same message
+meta git add .
+meta git commit -m "feat: description"
 
-# Push all repos with commits
+# Push all repos
 meta git push
 ```
 
-### /meta-git branch [name]
-Create or switch to a branch across all repositories.
-
+### Clone a Meta Repo (with all children)
 ```bash
-# Create new branch across all repos
-meta git checkout -b feature/my-feature
+meta git clone <meta-repo-url>
+```
+Clones the parent repo and all child repos defined in `.meta`.
 
-# Switch to existing branch
-meta git checkout main
+### Update All Repos
+```bash
+meta git update
+```
+Clones any missing repos and pulls latest changes in parallel.
+
+### Snapshot Before Risky Operations
+```bash
+# Save current state
+meta git snapshot create before-refactor
+
+# Do risky work...
+
+# Restore if needed
+meta git snapshot restore before-refactor
 ```
 
-### /meta-git commit [message]
-Commit staged changes across all dirty repositories with a shared message.
+## Filtering by Project
+
+Use `--tag`, `--include`, or `--exclude` to target specific repos:
 
 ```bash
-# Stage all changes
-meta git add .
-
-# Commit with message
-meta git commit -m "feat: implement new feature"
-```
-
-### /meta-git diff
-Show diffs across all repositories.
-
-```bash
-# Show unstaged diffs
-meta git diff
-
-# Show staged diffs
-meta git diff --staged
-```
-
-## MCP Tools Available
-
-When using the meta-mcp server, these tools are available:
-
-- `meta_git_status` - Get status for all projects
-- `meta_git_pull` - Pull changes (supports `rebase: true`)
-- `meta_git_push` - Push commits
-- `meta_git_fetch` - Fetch from remotes
-- `meta_git_diff` - Get diffs (supports `staged: true`)
-- `meta_git_branch` - Get branch info including ahead/behind
-- `meta_git_add` - Stage files
-- `meta_git_commit` - Commit with message
-- `meta_git_checkout` - Switch/create branches
-
-## Tag Filtering
-
-All commands support filtering by tag:
-
-```bash
-# Only operate on backend repos
+# Only backend repos
 meta --tag backend git status
 
-# Pull only frontend repos
-meta --tag frontend git pull
+# Exclude a specific repo
+meta --exclude meta_mcp git push
 ```
 
-## Examples
+## Important Behaviors
 
-### Sync all repos before starting work
+1. **Output ordering**: Repos report back in parallel, so output order may vary
+2. **Failure handling**: One repo failing doesn't stop others
+3. **Root repo**: The root meta repo (`.`) is included in all operations
+
+## Common Workflows
+
+### Before Starting Work
 ```bash
-meta git fetch
-meta git pull --rebase
+meta git status          # Check for uncommitted changes
+meta git pull            # Get latest from all remotes
 ```
 
-### Create feature branch across all repos
+### After Making Changes
 ```bash
-meta git checkout -b feature/user-auth
+meta git status          # Review what changed
+meta git add .           # Stage in all repos
+meta git commit -m "..."  # Commit with shared message
+meta git push            # Push all repos
 ```
 
-### Commit related changes across multiple repos
+### Safe Batch Operations
 ```bash
-meta git add .
-meta git commit -m "feat: add user authentication across services"
-meta git push
-```
-
-### Check which repos have uncommitted changes
-```bash
-meta --json git status | jq '.results[] | select(.output | contains("Changes"))'
+meta git snapshot create before-changes
+# ... make changes ...
+meta git snapshot restore before-changes  # if something goes wrong
 ```

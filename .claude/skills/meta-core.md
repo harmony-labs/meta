@@ -1,102 +1,79 @@
 # Meta Core Skill
 
-Core meta repository operations using the `meta` CLI tool.
+Core understanding of the meta CLI and this meta repository workspace.
 
-## Triggers
-- /meta
-- /meta-exec
-- /meta-clone
+## What is a Meta Repo?
 
-## Commands
+A **meta repository** is a parent repo that manages multiple child repositories. The `.meta` file defines which child repos belong to the workspace:
 
-### /meta exec [command]
-Execute a command across all repositories.
+```json
+{
+  "projects": {
+    "child_name": "git@github.com:org/child_name.git"
+  }
+}
+```
 
+## This Workspace Structure
+
+This is the `meta` CLI tool's own meta repo. It contains:
+- Root repo (`.`) - the main meta repo with workspace Cargo.toml
+- Child repos - individual crates that are also separate git repos
+
+Use `meta git status` to see all repos and their current state.
+
+## Key Commands
+
+### Execute Command Across All Repos
 ```bash
 meta exec -- <command>
 ```
+Runs any shell command in each repo directory.
 
-### /meta clone
-Clone all repositories defined in .meta.
-
+### List Projects
 ```bash
-meta clone
+meta projects list
 ```
 
-### /meta plugins
-List installed plugins.
-
+### Clone Entire Workspace
 ```bash
-meta plugins list
+meta git clone <meta-repo-url>
 ```
 
-## MCP Tools Available
+## Global Options
 
-When using the meta-mcp server, these tools are available:
+| Option | Description |
+|--------|-------------|
+| `--json` | Output in JSON format (useful for parsing) |
+| `--tag <tag>` | Filter projects by tag |
+| `--include <project>` | Only include specific project(s) |
+| `--exclude <project>` | Exclude specific project(s) |
+| `--recursive` | Include nested meta repos |
+| `--dry-run` | Preview without executing |
+
+## Building This Project
+
+Since this is a Cargo workspace:
+
+```bash
+# Build all crates
+cargo build
+
+# Build specific binary
+cargo build -p meta
+cargo build -p meta_git_cli
+
+# Run tests
+cargo test
+
+# Or use make
+make build
+make test
+```
+
+## MCP Tools (when meta-mcp server is running)
 
 - `meta_exec` - Execute command across projects
 - `meta_get_config` - Get meta configuration
 - `meta_list_projects` - List all projects
 - `meta_get_project_path` - Get path for a project
-- `meta_list_plugins` - List installed plugins
-
-## Global Options
-
-All meta commands support these global options:
-
-| Option | Description |
-|--------|-------------|
-| `--json` | Output in JSON format |
-| `--tag <tag>` | Filter projects by tag |
-| `--include <project>` | Include specific project(s) |
-| `--exclude <project>` | Exclude specific project(s) |
-| `--recursive` | Include nested meta repos |
-
-## Tag Filtering
-
-All commands support filtering by tag:
-
-```bash
-# Execute on backend repos only
-meta --tag backend exec -- <command>
-
-# Clone only frontend repos
-meta --tag frontend clone
-```
-
-## Examples
-
-### Execute command across all repos
-```bash
-meta exec -- ls -la
-```
-
-### Execute with JSON output
-```bash
-meta --json exec -- git rev-parse HEAD
-```
-
-### Execute on specific tagged projects
-```bash
-meta --tag backend exec -- make build
-```
-
-### Clone all repositories
-```bash
-meta clone
-```
-
-### Clone with specific tag
-```bash
-meta --tag backend clone
-```
-
-### List plugins
-```bash
-meta plugins list
-```
-
-### Recursive operations on nested meta repos
-```bash
-meta --recursive git status
-```
