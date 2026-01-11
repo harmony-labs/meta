@@ -1,17 +1,18 @@
 # Plugin Development Guide
 
-This guide provides a comprehensive overview of developing plugins for the `meta` CLI platform, including best practices, examples, and extensibility points.
+This guide provides a comprehensive overview of developing plugins for the `meta` CLI platform, including the plugin protocol, best practices, and examples.
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [Plugin Types](#plugin-types)
 - [Plugin Discovery](#plugin-discovery)
+- [Plugin Protocol](#plugin-protocol)
 - [Creating a Plugin](#creating-a-plugin)
-- [Plugin API Reference](#plugin-api-reference)
+- [Plugin Help System](#plugin-help-system)
 - [Best Practices](#best-practices)
 - [Testing Plugins](#testing-plugins)
-- [Advanced Plugin Features](#advanced-plugin-features)
+- [Publishing Plugins](#publishing-plugins)
 - [Troubleshooting](#troubleshooting)
 - [See Also](#see-also)
 
@@ -19,82 +20,519 @@ This guide provides a comprehensive overview of developing plugins for the `meta
 
 ## Introduction
 
-Plugins extend the functionality of `meta` by adding, overriding, or enhancing commands. They can be written in Rust, as external executables, or as scripts.
+Plugins extend the functionality of `meta` by adding, overriding, or enhancing commands. They are discovered automatically and communicate with meta via a JSON protocol over stdin/stdout.
+
+Key benefits:
+- **Language agnostic** - Write in any language that can read/write JSON
+- **Isolated** - Plugins run as subprocesses
+- **Discoverable** - Auto-found from standard locations
+- **Extensible** - Can intercept any command pattern
 
 ## Plugin Types
 
-- **Rust Crate Plugins**:
-  Build plugins as Rust crates for performance and integration.
-- **External Executables/Scripts**:
-  Any executable or script in your PATH or `.meta-plugins` directory can be a plugin.
+### Rust Binary Plugins
+
+Build plugins as Rust crates for performance and native integration:
+
+```rust
+// Cargo.toml
+[package]
+name = "meta-docker"
+version = "0.1.0"
+
+[[bin]]
+name = "meta-docker"
+```
+
+### External Executables
+
+Any executable in your PATH or `.meta-plugins` directory:
+
+```bash
+#!/bin/bash
+# meta-hello plugin
+```
+
+### Script Plugins
+
+Shell scripts, Python, Node.js, etc.:
+
+```python
+#!/usr/bin/env python3
+# meta-python plugin
+import json
+import sys
+```
 
 ## Plugin Discovery
 
-`meta` discovers plugins from:
-- `.meta-plugins` in your project root
-- Your home directory
-- System PATH
+Meta discovers plugins from these locations (in order):
 
-Plugins must be executable and follow the naming convention: `meta-<command>`.
+1. `.meta-plugins/` in current directory
+2. `.meta-plugins/` in parent directories (up to root)
+3. `~/.meta-plugins/` in home directory
+4. System PATH (executables named `meta-*`)
+
+### Naming Convention
+
+Plugins must follow the naming pattern:
+- `meta-<name>` (e.g., `meta-docker`, `meta-npm`)
+- Or `meta_<name>_cli` for Rust crates (e.g., `meta_git_cli`)
+
+Meta strips the prefix to determine the command. `meta-docker` handles `meta docker <subcommand>`.
+
+## Plugin Protocol
+
+Plugins communicate with meta via JSON over stdin/stdout.
+
+### Info Request
+
+Meta queries plugin capabilities:
+
+```bash
+meta-docker --meta-plugin-info
+```
+
+**Response:**
+```json
+{
+  "name": "docker",
+  "version": "0.1.0",
+  "description": "Docker operations for meta repositories",
+  "commands": ["build", "push", "compose"],
+  "help": {
+    "build": "Build Docker images across repos",
+    "push": "Push images to registry",
+    "compose": "Run docker-compose operations"
+  }
+}
+```
+
+### Execution Request
+
+Meta invokes plugin execution:
+
+```bash
+echo '<request>' | meta-docker --meta-plugin-exec
+```
+
+**Request Format:**
+```json
+{
+  "command": "build",
+  "args": ["--tag", "latest"],
+  "projects": [
+    {
+      "name": "api",
+      "path": "./api",
+      "tags": ["backend"],
+      "repo": "git@github.com:org/api.git"
+    }
+  ],
+  "filters": {
+    "tags": ["backend"],
+    "include": [],
+    "exclude": []
+  },
+  "options": {
+    "parallel": false,
+    "dry_run": false,
+    "json_output": false
+  }
+}
+```
+
+**Response Format:**
+```json
+{
+  "success": true,
+  "results": [
+    {
+      "project": "api",
+      "success": true,
+      "output": "Successfully built image api:latest",
+      "exit_code": 0
+    },
+    {
+      "project": "web",
+      "success": false,
+      "output": "",
+      "error": "Dockerfile not found",
+      "exit_code": 1
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "succeeded": 1,
+    "failed": 1
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "error": "Unknown command: foo",
+  "results": []
+}
+```
 
 ## Creating a Plugin
 
 ### Rust Plugin Example
 
-1. Create a new Rust binary crate:
-   ```bash
-   cargo new meta-myplugin --bin
-   ```
-2. Implement your logic in `main.rs`.
-3. Build and place the binary in `.meta-plugins` or your PATH.
+**Cargo.toml:**
+```toml
+[package]
+name = "meta-docker"
+version = "0.1.0"
+edition = "2021"
 
-### Script Plugin Example
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+clap = { version = "4.0", features = ["derive"] }
+```
 
-Create an executable script named `meta-hello`:
+**src/main.rs:**
+```rust
+use serde::{Deserialize, Serialize};
+use std::io::{self, Read};
+
+#[derive(Deserialize)]
+struct PluginRequest {
+    command: String,
+    args: Vec<String>,
+    projects: Vec<Project>,
+    #[serde(default)]
+    options: Options,
+}
+
+#[derive(Deserialize)]
+struct Project {
+    name: String,
+    path: String,
+    tags: Option<Vec<String>>,
+}
+
+#[derive(Deserialize, Default)]
+struct Options {
+    parallel: bool,
+    dry_run: bool,
+}
+
+#[derive(Serialize)]
+struct PluginInfo {
+    name: &'static str,
+    version: &'static str,
+    description: &'static str,
+    commands: Vec<&'static str>,
+}
+
+#[derive(Serialize)]
+struct PluginResponse {
+    success: bool,
+    results: Vec<ProjectResult>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
+}
+
+#[derive(Serialize)]
+struct ProjectResult {
+    project: String,
+    success: bool,
+    output: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
+}
+
+fn main() {
+    let args: Vec<String> = std::env::args().collect();
+
+    if args.contains(&"--meta-plugin-info".to_string()) {
+        let info = PluginInfo {
+            name: "docker",
+            version: "0.1.0",
+            description: "Docker operations for meta repos",
+            commands: vec!["build", "push"],
+        };
+        println!("{}", serde_json::to_string(&info).unwrap());
+        return;
+    }
+
+    if args.contains(&"--meta-plugin-exec".to_string()) {
+        let mut input = String::new();
+        io::stdin().read_to_string(&mut input).unwrap();
+
+        let request: PluginRequest = serde_json::from_str(&input).unwrap();
+        let response = execute(request);
+
+        println!("{}", serde_json::to_string(&response).unwrap());
+        return;
+    }
+
+    // Fallback: show help
+    eprintln!("meta-docker: Docker plugin for meta");
+    eprintln!("Commands: build, push");
+}
+
+fn execute(request: PluginRequest) -> PluginResponse {
+    let results: Vec<ProjectResult> = request.projects.iter().map(|p| {
+        // Your plugin logic here
+        ProjectResult {
+            project: p.name.clone(),
+            success: true,
+            output: format!("Processed {}", p.name),
+            error: None,
+        }
+    }).collect();
+
+    let success = results.iter().all(|r| r.success);
+
+    PluginResponse {
+        success,
+        results,
+        error: None,
+    }
+}
+```
+
+### Shell Script Example
+
+**meta-hello:**
 ```bash
 #!/bin/bash
-echo "Hello from meta plugin!"
+
+if [[ "$1" == "--meta-plugin-info" ]]; then
+    cat <<EOF
+{
+  "name": "hello",
+  "version": "0.1.0",
+  "description": "A friendly greeting plugin",
+  "commands": ["world", "there"]
+}
+EOF
+    exit 0
+fi
+
+if [[ "$1" == "--meta-plugin-exec" ]]; then
+    # Read request from stdin
+    REQUEST=$(cat)
+    COMMAND=$(echo "$REQUEST" | jq -r '.command')
+
+    # Process and respond
+    cat <<EOF
+{
+  "success": true,
+  "results": [
+    {"project": ".", "success": true, "output": "Hello, $COMMAND!"}
+  ]
+}
+EOF
+    exit 0
+fi
+
+echo "meta-hello: Greeting plugin"
+echo "Commands: world, there"
 ```
-Make it executable and place it in `.meta-plugins`.
 
-## Plugin API Reference
+### Python Example
 
-- Plugins receive command-line arguments and environment variables.
-- Plugins can output to stdout/stderr for user feedback.
-- For advanced integration, see the [meta_plugin_api](../meta_plugin_api/) crate.
+**meta-py:**
+```python
+#!/usr/bin/env python3
+import json
+import sys
+
+def get_info():
+    return {
+        "name": "py",
+        "version": "0.1.0",
+        "description": "Python operations plugin",
+        "commands": ["lint", "format"]
+    }
+
+def execute(request):
+    results = []
+    for project in request.get("projects", []):
+        results.append({
+            "project": project["name"],
+            "success": True,
+            "output": f"Processed {project['name']}"
+        })
+    return {
+        "success": all(r["success"] for r in results),
+        "results": results
+    }
+
+if __name__ == "__main__":
+    if "--meta-plugin-info" in sys.argv:
+        print(json.dumps(get_info()))
+    elif "--meta-plugin-exec" in sys.argv:
+        request = json.loads(sys.stdin.read())
+        response = execute(request)
+        print(json.dumps(response))
+    else:
+        print("meta-py: Python plugin for meta")
+```
+
+## Plugin Help System
+
+Plugins can provide structured help via the `--meta-plugin-info` response:
+
+```json
+{
+  "name": "docker",
+  "version": "0.1.0",
+  "description": "Docker operations for meta repositories",
+  "commands": ["build", "push", "compose"],
+  "help": {
+    "build": "Build Docker images\n\nUsage: meta docker build [OPTIONS]\n\nOptions:\n  --tag TAG  Image tag",
+    "push": "Push images to registry",
+    "compose": "Run docker-compose commands"
+  }
+}
+```
+
+When users run `meta docker --help`, meta displays this information.
 
 ## Best Practices
 
-- Follow naming conventions (`meta-<command>`).
-- Provide clear help output (`--help`).
-- Handle errors gracefully.
-- Support cross-platform usage (avoid OS-specific code when possible).
-- Document your plugin's usage and options.
+### 1. Follow the Protocol
+
+Always implement both `--meta-plugin-info` and `--meta-plugin-exec` flags.
+
+### 2. Handle Errors Gracefully
+
+```rust
+PluginResponse {
+    success: false,
+    results: vec![],
+    error: Some("Failed to connect to Docker daemon".to_string()),
+}
+```
+
+### 3. Respect Filters
+
+Use the provided `filters` to only operate on requested projects:
+
+```rust
+let filtered_projects: Vec<_> = request.projects
+    .iter()
+    .filter(|p| {
+        if let Some(tags) = &p.tags {
+            request.filters.tags.iter().any(|t| tags.contains(t))
+        } else {
+            request.filters.tags.is_empty()
+        }
+    })
+    .collect();
+```
+
+### 4. Support Dry Run
+
+When `options.dry_run` is true, show what would happen without executing:
+
+```rust
+if request.options.dry_run {
+    return ProjectResult {
+        project: p.name.clone(),
+        success: true,
+        output: format!("[DRY RUN] Would build {}", p.name),
+        error: None,
+    };
+}
+```
+
+### 5. Provide JSON Output
+
+When `options.json_output` is true, ensure structured output.
+
+### 6. Cross-Platform Compatibility
+
+Avoid OS-specific code when possible. Use standard paths and commands.
 
 ## Testing Plugins
 
-- Test plugins in isolation and as part of the full `meta` workflow.
-- Use the `meta --help` and `meta <command> --help` to verify integration.
+### Manual Testing
 
-## Advanced Plugin Features
+```bash
+# Test info response
+./meta-docker --meta-plugin-info | jq .
 
-- Plugins can provide interactive UIs, spinners, and progress bars.
-- Plugins can override built-in commands.
-- Use environment variables for configuration.
+# Test execution
+echo '{"command":"build","args":[],"projects":[{"name":"test","path":"./test"}],"options":{}}' \
+  | ./meta-docker --meta-plugin-exec | jq .
+```
 
-See [Advanced Usage Guide](advanced_usage.md) for more on scripting and advanced CLI features.
+### Integration Testing
+
+```bash
+# Place plugin in discovery path
+cp meta-docker ~/.meta-plugins/
+
+# Test via meta
+meta docker build --dry-run
+```
+
+### Automated Tests
+
+```rust
+#[test]
+fn test_plugin_info() {
+    let output = Command::new("./target/debug/meta-docker")
+        .arg("--meta-plugin-info")
+        .output()
+        .unwrap();
+
+    let info: PluginInfo = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(info.name, "docker");
+}
+```
+
+## Publishing Plugins
+
+### Via Registry
+
+```bash
+# Search for plugins
+meta plugin search docker
+
+# Install from registry
+meta plugin install meta-docker
+```
+
+### Manual Distribution
+
+1. Build for target platforms
+2. Distribute binaries or packages
+3. Users place in `~/.meta-plugins/` or PATH
 
 ## Troubleshooting
 
-If your plugin is not detected:
-- Ensure it is executable.
-- Check naming and placement.
-- Use `META_DEBUG=1` for debug output.
+### Plugin Not Detected
 
-For more help, see the [FAQ / Troubleshooting Guide](faq_troubleshooting.md).
+- Ensure executable permissions: `chmod +x meta-plugin`
+- Check naming: must start with `meta-`
+- Verify location: `.meta-plugins/`, `~/.meta-plugins/`, or PATH
+- Use `META_DEBUG=1` for debug output
+
+### Protocol Errors
+
+- Validate JSON format with `jq`
+- Check for proper stdout/stderr separation
+- Ensure newline after JSON output
+
+### Permission Issues
+
+- Check file permissions
+- Verify PATH includes plugin directory
 
 ## See Also
 
-- [Plugin Help & Clone Design](plugin_help_and_clone_design.md)
-- [Advanced Usage Guide](advanced_usage.md)
 - [Architecture Overview](architecture_overview.md)
+- [Advanced Usage Guide](advanced_usage.md)
+- [Plugin Help & Clone Design](plugin_help_and_clone_design.md)
+- [FAQ / Troubleshooting](faq_troubleshooting.md)

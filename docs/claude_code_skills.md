@@ -1,94 +1,104 @@
 # Claude Code Skills for Meta
 
-Meta includes four Claude Code skills that provide natural language interfaces for multi-repository operations. These skills are language-agnostic and work with any project type.
+Meta includes four purpose-built Claude Code skills that teach AI agents how to work effectively with multi-repository codebases. These skills are pedagogical—they explain HOW to work in a meta repo, not just WHAT commands exist.
 
 ## Installation
 
-Skills are located in `.claude/skills/` and are automatically discovered by Claude Code when working in a meta repository.
+Install skills via the `meta init` command:
+
+```bash
+# Install skills to .claude/skills/
+meta init claude
+
+# Force reinstall/update existing skills
+meta init claude --force
+```
+
+Skills are installed to `.claude/skills/` in your meta repository and are automatically discovered by Claude Code.
 
 ## Available Skills
 
+### meta-workspace - Understanding Meta Repos
+
+**Purpose:** Teaches Claude about meta repository structure and why multi-repo commands matter.
+
+**Key concepts covered:**
+- The `.meta` file structure (JSON and YAML formats)
+- Simple vs extended project formats
+- Tag-based filtering
+- Nested meta repos and recursive operations
+- Why `meta git` is better than `git` in workspaces
+
+**When Claude should reference this skill:**
+- When first entering a meta repository
+- When asked about project structure
+- When confused about repo relationships
+
 ### meta-git - Git Operations
 
-**Triggers:** `/meta-git`, `/sync-repos`, `/multi-repo-status`
+**Purpose:** Multi-repo git operations with special attention to snapshots and safe batch changes.
 
-Provides multi-repo git operations with intelligent status reporting.
+**Key concepts covered:**
+- `meta git clone` and its queue-based recursive cloning
+- `meta git update` for syncing workspaces
+- Snapshot create/list/restore workflow
+- SSH optimization with `setup-ssh`
+- Safe workflow patterns (status → snapshot → work → commit)
 
-**Commands:**
-- `/meta-git status` - Show status across all repos
-- `/meta-git sync` - Pull and push all repos
-- `/meta-git branch <name>` - Create branch across repos
-- `/meta-git commit <msg>` - Commit across dirty repos
+**When Claude should reference this skill:**
+- Before any multi-repo git operation
+- When making batch changes across repos
+- When needing to undo workspace-wide changes
 
-**Example Usage:**
-```
-/meta-git status
-/meta-git sync
-/meta-git branch feature/new-api
-/meta-git commit "Update dependencies"
-```
+### meta-exec - Execution Model
 
-### meta-build - Build and Test
+**Purpose:** How commands run across repos, filtering options, and output modes.
 
-**Triggers:** `/meta-build`, `/meta-test`, `/run-tests`
+**Key concepts covered:**
+- Direct command passthrough (`meta npm install`)
+- `meta exec -- <cmd>` syntax
+- Parallel vs sequential execution
+- `--include-only`, `--exclude`, `--tag` filtering
+- `--dry-run` for previewing operations
+- JSON output mode for scripting
+- Filter precedence (tag → include → exclude)
 
-Build and test operations with auto-detection of build systems.
+**When Claude should reference this skill:**
+- When running arbitrary commands across repos
+- When needing to filter target repositories
+- When building scripts that use meta
 
-**Commands:**
-- `/meta-build` - Build all projects
-- `/meta-build --release` - Release build
-- `/meta-test` - Run tests across all projects
-- `/meta-test --tag backend` - Run tests for tagged projects
+### meta-plugins - Plugin System
 
-**Example Usage:**
-```
-/meta-build
-/meta-test --tag backend
-/meta-build --release
-```
+**Purpose:** How plugins intercept commands and extend meta's behavior.
 
-### meta-discover - Discovery and Analysis
+**Key concepts covered:**
+- Plugin discovery locations
+- How command routing works (plugin vs exec fallback)
+- Built-in plugins (git, project, rust)
+- Plugin management commands
+- Why some commands behave "magically" (e.g., `meta git clone`)
 
-**Triggers:** `/meta-discover`, `/analyze-project`, `/find-code`
+**When Claude should reference this skill:**
+- When a command behaves unexpectedly
+- When extending meta with custom behavior
+- When troubleshooting command routing
 
-Code search and project discovery across repositories.
+## Skill Design Philosophy
 
-**Commands:**
-- `/meta-discover` - Analyze all projects (build systems, structure)
-- `/find-code <pattern>` - Search code across repos
-- `/find-code "TODO" --file "*.rs"` - Search with file filter
-- `/analyze-deps` - Dependency analysis
+These skills were designed with specific principles:
 
-**Example Usage:**
-```
-/meta-discover
-/find-code "handleError"
-/find-code "import.*axios" --file "*.ts"
-/analyze-deps
-```
+1. **Pedagogical, not encyclopedic** - Skills teach workflows and decision-making, not just command lists
 
-### meta-core - Core Operations
+2. **Context-aware** - Skills explain WHEN to use techniques, not just HOW
 
-**Triggers:** `/meta`, `/meta-exec`, `/meta-help`
+3. **Safety-first** - Snapshots and dry-run are emphasized for batch operations
 
-Core meta operations and command execution.
+4. **AI-optimized** - Written for how AI agents process instructions, with clear patterns and examples
 
-**Commands:**
-- `/meta exec <cmd>` - Run command across repos
-- `/meta config` - Show configuration
-- `/meta plugins` - List plugins
-- `/meta query <query>` - Query repos by state
+## Creating Custom Skills
 
-**Example Usage:**
-```
-/meta exec "git fetch"
-/meta config
-/meta query "dirty:true AND tag:backend"
-```
-
-## Skill File Structure
-
-Each skill file follows this structure:
+Add custom skills by creating markdown files in `.claude/skills/`:
 
 ```markdown
 ---
@@ -100,68 +110,42 @@ triggers:
 
 # Skill Name
 
-Instructions for Claude on how to use this skill...
-
-## Available Commands
-
-### Command 1
-Description and examples...
-
-### Command 2
-Description and examples...
+Instructions for Claude...
 ```
 
-## Creating Custom Skills
+### Best Practices for Custom Skills
 
-You can create custom skills by adding markdown files to `.claude/skills/`:
+1. **Focus on workflow, not reference** - Explain when and why, not just what
+2. **Include concrete examples** - Show actual command sequences
+3. **Highlight safety patterns** - Snapshots, dry-run, filtered operations
+4. **Keep it scannable** - Use tables, code blocks, and clear headers
 
-1. Create a new file: `.claude/skills/my-skill.md`
-2. Add frontmatter with triggers
-3. Document commands and usage
-4. Claude Code will auto-discover it
-
-**Example Custom Skill:**
-
-```markdown
----
-description: Deploy to staging environment
-triggers:
-  - /deploy
-  - /stage
----
-
-# Deploy Skill
-
-Deploy projects to staging environment.
-
-## Commands
-
-### /deploy staging
-Deploy all services to staging.
-
-Uses meta MCP tools:
-1. `meta_git_status` to check for uncommitted changes
-2. `meta_run_tests` to verify tests pass
-3. `meta_exec` to run deploy scripts
-```
-
-## Best Practices
+## Best Practices for AI Agents
 
 1. **Use tags** - Filter operations by tag to avoid affecting unrelated projects
-2. **Check status first** - Run `/meta-git status` before bulk operations
+2. **Check status first** - Run `meta git status` before bulk operations
 3. **Use atomic mode** - For risky operations, use atomic mode for auto-rollback
-4. **Leverage queries** - Use `/meta query` to find specific repos by state
+4. **Leverage queries** - Use query DSL to find specific repos by state
 5. **Create snapshots** - Before major changes, create a snapshot for easy rollback
 
-## Integration with MCP
+## Integration with MCP Server
 
-Skills use the Meta MCP server under the hood. When Claude Code executes a skill command, it translates to MCP tool calls:
+While skills provide guidance for CLI usage, Claude can also use the Meta MCP server for programmatic access. The MCP server exposes 29 tools:
 
-| Skill Command | MCP Tool(s) |
-|--------------|-------------|
-| `/meta-git status` | `meta_git_status` |
-| `/meta-git sync` | `meta_git_pull`, `meta_git_push` |
-| `/meta-build` | `meta_build` |
-| `/meta-test` | `meta_run_tests` |
-| `/find-code <pattern>` | `meta_search_code` |
-| `/meta query` | `meta_query_repos` |
+| Skill Domain | Related MCP Tools |
+|--------------|-------------------|
+| meta-workspace | `meta_list_projects`, `meta_get_config`, `meta_workspace_state` |
+| meta-git | `meta_git_*`, `meta_snapshot_*` |
+| meta-exec | `meta_exec`, `meta_batch_execute`, `meta_query_repos` |
+| meta-plugins | `meta_list_plugins` |
+
+See [mcp_server.md](mcp_server.md) for full MCP documentation.
+
+## Updating Skills
+
+Skills are embedded in the `meta` binary and updated with each release. To get the latest skills:
+
+1. Update meta: `brew upgrade meta-cli` or reinstall
+2. Reinstall skills: `meta init claude --force`
+
+The `--force` flag overwrites existing skill files with the latest versions.
