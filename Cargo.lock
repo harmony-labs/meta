@@ -1017,6 +1017,7 @@ dependencies = [
  "indicatif",
  "log",
  "loop_lib",
+ "meta",
  "meta_git_lib",
  "ratatui",
  "rayon",
@@ -1046,6 +1047,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "colored",
+ "meta",
  "meta_git_lib",
  "serde",
  "serde_json",
