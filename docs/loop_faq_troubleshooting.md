@@ -27,7 +27,7 @@ A: Run `loop --help` for a full list of commands and options.
 A: Check your `.looprc` for correct `directories` and `ignore` patterns.
 
 **Q: How do I specify which directories to include or exclude?**
-A: Use the `directories` and `ignore` fields in `.looprc`, or CLI flags like `--include-only` and `--exclude`.
+A: Use the `directories` and `ignore` fields in `.looprc`, or CLI flags like `--include` and `--exclude`.
 
 ## Parallel Execution
 

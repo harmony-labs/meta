@@ -19,7 +19,7 @@ Rationale:
 - Partial snapshots would be confusing
 - Users expect `meta snapshot restore` to fully restore their workspace
 
-Optional filtering via `--include-only`, `--exclude`, or `--tag` if needed.
+Optional filtering via `--include`, `--exclude`, or `--tag` if needed.
 
 ---
 

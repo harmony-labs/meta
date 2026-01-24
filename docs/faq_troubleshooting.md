@@ -127,7 +127,7 @@ projects:
 meta --tag backend git status
 
 # By directory name
-meta git status --include-only api,web
+meta git status --include api,web
 
 # Exclude specific repos
 meta npm install --exclude legacy-service
@@ -327,7 +327,7 @@ meta git snapshot delete old-snapshot
 
 1. **Use parallel mode**: `--parallel`
 2. **Set up SSH multiplexing**: `meta git setup-ssh`
-3. **Filter to relevant repos**: `--tag`, `--include-only`
+3. **Filter to relevant repos**: `--tag`, `--include`
 4. **Use shallow clones for initial setup**: `meta git clone <url> --depth 1`
 
 ### Q: Parallel operations are failing?

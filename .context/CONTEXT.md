@@ -20,7 +20,7 @@ You are an expert Rust developer specializing in high-performance, cross-platfor
 - YAML and JSON configuration support (`.meta`, `.meta.yaml`, `.meta.yml`)
 - Nested meta repos with `--recursive` flag
 - JSON output mode for scripting (`--json`)
-- Directory filtering (`--include-only`, `--exclude`)
+- Directory filtering (`--include`, `--exclude`)
 
 ### Plugin System
 - **Subprocess-based plugins** - executables that communicate via JSON over stdin/stdout

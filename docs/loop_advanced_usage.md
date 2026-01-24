@@ -36,7 +36,7 @@ The loop system can execute commands in parallel across many directories. You ca
 `loop_cli` is script-friendly and can be used in shell scripts or CI jobs:
 
 ```sh
-loop --include-only pkg1,pkg2 cargo test
+loop --include pkg1,pkg2 cargo test
 ```
 
 Chain commands for complex workflows:

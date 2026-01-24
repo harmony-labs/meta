@@ -58,6 +58,10 @@ test-meta-git-clone-depth-1-recursive: rm-meta
 test-meta-git-clone-parallel-recursive: rm-meta
 	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git --parallel 4 --recursive
 
+bats:
+	cargo build --workspace
+	bats tests/
+
 integration-test:
 	cargo build -p meta
 	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) META_CLI_PATH=target/debug/meta CARGO_BIN_EXE_meta=target/debug/meta cargo nextest run --workspace
@@ -65,4 +69,4 @@ integration-test:
 uninstall:
 	cargo uninstall -p meta
 
-.PHONY: install build run test release integration-test
+.PHONY: install build run test bats release integration-test

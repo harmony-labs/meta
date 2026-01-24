@@ -981,6 +981,7 @@ dependencies = [
  "flate2",
  "log",
  "loop_lib",
+ "meta_plugin_protocol",
  "predicates 2.1.5",
  "rayon",
  "serde",
@@ -1019,6 +1020,7 @@ dependencies = [
  "loop_lib",
  "meta",
  "meta_git_lib",
+ "meta_plugin_protocol",
  "ratatui",
  "rayon",
  "serde",
@@ -1042,6 +1044,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "meta_plugin_protocol"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "meta_project_cli"
 version = "0.1.0"
 dependencies = [
@@ -1049,6 +1060,7 @@ dependencies = [
  "colored",
  "meta",
  "meta_git_lib",
+ "meta_plugin_protocol",
  "serde",
  "serde_json",
  "tempfile",
@@ -1060,6 +1072,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "colored",
+ "meta_plugin_protocol",
  "serde",
  "serde_json",
  "tempfile",

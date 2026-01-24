@@ -306,7 +306,7 @@ meta npm test --tag frontend,shared
 
 ```bash
 # Include only specific directories
-meta git status --include-only api-service,web-app
+meta git status --include api-service,web-app
 
 # Exclude directories
 meta npm install --exclude legacy-app

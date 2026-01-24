@@ -58,7 +58,7 @@ Skills are installed to `.claude/skills/` in your meta repository and are automa
 - Direct command passthrough (`meta npm install`)
 - `meta exec -- <cmd>` syntax
 - Parallel vs sequential execution
-- `--include-only`, `--exclude`, `--tag` filtering
+- `--include`, `--exclude`, `--tag` filtering
 - `--dry-run` for previewing operations
 - JSON output mode for scripting
 - Filter precedence (tag → include → exclude)

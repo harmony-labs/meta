@@ -58,7 +58,7 @@ Control which repos run the command. These options come from `loop`:
 
 ```bash
 # Only include specific directories (overrides config)
-meta git status --include-only api,worker
+meta git status --include api,worker
 
 # Exclude specific directories (adds to ignores)
 meta git push --exclude legacy-service
@@ -67,12 +67,12 @@ meta git push --exclude legacy-service
 meta --tag backend exec -- make deploy
 
 # Combine: tag filter + directory filter
-meta --tag backend git status --include-only api
+meta --tag backend git status --include api
 ```
 
 **Filter precedence:**
 1. `--tag` filters projects by tag (meta level)
-2. `--include-only` limits to specific directories (loop level)
+2. `--include` limits to specific directories (loop level)
 3. `--exclude` removes directories (loop level)
 
 ## Dry Run
@@ -128,7 +128,7 @@ meta --silent exec -- npm install
 | Option | Description |
 |--------|-------------|
 | `--parallel` | Run commands concurrently |
-| `--include-only <dirs>` | Only run in these directories |
+| `--include <dirs>` | Only run in these directories |
 | `--exclude <dirs>` | Skip these directories |
 | `--tag <tags>` | Filter by project tag(s) |
 | `--dry-run` | Preview without executing |

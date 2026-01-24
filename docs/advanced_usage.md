@@ -233,7 +233,7 @@ meta npm test --tag frontend,shared
 
 ```bash
 # Include only specific directories
-meta git status --include-only api-service,web-app
+meta git status --include api-service,web-app
 
 # Exclude directories
 meta npm install --exclude legacy-app
@@ -243,12 +243,12 @@ meta npm install --exclude legacy-app
 
 ```bash
 # Tag filter + directory filter
-meta --tag backend git status --include-only api
+meta --tag backend git status --include api
 ```
 
 **Filter precedence:**
 1. `--tag` filters by project tags (meta level)
-2. `--include-only` limits to specific directories (loop level)
+2. `--include` limits to specific directories (loop level)
 3. `--exclude` removes directories (loop level)
 
 ---
