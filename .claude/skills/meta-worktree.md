@@ -6,6 +6,20 @@ Manage isolated git worktree sets for multi-repo tasks. Each worktree set create
 - Code reviews requiring clean checkouts
 - Ephemeral testing environments
 
+## When to Use Worktrees
+
+**Create a worktree when:**
+- Working on a feature that spans multiple repos and you need isolation
+- Running CI checks or tests that shouldn't affect the primary workspace
+- Reviewing a PR in a clean environment
+- Investigating an incident at a specific version (`--from-ref`)
+- Multiple tasks need to proceed in parallel without branch conflicts
+
+**Skip worktrees for:**
+- Quick single-file fixes in one repo
+- Read-only exploration or research
+- Operations you'll complete in the current session without switching context
+
 ## Core Concept
 
 A "worktree set" is a named collection of git worktrees, one per repo, all sharing a branch or task name:

@@ -2,6 +2,21 @@
 
 This project is a **meta repository** - a parent repo that manages a graph of child repositories. Understanding this structure is essential for effective operation.
 
+## Starting a Session
+
+When you begin working in a meta repo, discover its structure:
+
+```bash
+meta project list --json
+```
+
+This returns repos, paths, and tags. Use this to:
+- Know which repos exist before making changes
+- Identify available tags for filtering operations
+- Understand the project graph
+
+Run `meta git status` to see the current state across all repos.
+
 ## Why This Matters for You (Claude)
 
 In a meta repo, changes often span multiple repositories. Using `meta` commands instead of plain `git` lets you:
