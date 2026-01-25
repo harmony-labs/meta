@@ -50,7 +50,7 @@ YAML is also supported (`.meta.yaml` or `.meta.yml`).
 
 ```bash
 # List all projects in this workspace
-meta projects list
+meta project list
 
 # See git status across ALL repos at once
 meta git status
@@ -92,7 +92,7 @@ The `--depth N` flag limits recursion depth.
 | `meta git status` | Git status in ALL repos |
 | `meta git clone <url>` | Clone meta repo + all children |
 | `meta exec -- <cmd>` | Run command in all repos |
-| `meta projects list` | List all child projects |
+| `meta project list` | List all child projects |
 | `meta init claude` | Install these skills |
 
 ## When Working in This Repo

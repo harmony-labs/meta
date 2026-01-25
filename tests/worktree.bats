@@ -474,3 +474,18 @@ assert d['totals']['files_changed'] >= 1
     [ "$status" -eq 0 ]
     [[ "$output" != *"lifecycle"* ]]
 }
+
+# ============ Unrecognized command handling (meta-7) ============
+
+@test "unrecognized worktree command shows help" {
+    cd "$TEST_DIR"
+    run "$META_BIN" worktree blablabla
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"unrecognized"* ]]
+    [[ "$output" == *"blablabla"* ]]
+    # Must show ACTUAL help content (not just a reference to --help)
+    [[ "$output" == *"USAGE"* ]]
+    [[ "$output" == *"create"* ]]
+    [[ "$output" == *"destroy"* ]]
+    [[ "$output" == *"list"* ]]
+}

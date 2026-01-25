@@ -389,3 +389,52 @@ SCRIPT
     [[ "$output" == *"worker-ok"* ]]
     [[ "$output" == *"frontend-ok"* ]]
 }
+
+# ============ Unrecognized command handling (meta-7) ============
+
+@test "unrecognized top-level command shows help" {
+    run "$META_BIN" blablabla
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"unrecognized command"* ]]
+    [[ "$output" == *"blablabla"* ]]
+    [[ "$output" == *"meta exec"* ]]
+    # Must show ACTUAL help content (not just a reference to --help)
+    # This ensures LLMs can self-correct without a second command
+    [[ "$output" == *"Usage"* ]]
+    [[ "$output" == *"exec"* ]]
+    [[ "$output" == *"init"* ]] || [[ "$output" == *"worktree"* ]]
+}
+
+@test "unrecognized plugin subcommand shows plugin help" {
+    # Copy meta-project plugin to test dir
+    cp "$BATS_TEST_DIRNAME/../target/debug/meta-project" "$TEST_DIR/.meta-plugins/meta-project"
+    chmod +x "$TEST_DIR/.meta-plugins/meta-project"
+
+    run "$META_BIN" project blablabla
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"unrecognized command"* ]]
+    [[ "$output" == *"project blablabla"* ]]
+    # Should show plugin help with available commands
+    [[ "$output" == *"list"* ]] || [[ "$output" == *"check"* ]]
+}
+
+@test "unrecognized git subcommand passes through to git" {
+    # Git plugin passes through unrecognized commands to raw git
+    # (unlike other plugins which show help)
+    run "$META_BIN" git blablabla
+    [ "$status" -ne 0 ]
+    # Should show git's own error, not meta's help
+    [[ "$output" == *"not a git command"* ]]
+}
+
+@test "explicit exec still works for arbitrary commands" {
+    run "$META_BIN" exec echo hello
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"hello"* ]]
+}
+
+@test "explicit exec with -- separator still works" {
+    run "$META_BIN" exec -- echo hello
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"hello"* ]]
+}

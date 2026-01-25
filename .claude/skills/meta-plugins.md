@@ -7,12 +7,12 @@ Meta uses a plugin system to intercept commands and provide enhanced behavior.
 When you run `meta <command>`, meta checks if a plugin handles that command pattern:
 
 1. **Plugin matches** → Plugin executes with special logic
-2. **No plugin** → Falls back to `meta exec -- <command>`
+2. **No plugin** → Shows help (use `meta exec` for arbitrary commands)
 
 Example:
 - `meta git status` → git plugin runs `git status` in all repos
 - `meta git clone <url>` → git plugin clones parent + all children from `.meta`
-- `meta npm install` → no plugin, falls back to exec
+- `meta npm install` → unrecognized, shows help; use `meta exec npm install`
 
 ## Built-in Plugins
 

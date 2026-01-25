@@ -17,23 +17,16 @@ meta exec -- ls -la
 meta exec -- npm install --save-dev typescript
 ```
 
-The `--` separates meta options from the command to execute.
-
-## Shorthand: Direct Commands
-
-Any unrecognized command is passed through to exec:
+The `--` separates meta options from the command to execute. The `--` is optional unless your command starts with `-`.
 
 ```bash
 # These are equivalent:
+meta exec make test
 meta exec -- make test
-meta make test
 
-# These are equivalent:
-meta exec -- npm run build
-meta npm run build
+# Use -- when command starts with dash:
+meta exec -- --version
 ```
-
-**Exception**: Commands that match plugins (like `git`) are handled by the plugin instead.
 
 ## Parallel vs Sequential
 
