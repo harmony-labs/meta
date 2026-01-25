@@ -180,3 +180,17 @@ meta exec -- rm -rf node_modules dist
 | npm/cargo/make | Clone, update, snapshot |
 
 Plugins intercept command patterns and provide enhanced behavior. `meta git clone` doesn't run `git clone` in each repo—it reads `.meta` and clones the entire graph.
+
+## Worktree Context Detection
+
+When your cwd is inside a `.worktrees/<name>/` directory, `meta exec` automatically scopes to the worktree's repos instead of the primary checkout:
+
+```bash
+cd .worktrees/auth-fix/backend
+meta exec -- cargo test    # runs in auth-fix's repos
+
+# Override with --primary to use primary checkout paths
+meta exec --primary -- cargo test
+```
+
+This is filesystem-based detection—no store dependency. See `meta-worktree.md` for full worktree management.
