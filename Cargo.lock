@@ -981,6 +981,7 @@ dependencies = [
  "flate2",
  "log",
  "loop_lib",
+ "meta_core",
  "meta_plugin_protocol",
  "predicates 2.1.5",
  "rayon",
@@ -1004,6 +1005,18 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml",
+]
+
+[[package]]
+name = "meta_core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "libc",
+ "serde",
+ "serde_json",
+ "tempfile",
 ]
 
 [[package]]

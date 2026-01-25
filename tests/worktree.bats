@@ -416,6 +416,12 @@ assert d['totals']['files_changed'] >= 1
     [ "$status" -ne 0 ]
 }
 
+@test "worktree create with invalid name (unicode) fails" {
+    run "$META_BIN" worktree create "修正" --repo backend
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"ASCII"* ]] || [[ "$output" == *"alphanumeric"* ]]
+}
+
 @test "worktree create with unknown repo alias fails" {
     run "$META_BIN" worktree create bad-alias --repo nonexistent-repo
     [ "$status" -ne 0 ]

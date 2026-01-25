@@ -58,9 +58,30 @@ test-meta-git-clone-depth-1-recursive: rm-meta
 test-meta-git-clone-parallel-recursive: rm-meta
 	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) cargo run --release --bin meta -- git clone git@github.com:mateodelnorte/meta.git --parallel 4 --recursive
 
+# Parallel jobs - defaults to CPU count
+# Override with JOBS=N, or disable with JOBS=1
+CPU_COUNT := $(shell sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 1)
+JOBS ?= $(CPU_COUNT)
+BATS_FLAGS :=
+ifneq ($(JOBS),1)
+  BATS_FLAGS += --jobs $(JOBS)
+endif
+ifdef FILTER
+  BATS_FLAGS += --filter "$(FILTER)"
+endif
+
+# Run BATS integration tests with parallel jobs
+# Optional: FILE="pattern" to filter by test file
+# Optional: FILTER="pattern" to filter by test name
+# Optional: JOBS=N to set parallel jobs (default: CPU count)
+# Examples:
+#   make bats                    - Run all tests (parallel)
+#   make bats JOBS=1             - Run all tests (serial)
+#   make bats FILE="cloud"       - Run worktree_cloud.bats
+#   make bats FILTER="prune"     - Run tests with "prune" in name
 bats:
 	cargo build --workspace
-	bats tests/
+	bats $(BATS_FLAGS) $(if $(FILE),$(wildcard tests/*$(FILE)*.bats),tests/)
 
 integration-test:
 	cargo build -p meta
