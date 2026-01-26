@@ -37,7 +37,7 @@ By default, commands run sequentially with live output. Use `--parallel` for con
 meta exec -- cargo build
 
 # Parallel - faster, grouped output after completion
-meta git status --parallel
+meta --parallel git status
 ```
 
 Parallel mode:
@@ -51,16 +51,16 @@ Control which repos run the command. These options come from `loop`:
 
 ```bash
 # Only include specific directories (overrides config)
-meta git status --include api,worker
+meta --include api,worker git status
 
 # Exclude specific directories (adds to ignores)
-meta git push --exclude legacy-service
+meta --exclude legacy-service git push
 
 # Filter by tag (meta-specific, applied before loop filtering)
 meta --tag backend exec -- make deploy
 
 # Combine: tag filter + directory filter
-meta --tag backend git status --include api
+meta --tag backend --include api git status
 ```
 
 **Filter precedence:**
@@ -139,8 +139,8 @@ meta exec -- cargo build --release
 
 ### Run Tests (Parallel for Speed)
 ```bash
-meta git status --parallel
-meta exec -- cargo test --parallel
+meta --parallel git status
+meta --parallel exec -- cargo test
 ```
 
 ### Update Dependencies Selectively

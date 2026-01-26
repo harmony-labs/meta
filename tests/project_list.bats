@@ -99,7 +99,7 @@ assert repos['backend'] == 'git@github.com:org/backend.git'
 EOF
     mkdir -p "$TEST_DIR/frontend/frontend-lib"
 
-    run "$META_BIN" project list --recursive
+    run "$META_BIN" --recursive project list
     [ "$status" -eq 0 ]
     [[ "$output" == *"frontend"* ]]
     [[ "$output" == *"frontend-lib"* ]]
@@ -115,7 +115,7 @@ EOF
 EOF
     mkdir -p "$TEST_DIR/frontend/frontend-lib"
 
-    run "$META_BIN" project list --recursive --json
+    run "$META_BIN" --recursive project list --json
     [ "$status" -eq 0 ]
     echo "$output" | python3 -c "
 import sys, json

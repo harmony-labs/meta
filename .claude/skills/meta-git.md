@@ -53,7 +53,7 @@ meta git snapshot create before-refactor
 meta git snapshot list
 
 # Preview what restore would do
-meta git snapshot restore before-refactor --dry-run
+meta --dry-run git snapshot restore before-refactor
 
 # Actually restore (auto-stashes uncommitted work)
 meta git snapshot restore before-refactor

@@ -228,7 +228,7 @@ assert backend['dirty'] == True, f'backend should be dirty, got {backend}'
     git -C "$TEST_DIR/frontend" add README.md
     git -C "$TEST_DIR/frontend" commit --quiet -m "Post-snapshot change"
 
-    run "$META_BIN" git snapshot restore restore-test --dry-run
+    run "$META_BIN" --dry-run git snapshot restore restore-test
     [ "$status" -eq 0 ]
     [[ "$output" == *"DRY RUN"* ]] || [[ "$output" == *"dry run"* ]] || [[ "$output" == *"Dry run"* ]]
 }
@@ -240,7 +240,7 @@ assert backend['dirty'] == True, f'backend should be dirty, got {backend}'
     git -C "$TEST_DIR/frontend" add README.md
     git -C "$TEST_DIR/frontend" commit --quiet -m "Change"
 
-    "$META_BIN" git snapshot restore no-change-test --dry-run
+    "$META_BIN" --dry-run git snapshot restore no-change-test
     CURRENT_SHA=$(git -C "$TEST_DIR/frontend" rev-parse HEAD)
     # SHA should NOT have reverted (dry-run doesn't change anything)
     [ "$CURRENT_SHA" != "$ORIGINAL_SHA" ]
@@ -427,7 +427,7 @@ EOF
 }
 EOF
 
-    run "$META_BIN" git snapshot create --recursive nested-snap
+    run "$META_BIN" --recursive git snapshot create nested-snap
     [ "$status" -eq 0 ]
     [ -f "$TEST_DIR/.meta-snapshots/nested-snap.json" ]
 }
@@ -447,7 +447,7 @@ EOF
 # ============ meta git --dry-run ============
 
 @test "meta git status --dry-run shows plan without executing" {
-    run "$META_BIN" git status --dry-run
+    run "$META_BIN" --dry-run git status
     [ "$status" -eq 0 ]
     # Dry run should show what would be executed
     [[ "$output" == *"git status"* ]] || [[ "$output" == *"Would run"* ]] || [[ "$output" == *"DRY"* ]] || [[ "$output" == *"plan"* ]]

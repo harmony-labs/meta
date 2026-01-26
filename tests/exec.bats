@@ -73,7 +73,7 @@ teardown() {
 }
 
 @test "meta exec passes arguments correctly" {
-    run "$META_BIN" exec -- ls README.md --include api,worker,frontend
+    run "$META_BIN" --include api,worker,frontend exec -- ls README.md
     [ "$status" -eq 0 ]
     [[ "$output" == *"README.md"* ]]
 }
@@ -87,7 +87,7 @@ teardown() {
 # ============ --include ============
 
 @test "meta exec --include runs only in specified dirs" {
-    run "$META_BIN" exec -- pwd --include api
+    run "$META_BIN" --include api exec -- pwd
     [ "$status" -eq 0 ]
     [[ "$output" == *"api"* ]]
     [[ "$output" != *"worker"* ]]
@@ -95,7 +95,7 @@ teardown() {
 }
 
 @test "meta exec --include with multiple dirs" {
-    run "$META_BIN" exec -- pwd --include api,frontend
+    run "$META_BIN" --include api,frontend exec -- pwd
     [ "$status" -eq 0 ]
     [[ "$output" == *"api"* ]]
     [[ "$output" == *"frontend"* ]]
@@ -103,7 +103,7 @@ teardown() {
 }
 
 @test "meta exec --include with nonexistent dir runs nothing" {
-    run "$META_BIN" exec -- echo hello --include nonexistent
+    run "$META_BIN" --include nonexistent exec -- echo hello
     [ "$status" -eq 0 ]
     # Should not produce "hello" output since no dirs match
     [[ "$output" != *"hello"* ]] || [[ "$output" == *"No directories"* ]] || [[ "$output" == *"0"* ]]
@@ -112,12 +112,12 @@ teardown() {
 # ============ --exclude ============
 
 @test "meta exec --exclude does not error" {
-    run "$META_BIN" exec -- echo test --exclude frontend
+    run "$META_BIN" --exclude frontend exec -- echo test
     [ "$status" -eq 0 ]
 }
 
 @test "meta exec --exclude filters correctly with short names" {
-    run "$META_BIN" exec -- pwd --exclude frontend
+    run "$META_BIN" --exclude frontend exec -- pwd
     [ "$status" -eq 0 ]
     [[ "$output" == *"api"* ]]
     [[ "$output" == *"worker"* ]]
@@ -127,14 +127,14 @@ teardown() {
 # ============ --dry-run ============
 
 @test "meta exec --dry-run shows commands without executing" {
-    run "$META_BIN" exec -- echo secret --dry-run
+    run "$META_BIN" --dry-run exec -- echo secret
     [ "$status" -eq 0 ]
     # Should show the command plan but not actually execute it
     [[ "$output" == *"echo"* ]] || [[ "$output" == *"Would"* ]] || [[ "$output" == *"DRY"* ]]
 }
 
 @test "meta exec --dry-run does not create side effects" {
-    run "$META_BIN" exec -- touch should-not-exist.txt --dry-run
+    run "$META_BIN" --dry-run exec -- touch should-not-exist.txt
     [ "$status" -eq 0 ]
     # File should NOT be created
     [ ! -f "$TEST_DIR/api/should-not-exist.txt" ]
@@ -145,13 +145,13 @@ teardown() {
 # ============ --parallel ============
 
 @test "meta exec --parallel runs successfully" {
-    run "$META_BIN" exec -- echo parallel-test --parallel
+    run "$META_BIN" --parallel exec -- echo parallel-test
     [ "$status" -eq 0 ]
     [[ "$output" == *"parallel-test"* ]]
 }
 
 @test "meta exec --parallel produces output from all repos" {
-    run "$META_BIN" exec -- pwd --parallel
+    run "$META_BIN" --parallel exec -- pwd
     [ "$status" -eq 0 ]
     [[ "$output" == *"api"* ]]
     [[ "$output" == *"worker"* ]]
@@ -196,13 +196,13 @@ teardown() {
 # ============ Combined options ============
 
 @test "meta exec --include with --parallel" {
-    run "$META_BIN" exec -- echo combo --include api,worker --parallel
+    run "$META_BIN" --include api,worker --parallel exec -- echo combo
     [ "$status" -eq 0 ]
     [[ "$output" == *"combo"* ]]
 }
 
 @test "meta --tag with --exclude filters correctly" {
-    run "$META_BIN" --tag backend exec -- pwd --exclude worker
+    run "$META_BIN" --tag backend --exclude worker exec -- pwd
     [ "$status" -eq 0 ]
     [[ "$output" == *"api"* ]]
     [[ "$output" != *"worker"* ]]
@@ -228,7 +228,7 @@ teardown() {
         git -C "$TEST_DIR/$repo" commit --quiet -m "init"
     done
 
-    run "$META_BIN" exec -- git branch --include api,worker,frontend
+    run "$META_BIN" --include api,worker,frontend exec -- git branch
     [ "$status" -eq 0 ]
     # Should show branch info from repos
     [[ "$output" == *"main"* ]] || [[ "$output" == *"master"* ]]
@@ -243,7 +243,7 @@ teardown() {
         git -C "$TEST_DIR/$repo" commit --quiet -m "init $repo"
     done
 
-    run "$META_BIN" exec -- git log --oneline --include api
+    run "$META_BIN" --include api exec -- git log --oneline
     [ "$status" -eq 0 ]
     [[ "$output" == *"init api"* ]]
 }
@@ -266,7 +266,7 @@ teardown() {
     echo "exit 0" >> "$TEST_DIR/worker/fail.sh"
     chmod +x "$TEST_DIR/worker/fail.sh"
 
-    run "$META_BIN" exec -- sh -c "exit 0" --include worker
+    run "$META_BIN" --include worker exec -- sh -c "exit 0"
     [ "$status" -eq 0 ]
 }
 
@@ -289,7 +289,7 @@ teardown() {
 
 @test "loop sequential mode runs commands in order" {
     # Create files with timestamps to verify sequential execution
-    run "$META_BIN" exec -- sh -c "echo \$(basename \$(pwd))" --include api,worker,frontend
+    run "$META_BIN" --include api,worker,frontend exec -- sh -c "echo \$(basename \$(pwd))"
     [ "$status" -eq 0 ]
     # All three should appear in output
     [[ "$output" == *"api"* ]]
@@ -306,7 +306,7 @@ echo stderr-output >&2
 SCRIPT
     chmod +x "$TEST_DIR/api/test.sh"
 
-    run "$META_BIN" exec -- ./test.sh --include api
+    run "$META_BIN" --include api exec -- ./test.sh
     [ "$status" -eq 0 ]
     [[ "$output" == *"stdout-output"* ]]
     [[ "$output" == *"stderr-output"* ]]
@@ -320,7 +320,7 @@ exit 42
 SCRIPT
     chmod +x "$TEST_DIR/api/fail.sh"
 
-    run "$META_BIN" exec -- ./fail.sh --include api
+    run "$META_BIN" --include api exec -- ./fail.sh
     [ "$status" -ne 0 ]
 }
 
@@ -333,7 +333,7 @@ echo line3
 SCRIPT
     chmod +x "$TEST_DIR/api/multi.sh"
 
-    run "$META_BIN" exec -- ./multi.sh --include api
+    run "$META_BIN" --include api exec -- ./multi.sh
     [ "$status" -eq 0 ]
     [[ "$output" == *"line1"* ]]
     [[ "$output" == *"line2"* ]]
@@ -351,7 +351,7 @@ SCRIPT
 }
 
 @test "loop with --json outputs structured results" {
-    run "$META_BIN" --json exec -- echo json-test --include api
+    run "$META_BIN" --json --include api exec -- echo json-test
     [ "$status" -eq 0 ]
     # JSON mode should produce parseable output
     # (the exact format depends on loop_lib implementation)
@@ -365,7 +365,7 @@ echo hello | tr h H
 SCRIPT
     chmod +x "$TEST_DIR/api/pipe.sh"
 
-    run "$META_BIN" exec -- ./pipe.sh --include api
+    run "$META_BIN" --include api exec -- ./pipe.sh
     [ "$status" -eq 0 ]
     [[ "$output" == *"Hello"* ]]
 }
@@ -384,7 +384,7 @@ SCRIPT
     echo "echo frontend-ok" >> "$TEST_DIR/frontend/run.sh"
     chmod +x "$TEST_DIR/frontend/run.sh"
 
-    run "$META_BIN" exec -- sh run.sh --include api,worker,frontend --parallel
+    run "$META_BIN" --include api,worker,frontend --parallel exec -- sh run.sh
     # Even though api fails, worker and frontend should complete
     [[ "$output" == *"worker-ok"* ]]
     [[ "$output" == *"frontend-ok"* ]]
@@ -426,6 +426,29 @@ SCRIPT
     # Should show git's own error, not meta's help
     [[ "$output" == *"not a git command"* ]]
 }
+
+# ============ Trailing flags pass through to commands (meta-26) ============
+
+@test "trailing --include passes through to command, not intercepted by meta" {
+    # --include after the command should be part of the command args, not meta filtering
+    run "$META_BIN" exec -- echo --include api
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"--include api"* ]]
+}
+
+@test "trailing --parallel passes through to command, not intercepted by meta" {
+    run "$META_BIN" exec -- echo --parallel
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"--parallel"* ]]
+}
+
+@test "trailing --dry-run passes through to command, not intercepted by meta" {
+    run "$META_BIN" exec -- echo --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"--dry-run"* ]]
+}
+
+# ============ Backward compat (exec syntax) ============
 
 @test "explicit exec still works for arbitrary commands" {
     run "$META_BIN" exec echo hello
