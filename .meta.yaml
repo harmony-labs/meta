@@ -1,0 +1,44 @@
+projects:
+  # Foundation crates (no workspace deps)
+  loop_lib:
+    repo: git@github.com:harmony-labs/loop_lib.git
+    provides: [loop-lib]
+
+  meta_plugin_protocol:
+    repo: git@github.com:harmony-labs/meta_plugin_protocol.git
+    provides: [plugin-protocol]
+
+  meta_core:
+    repo: git@github.com:harmony-labs/meta_core.git
+    provides: [meta-core]
+
+  meta_git_lib:
+    repo: git@github.com:harmony-labs/meta_git_lib.git
+    provides: [meta-git-lib]
+
+  # Mid-level crates
+  loop_cli:
+    repo: git@github.com:harmony-labs/loop_cli.git
+    depends_on: [loop-lib]
+
+  meta_cli:
+    repo: git@github.com:harmony-labs/meta_cli.git
+    provides: [meta-cli]
+    depends_on: [meta-core, plugin-protocol, loop-lib]
+
+  # Top-level crates (depend on meta_cli and/or plugins)
+  meta_git_cli:
+    repo: git@github.com:harmony-labs/meta_git_cli.git
+    depends_on: [plugin-protocol, meta-git-lib, meta-cli, loop-lib]
+
+  meta_project_cli:
+    repo: git@github.com:harmony-labs/meta_project_cli.git
+    depends_on: [plugin-protocol, meta-cli, meta-git-lib]
+
+  meta_rust_cli:
+    repo: git@github.com:harmony-labs/meta_rust_cli.git
+    depends_on: [plugin-protocol, meta-cli]
+
+  meta_mcp:
+    repo: git@github.com:harmony-labs/meta_mcp.git
+    depends_on: [meta-cli]
