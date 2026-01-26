@@ -4,28 +4,25 @@
 [![Version](https://img.shields.io/github/v/release/harmony-labs/meta)](https://github.com/harmony-labs/meta/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-`meta` is a **powerful, extensible multi-repository management CLI** built in Rust. It enables engineers to **run any command across many repositories** with ease, and extend functionality via a flexible plugin system.
+**Meta makes multi-repo architectures feel like monorepos** — without the downsides of monorepos. Keep your repositories independent (their own git history, CI, ownership boundaries), but operate on them as a cohesive unit.
+
+Most multi-repo tools solve the *cloning* problem. Meta solves the *working* problem. A `.meta` file declares your repos. Everything else flows from that: clone them all at once, run any command across them, query their state, snapshot and rollback, understand their dependency graph — and let AI agents do it autonomously.
 
 ---
 
 ## Table of Contents
 
-- [Key Features](#key-features)
-- [Installation](#installation)
+- [Why Meta](#why-meta)
 - [Quick Start](#quick-start)
+- [How It Works](#how-it-works)
+- [Installation](#installation)
 - [Configuration](#configuration)
-  - [Simple Format (Legacy)](#simple-format-legacy)
-  - [Extended Format](#extended-format)
-  - [YAML Support](#yaml-support)
-  - [Dependency Tracking](#dependency-tracking)
 - [Commands](#commands)
 - [Filtering](#filtering)
-  - [Query DSL](#query-dsl)
 - [Snapshots](#snapshots)
 - [Plugins](#plugins)
-- [MCP Server (AI Integration)](#mcp-server-ai-integration)
-- [Claude Code Skills](#claude-code-skills)
-- [Loop System](#loop-system)
+- [AI Integration](#ai-integration)
+- [Architecture](#architecture)
 - [CLI Reference](#cli-reference)
 - [Documentation](#documentation)
 - [Roadmap](#roadmap)
@@ -34,21 +31,83 @@
 
 ---
 
-## Key Features
+## Why Meta
 
-- **Run any command** across multiple repositories using a fast, portable Rust CLI
-- **Project tags** for filtering (`--tag backend,api`)
-- **YAML and JSON** configuration support
-- **Nested meta repos** with `--recursive` flag
-- **JSON output** mode for scripting (`--json`)
-- **Plugin system** with auto-discovery
-- **MCP server** for AI agent integration (29 tools)
-- **Multi-repo git operations** including per-repo commit messages
-- **Workspace snapshots** for safe batch operations with rollback
-- **Query DSL** for filtering repos by state (`dirty:true AND tag:backend`)
-- **Dependency tracking** with impact analysis and execution ordering
-- **Claude Code skills** for AI-assisted multi-repo workflows
-- **Cross-platform**: works on macOS, Linux, and Windows
+| Problem | How Meta Solves It |
+|---------|-------------------|
+| **Git submodules** are painful — detached HEADs, nested `.git` state, no batch operations | Meta treats repos as peers, not hierarchy. Parallel execution built-in. |
+| **Lerna/Nx/Turborepo** assume JavaScript | Meta is language-agnostic. Run `cargo test`, `npm install`, or `make build` — it doesn't care. |
+| **Google's `repo` tool** is rigid | Meta has an extensible plugin system in any language. |
+| **AI agents struggle** with multi-repo codebases | Meta is AI-native: MCP server, Claude Code skills, JSON output, query DSL — all designed for agents from day one. |
+
+---
+
+## Quick Start
+
+1. **Clone a meta repository:**
+
+   ```bash
+   meta git clone https://github.com/org/meta-repo.git
+   ```
+
+   This clones the meta repo and all child repositories defined in its `.meta` file.
+
+2. **Run commands across all repos:**
+
+   ```bash
+   meta git status
+   meta git pull
+   meta exec npm install
+   meta exec cargo test
+   ```
+
+3. **Filter by tags:**
+
+   ```bash
+   meta git pull --tag backend
+   meta exec npm test --tag frontend,shared
+   ```
+
+4. **Query repo state:**
+
+   ```bash
+   meta query "dirty:true AND tag:backend"
+   ```
+
+5. **Snapshot before risky changes:**
+
+   ```bash
+   meta git snapshot create before-refactor
+   # ... make changes ...
+   meta git snapshot restore before-refactor  # rollback if needed
+   ```
+
+---
+
+## How It Works
+
+Meta is a **command router on top of a loop engine**, built in three layers:
+
+**1. Loop Engine** — The foundation. Takes a list of directories and a command, runs it in each one (sequential or parallel), aggregates output. Simple, fast, reliable.
+
+**2. Meta CLI** — The brain. Reads your `.meta` config, applies filters (tags, include/exclude), discovers plugins, and routes commands. When no plugin claims a command, it falls through to the loop engine via `meta exec`.
+
+**3. Plugins** — The specialists. They don't *execute* — they *plan*. A plugin receives a request and returns an execution plan (a list of directory/command pairs). The loop engine does the actual work. This means plugins are pure functions, and execution is always consistent.
+
+```
+User runs: meta git status --tag backend
+    │
+    ▼
+Meta CLI: parse args → load .meta → filter by tags → find plugin
+    │
+    ▼
+Plugin (meta-git): "here's the plan" → [{dir: "./api", cmd: "git status"}, ...]
+    │
+    ▼
+Loop Engine: execute plan → aggregate output → report results
+```
+
+Plugins communicate via JSON over stdin/stdout — language-agnostic, process-isolated, easy to debug. You could write a plugin in Python, Go, Rust, or anything else.
 
 ---
 
@@ -86,48 +145,13 @@ cargo install --git https://github.com/harmony-labs/meta
 
 ---
 
-## Quick Start
-
-1. **Clone a meta repository:**
-
-   ```bash
-   meta git clone https://github.com/org/meta-repo.git
-   ```
-
-   This clones the meta repo and all child repositories defined in its `.meta` file.
-
-2. **Run commands across all repos:**
-
-   ```bash
-   meta git status
-   meta git pull
-   meta npm install
-   meta cargo test
-   ```
-
-3. **Filter by tags:**
-
-   ```bash
-   meta git pull --tag backend
-   meta npm test --tag frontend,shared
-   ```
-
-4. **See help:**
-
-   ```bash
-   meta --help
-   meta git --help
-   ```
-
----
-
 ## Configuration
 
 Meta projects are configured via a `.meta` file (JSON) or `.meta.yaml`/`.meta.yml` (YAML) in the repository root.
 
-### Simple Format (Legacy)
+### Simple Format
 
-The original format maps project names to repository URLs:
+Map project names to repository URLs:
 
 ```json
 {
@@ -139,30 +163,24 @@ The original format maps project names to repository URLs:
 }
 ```
 
-This format is still fully supported and works seamlessly.
-
 ### Extended Format
 
-The extended format supports tags, custom paths, and dependency tracking:
+Add tags, custom paths, and dependency tracking:
 
-```json
-{
-  "projects": {
-    "api-service": {
-      "repo": "git@github.com:org/api-service.git",
-      "tags": ["backend", "rust"]
-    },
-    "web-app": {
-      "repo": "git@github.com:org/web-app.git",
-      "path": "apps/web",
-      "tags": ["frontend", "typescript"]
-    },
-    "shared-utils": {
-      "repo": "git@github.com:org/shared-utils.git",
-      "tags": ["shared"]
-    }
-  }
-}
+```yaml
+projects:
+  api-service:
+    repo: git@github.com:org/api-service.git
+    tags: [backend, rust]
+
+  web-app:
+    repo: git@github.com:org/web-app.git
+    path: apps/web
+    tags: [frontend, typescript]
+
+  shared-utils:
+    repo: git@github.com:org/shared-utils.git
+    tags: [shared]
 ```
 
 **Extended format fields:**
@@ -173,103 +191,56 @@ The extended format supports tags, custom paths, and dependency tracking:
 | `path` | No | Custom clone path (defaults to project name) |
 | `tags` | No | Array of tags for filtering |
 
-### YAML Support
-
-YAML configuration is supported via `.meta.yaml` or `.meta.yml`:
-
-```yaml
-projects:
-  api-service:
-    repo: git@github.com:org/api-service.git
-    tags:
-      - backend
-      - rust
-
-  web-app:
-    repo: git@github.com:org/web-app.git
-    path: apps/web
-    tags:
-      - frontend
-      - typescript
-
-  shared-utils: git@github.com:org/shared-utils.git  # Simple format also works
-```
-
 **File priority:** `.meta.yaml` > `.meta.yml` > `.meta`
+
+You can mix simple and extended formats in the same file.
 
 ### Dependency Tracking
 
-For advanced workflows like impact analysis and build ordering, extend your configuration with `provides` and `depends_on`:
+For impact analysis and build ordering:
 
 ```yaml
 projects:
   shared-utils:
     repo: git@github.com:org/shared-utils.git
-    tags: [lib]
     provides: [utils-api]
-    depends_on: []
 
   auth-service:
     repo: git@github.com:org/auth-service.git
-    tags: [backend]
-    provides: [auth-api]
-    depends_on:
-      - shared-utils
+    depends_on: [shared-utils]
 
   api-service:
     repo: git@github.com:org/api-service.git
-    tags: [backend]
-    depends_on:
-      - auth-service
-      - utils-api  # Can reference provided items
+    depends_on: [auth-service, utils-api]
 ```
 
-This enables:
-- **Impact analysis**: See what's affected when a project changes
-- **Execution ordering**: Build/test in correct dependency order
-- **Transitive dependencies**: Understand the full dependency graph
-
-### Mixed Format
-
-You can mix simple and extended formats in the same file:
-
-```yaml
-projects:
-  # Extended format with tags
-  api-service:
-    repo: git@github.com:org/api-service.git
-    tags: [backend]
-
-  # Simple format (legacy)
-  legacy-app: git@github.com:org/legacy-app.git
-```
+This enables impact analysis ("what breaks if I change shared-utils?"), topological build ordering, and transitive dependency resolution.
 
 ---
 
 ## Commands
 
-### Core Commands
+### Core
 
 | Command | Description |
 |---------|-------------|
-| `meta <command>` | Run any command across all repositories |
+| `meta exec <command>` | Run any command across all repositories |
 | `meta git status` | Git status for all repos |
 | `meta git pull` | Pull latest changes |
 | `meta git push` | Push commits |
-| `meta npm install` | Install npm dependencies |
-| `meta cargo test` | Run Rust tests |
+| `meta query "<expr>"` | Query repos by state |
 
-### Git Plugin Commands
+### Git Plugin
 
 | Command | Description |
 |---------|-------------|
-| `meta git clone <url>` | Clone meta repo and all child repos |
+| `meta git clone <url>` | Clone meta repo + all child repos |
 | `meta git update` | Pull changes and clone missing repos |
 | `meta git setup-ssh` | Configure SSH multiplexing |
 | `meta git commit --edit` | Per-repo commit messages via editor |
 | `meta git commit -m "msg"` | Same message across all repos |
-| `meta git snapshot create <name>` | Create workspace state snapshot |
-| `meta git snapshot list` | List available snapshots |
+| `meta git snapshot create <name>` | Capture workspace state |
+| `meta git snapshot list` | List snapshots |
 | `meta git snapshot restore <name>` | Restore workspace to snapshot |
 
 ### Plugin Management
@@ -281,13 +252,6 @@ projects:
 | `meta plugin install <name>` | Install a plugin |
 | `meta plugin uninstall <name>` | Remove a plugin |
 
-### AI Integration
-
-| Command | Description |
-|---------|-------------|
-| `meta init claude` | Install Claude Code skills for this repo |
-| `meta init claude --force` | Reinstall/update Claude Code skills |
-
 ---
 
 ## Filtering
@@ -295,117 +259,90 @@ projects:
 ### By Tag
 
 ```bash
-# Single tag
 meta git pull --tag backend
-
-# Multiple tags (OR logic)
-meta npm test --tag frontend,shared
+meta exec npm test --tag frontend,shared
 ```
 
 ### By Directory
 
 ```bash
-# Include only specific directories
 meta git status --include api-service,web-app
-
-# Exclude directories
-meta npm install --exclude legacy-app
+meta exec npm install --exclude legacy-app
 ```
 
 ### Recursive Processing
 
 ```bash
-# Process nested meta repositories
 meta git status --recursive
-
-# Limit recursion depth
 meta git pull --recursive --depth 2
 ```
 
 ### Query DSL
 
-Filter repositories by their git state using a powerful query language:
-
 ```bash
-# Find repos with uncommitted changes
 meta query "dirty:true"
-
-# Find dirty backend repos on main branch
 meta query "dirty:true AND tag:backend AND branch:main"
-
-# Find repos ahead of remote
 meta query "ahead:true"
 ```
 
-**Query conditions:**
-- `dirty:true/false` - Uncommitted changes
-- `branch:<name>` - On specific branch
-- `tag:<name>` - Has specific tag
-- `ahead:true/false` - Ahead of remote
-- `behind:true/false` - Behind remote
-
-Combine with `AND`: `dirty:true AND tag:backend AND branch:main`
+**Conditions:** `dirty`, `branch`, `tag`, `ahead`, `behind` — combined with `AND`.
 
 ---
 
 ## Snapshots
 
-Snapshots capture the complete state of all repositories for safe batch operations:
+Capture the complete state of all repositories for safe batch operations:
 
 ```bash
-# Create a snapshot before risky operations
 meta git snapshot create before-refactor
-
-# List available snapshots
 meta git snapshot list
-
-# Preview what restore would do
 meta git snapshot restore before-refactor --dry-run
-
-# Restore workspace to snapshot state
 meta git snapshot restore before-refactor
 ```
 
-**What snapshots capture per repo:**
-- Current commit SHA
-- Branch name
-- Dirty status (auto-stashes uncommitted work on restore)
+Snapshots record each repo's commit SHA, branch, and dirty status. Dirty repos are auto-stashed on restore.
 
 ---
 
 ## Plugins
 
-Plugins extend meta with specialized functionality. They are discovered automatically from:
+Plugins are standalone executables that extend meta. They're discovered automatically from:
 
-- `.meta-plugins/` in the current directory
-- `.meta-plugins/` in parent directories
+- `.meta-plugins/` in the current or parent directories
 - `~/.meta-plugins/`
 - System PATH (binaries named `meta-*`)
 
 ### Built-in Plugins
 
-| Plugin | Commands | Description |
-|--------|----------|-------------|
-| `git` | `clone`, `status`, `update`, `commit`, `setup-ssh` | Git operations |
-| `project` | `check`, `sync`, `update` | Project management |
-| `rust` | `build`, `test` | Rust/Cargo commands |
+| Plugin | Description |
+|--------|-------------|
+| `git` | Clone, status, update, commit, snapshots, SSH multiplexing |
+| `project` | Project health checks and sync |
+| `rust` | Cargo build, test, and command passthrough |
 
-### Plugin Help
+### Writing Plugins
+
+Plugins communicate via JSON over stdin/stdout. Any language works:
 
 ```bash
-meta git --help
-meta project --help
+# Meta asks: "What can you do?"
+meta-myplugin --meta-plugin-info
+# → {"name": "myplugin", "version": "1.0", "commands": ["myplugin run"]}
+
+# Meta asks: "Execute this command"
+echo '{"command":"myplugin run","args":[],"projects":[...]}' | meta-myplugin --meta-plugin-exec
+# → {"plan": {"commands": [{"dir": "./repo1", "cmd": "..."}]}}
 ```
+
+See [docs/plugin_development.md](docs/plugin_development.md) for the full guide.
 
 ---
 
-## MCP Server (AI Integration)
+## AI Integration
 
-Meta includes an MCP (Model Context Protocol) server for AI agent integration, exposing 29 tools for multi-repo operations.
+Meta is designed for AI agents from day one. Three integration points:
 
-### Setup
-
-Add to Claude Desktop's `claude_desktop_config.json`:
+### MCP Server (29 tools)
 
 ```json
 {
@@ -418,60 +355,55 @@ Add to Claude Desktop's `claude_desktop_config.json`:
 }
 ```
 
-### Available Tools
-
-**Core:** `meta_list_projects`, `meta_exec`, `meta_get_config`, `meta_get_project_path`
-
-**Git:** `meta_git_status`, `meta_git_pull`, `meta_git_push`, `meta_git_fetch`, `meta_git_diff`, `meta_git_branch`, `meta_git_add`, `meta_git_commit`, `meta_git_checkout`, `meta_git_multi_commit`
-
-**Build:** `meta_detect_build_systems`, `meta_run_tests`, `meta_build`, `meta_clean`
-
-**Discovery:** `meta_search_code`, `meta_get_file_tree`, `meta_list_plugins`
-
-**AI Features:** `meta_query_repos`, `meta_workspace_state`, `meta_analyze_impact`, `meta_execution_order`, `meta_snapshot_create`, `meta_snapshot_list`, `meta_snapshot_restore`, `meta_batch_execute`
+**Tools include:** project listing, git operations (status/pull/push/commit/diff/branch), build/test, code search, file tree discovery, query DSL, impact analysis, workspace snapshots, and batch execution.
 
 See [docs/mcp_server.md](docs/mcp_server.md) for full documentation.
 
----
-
-## Claude Code Skills
-
-Meta includes purpose-built skills for Claude Code that teach AI agents how to work effectively with multi-repository codebases.
-
-### Installation
+### Claude Code Skills
 
 ```bash
-# Install skills to .claude/skills/ in your meta repo
 meta init claude
-
-# Force reinstall/update
-meta init claude --force
 ```
 
-### Available Skills
+Installs purpose-built skills that teach Claude Code how to work with multi-repo codebases — using `meta git` instead of `git`, creating snapshots before risky changes, filtering by tags, and understanding plugin interception.
 
-| Skill | Purpose |
+### JSON Output
+
+Every command supports `--json` for structured, machine-readable output:
+
+```bash
+meta git status --json
+meta query "dirty:true" --json
+```
+
+---
+
+## Architecture
+
+Meta is a Rust workspace of 10 crates:
+
+| Crate | Purpose |
 |-------|---------|
-| `meta-workspace` | Understanding meta repo structure and navigation |
-| `meta-git` | Multi-repo git operations, snapshots, SSH optimization |
-| `meta-exec` | Command execution model, filtering, parallel execution |
-| `meta-plugins` | Plugin system and command interception |
+| `meta_cli` | Main CLI — config loading, plugin routing, filtering |
+| `loop_lib` | Core execution engine — runs commands across directories |
+| `loop_cli` | Standalone loop CLI (usable without meta) |
+| `meta_core` | Shared infrastructure — `~/.meta/` directory, lockfile, atomic store |
+| `meta_plugin_protocol` | Shared types for the plugin contract |
+| `meta_git_cli` | Git plugin — clone, update, status, commit, snapshots |
+| `meta_git_lib` | Shared git library utilities |
+| `meta_project_cli` | Project management plugin |
+| `meta_rust_cli` | Rust/Cargo plugin |
+| `meta_mcp` | MCP server for AI agent integration |
 
-### How Skills Help AI Agents
+Each plugin is both a workspace member and a child repo in the `.meta` manifest — meta manages itself with itself.
 
-Skills teach Claude:
-- **Use `meta git` instead of `git`** for workspace-wide operations
-- **Create snapshots before risky batch changes** for safe rollback
-- **Filter by tags** to scope operations appropriately
-- **Understand plugin interception** (e.g., `meta git clone` does more than `git clone`)
-
-See [docs/claude_code_skills.md](docs/claude_code_skills.md) for detailed skill documentation.
+See [docs/architecture_overview.md](docs/architecture_overview.md) for the full design.
 
 ---
 
 ## Loop System
 
-The **loop** system is the underlying engine that runs commands across directories. It can be used standalone:
+The **loop** engine is the foundation that runs commands across directories. It can be used standalone:
 
 ```bash
 loop git status
@@ -479,26 +411,7 @@ loop npm install
 loop cargo test
 ```
 
-Configure with `.looprc`:
-
-```
---include repo1,repo2
---exclude legacy
---parallel
-```
-
-See [docs/loop.md](docs/loop.md) for details.
-
----
-
-## Documentation
-
-- **[MCP Server Guide](docs/mcp_server.md)** - AI agent integration
-- **[Plugin Development](docs/plugin_development.md)** - Writing plugins
-- **[Architecture Overview](docs/architecture_overview.md)** - System design
-- **[Advanced Usage](docs/advanced_usage.md)** - Power-user features
-- **[FAQ / Troubleshooting](docs/faq_troubleshooting.md)** - Common issues
-- **[Loop System](docs/loop.md)** - Loop engine details
+Configure with `.looprc`. See [docs/loop.md](docs/loop.md) for details.
 
 ---
 
@@ -523,6 +436,18 @@ Options:
   -h, --help                Print help
   -V, --version             Print version
 ```
+
+---
+
+## Documentation
+
+- **[Architecture Overview](docs/architecture_overview.md)** — System design
+- **[MCP Server Guide](docs/mcp_server.md)** — AI agent integration
+- **[Plugin Development](docs/plugin_development.md)** — Writing plugins
+- **[Claude Code Skills](docs/claude_code_skills.md)** — AI workflow skills
+- **[Advanced Usage](docs/advanced_usage.md)** — Power-user features
+- **[Loop System](docs/loop.md)** — Loop engine details
+- **[FAQ / Troubleshooting](docs/faq_troubleshooting.md)** — Common issues
 
 ---
 
