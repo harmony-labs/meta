@@ -111,14 +111,28 @@ meta worktree exec auth-fix --parallel -- cargo build
 
 ## Context Detection
 
-When your cwd is inside a `.worktrees/<name>/` directory, `meta exec` automatically scopes to the worktree's repos:
+When your cwd is inside a `.worktrees/<name>/` directory, meta automatically scopes commands to the worktree's repos with full feature support:
 
 ```bash
 cd .worktrees/auth-fix/backend
-meta exec -- cargo test    # runs in auth-fix's repos, not primary checkout
+meta exec -- cargo test       # runs in auth-fix's repos, not primary checkout
+meta git status               # plugin dispatch works in worktrees
+meta --tag cli exec -- pwd    # tag filtering works in worktrees
+meta --parallel exec -- build # parallel execution works in worktrees
+```
 
-# Override with --primary to use primary checkout paths
-meta exec --primary -- cargo test
+**Include root repo for full features:** When creating worktrees, include `--repo .` to ensure the `.meta.yaml` config is available inside the worktree. This gives full meta features (tags, plugins, parallel, ignore list) without needing to walk up to the primary checkout:
+
+```bash
+meta worktree create auth-fix --repo . --repo backend --repo frontend
+```
+
+If root repo is not in the worktree, meta will still find config by walking up to the primary checkout directory.
+
+**Override with `--primary`:** Use `--primary` to bypass worktree context detection and operate on the primary checkout:
+
+```bash
+meta exec --primary -- cargo test  # uses primary checkout paths
 ```
 
 ## Cleanup
