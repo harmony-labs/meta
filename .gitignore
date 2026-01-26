@@ -67,3 +67,4 @@ meta_rust_cli/
 # GitKB
 .kb/.cache/
 .kb/workspace/
+.worktrees/
