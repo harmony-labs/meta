@@ -15,7 +15,7 @@ quick_commands:
   bootstrap_context: "git kb checkout --path context/"
   view_tasks: "git kb board"
   show_active: "git kb show context/overridable/active"
-  create_doc: "git kb create --type <type> --slug <slug> --title <title>"
+  create_doc: "git kb create <type> --slug <slug> --title <title>"
 
 context_documents:
   required:
@@ -130,17 +130,17 @@ Based on the conversation, create each context document:
 
 ```bash
 # Create immutable context (core truths)
-git kb create --type brief --slug context/immutable/project-brief --title "Project Brief"
-git kb create --type patterns --slug context/immutable/patterns --title "System Patterns"
-git kb create --type architecture --slug context/immutable/architecture --title "Architecture"
+git kb create brief --slug context/immutable/project-brief --title "Project Brief"
+git kb create patterns --slug context/immutable/patterns --title "System Patterns"
+git kb create architecture --slug context/immutable/architecture --title "Architecture"
 
 # Create extensible context (evolving)
-git kb create --type context --slug context/extensible/product --title "Product Context"
-git kb create --type context --slug context/extensible/tech --title "Tech Context"
+git kb create context --slug context/extensible/product --title "Product Context"
+git kb create context --slug context/extensible/tech --title "Tech Context"
 
 # Create overridable context (current state)
-git kb create --type context --slug context/overridable/active --title "Active Context"
-git kb create --type context --slug context/overridable/progress --title "Progress"
+git kb create context --slug context/overridable/active --title "Active Context"
+git kb create context --slug context/overridable/progress --title "Progress"
 ```
 
 After creating, checkout to edit:
@@ -267,14 +267,15 @@ GitKB is a database-first knowledge base with a git-like CLI. All project contex
 | Command | Purpose |
 |---------|---------|
 | `git kb list` | List all documents |
-| `git kb list --type task` | List tasks |
+| `git kb list --slug tasks` | List tasks by slug pattern match |
+| `git kb list --type task` | List tasks by type |
 | `git kb show <slug>` | View document content |
 | `git kb board` | Kanban view of tasks |
 | `git kb checkout <slug>` | Materialize for editing |
 | `git kb checkout --path context/` | Checkout by path prefix |
 | `git kb status` | Show workspace changes |
 | `git kb commit -m "msg"` | Save changes to database |
-| `git kb create --type <t> --slug <s> --title <t>` | Create new document |
+| `git kb create <t> --slug <s> --title <t>` | Create new document |
 | `git kb graph <slug>` | Show document relationships |
 | `git kb search <query>` | Full-text search |
 
@@ -344,7 +345,7 @@ flowchart TD
 ### Creating Tasks
 
 ```bash
-git kb create --type task --slug tasks/my-task --title "My Task"
+git kb create task --slug tasks/my-task --title "My Task"
 git kb checkout tasks/my-task
 # Edit .kb/workspace/tasks/my-task.md
 git kb commit -m "Add my-task"
@@ -432,7 +433,7 @@ git kb list --type task --status active   # Filter by status
 7. **Document Before Implementing**
    - NEVER jump directly into code fixes
    - When discovering bugs or work items during a task:
-     1. First create a task document (`git kb create --type task`)
+     1. First create a task document (`git kb create task`)
      2. Populate the task with context, goals, and acceptance criteria
      3. Only then implement the fix
    - This ensures work is tracked and survives context reinitialization
