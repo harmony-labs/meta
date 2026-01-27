@@ -889,6 +889,7 @@ dependencies = [
  "chrono",
  "clap",
  "colored",
+ "dirs",
  "env_logger",
  "flate2",
  "log",
