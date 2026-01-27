@@ -60,6 +60,7 @@ meta_mcp/
 meta_plugin_protocol/
 meta_project_cli/
 meta_rust_cli/
+claude-plugins/
 
 # plugins (build instead)
 .meta-plugins
