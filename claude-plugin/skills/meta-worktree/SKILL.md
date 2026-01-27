@@ -1,3 +1,8 @@
+---
+name: meta-worktree
+description: Manage isolated git worktree sets for multi-repo tasks.
+---
+
 # Meta Worktree Skill
 
 Manage isolated git worktree sets for multi-repo tasks. Each worktree set creates parallel working directories with feature branches, perfect for:

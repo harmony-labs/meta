@@ -1,3 +1,8 @@
+---
+name: meta-git
+description: Git operations across multiple repositories — status, commit, push, pull, snapshots, multi-commit.
+---
+
 # Meta Git Skill
 
 Git operations across multiple repositories. One command operates on ALL repos in the workspace.

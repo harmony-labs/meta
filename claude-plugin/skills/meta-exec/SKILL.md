@@ -1,3 +1,8 @@
+---
+name: meta-exec
+description: Execute commands across all repos — parallel, filtered, dry-run modes.
+---
+
 # Meta Exec Skill
 
 Execute any command across all repositories in the workspace. Meta extends `loop`, a tool for running commands across directories.

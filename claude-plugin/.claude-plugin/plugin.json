@@ -1,0 +1,13 @@
+{
+  "name": "meta",
+  "version": "0.1.0",
+  "description": "Multi-repo workspace management. Skills, hooks, and MCP server for the meta CLI.",
+  "author": {
+    "name": "Harmony Labs",
+    "url": "https://github.com/harmony-labs"
+  },
+  "homepage": "https://github.com/harmony-labs/meta",
+  "repository": "https://github.com/harmony-labs/meta",
+  "license": "MIT",
+  "keywords": ["meta", "multi-repo", "workspace", "git", "mcp"]
+}
