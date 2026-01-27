@@ -493,3 +493,101 @@ assert d['totals']['files_changed'] >= 1
     [[ "$output" == *"destroy"* ]]
     [[ "$output" == *"list"* ]]
 }
+
+# ============ Edge Cases: Destroy with dot-alias ============
+
+@test "worktree destroy with dot-alias removes children before root" {
+    # Create worktree with . (meta repo) + child repos
+    run "$META_BIN" worktree create dot-destroy --repo . --repo backend --repo frontend
+    [ "$status" -eq 0 ]
+    [ -f ".worktrees/dot-destroy/.git" ]
+    [ -d ".worktrees/dot-destroy/backend" ]
+    [ -d ".worktrees/dot-destroy/frontend" ]
+
+    # Destroy — children must be removed before "." (root)
+    # --force needed: the meta repo worktree is dirty (.worktrees/ + .gitignore changes)
+    run "$META_BIN" worktree destroy dot-destroy --force
+    [ "$status" -eq 0 ]
+    [ ! -d ".worktrees/dot-destroy" ]
+
+    # Original repos should be intact
+    [ -d "backend" ]
+    [ -d "frontend" ]
+
+    # Branches should still exist in original repos
+    git -C backend branch | grep -q "dot-destroy"
+    git -C frontend branch | grep -q "dot-destroy"
+}
+
+# ============ Edge Cases: Add duplicate repo ============
+
+@test "worktree add duplicate repo fails" {
+    "$META_BIN" worktree create dup-repo --repo backend
+    run "$META_BIN" worktree add dup-repo --repo backend
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"already"* ]] || [[ "$output" == *"exists"* ]] || [[ "$output" == *"duplicate"* ]]
+}
+
+# ============ Edge Cases: Diff with no changes ============
+
+@test "worktree diff with no changes shows zero" {
+    "$META_BIN" worktree create diff-clean --repo backend
+    run "$META_BIN" worktree diff diff-clean --json
+    [ "$status" -eq 0 ]
+    echo "$output" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+assert d['totals']['files_changed'] == 0, f'expected 0 files changed, got: {d[\"totals\"][\"files_changed\"]}'
+assert d['totals']['insertions'] == 0
+assert d['totals']['deletions'] == 0
+"
+}
+
+# ============ Edge Cases: Status mixed dirty/clean ============
+
+@test "worktree status shows mixed dirty and clean repos" {
+    "$META_BIN" worktree create mixed-status --repo backend --repo frontend
+    # Make backend dirty
+    echo "dirty change" >> ".worktrees/mixed-status/backend/README.md"
+    # Leave frontend clean
+
+    run "$META_BIN" worktree status mixed-status --json
+    [ "$status" -eq 0 ]
+    echo "$output" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+repos = {r['alias']: r for r in d['repos']}
+assert repos['backend']['dirty'] == True, f'backend should be dirty: {repos[\"backend\"]}'
+assert repos['frontend']['dirty'] == False, f'frontend should be clean: {repos[\"frontend\"]}'
+"
+}
+
+# ============ Edge Cases: --all and --repo mutually exclusive ============
+
+@test "worktree create --all --repo rejects combination" {
+    run "$META_BIN" worktree create all-repo-combo --all --repo backend
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"cannot be used with"* ]] || [[ "$output" == *"conflict"* ]]
+}
+
+# ============ Edge Cases: worktrees_dir config ============
+
+@test "worktrees_dir config option overrides default location" {
+    CUSTOM_DIR="$TEST_DIR/custom-wt-dir"
+
+    cat > "$TEST_DIR/.meta" <<EOF
+{
+    "projects": {
+        "backend": "git@github.com:org/backend.git",
+        "frontend": "git@github.com:org/frontend.git"
+    },
+    "worktrees_dir": "$CUSTOM_DIR"
+}
+EOF
+
+    run "$META_BIN" worktree create cfg-dir --repo backend
+    [ "$status" -eq 0 ]
+    [ -d "$CUSTOM_DIR/cfg-dir/backend" ]
+    # Default location should NOT have it
+    [ ! -d ".worktrees/cfg-dir" ]
+}
