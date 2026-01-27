@@ -6,12 +6,16 @@
 
 setup() {
     META_BIN="$BATS_TEST_DIRNAME/../target/debug/meta"
+    META_GIT_BIN="$BATS_TEST_DIRNAME/../target/debug/meta-git"
 
-    if [ ! -f "$META_BIN" ]; then
+    if [ ! -f "$META_BIN" ] || [ ! -f "$META_GIT_BIN" ]; then
         cargo build --workspace --quiet
     fi
 
     TEST_DIR="$(mktemp -d)"
+    mkdir -p "$TEST_DIR/.meta-plugins"
+    cp "$META_GIT_BIN" "$TEST_DIR/.meta-plugins/meta-git"
+    chmod +x "$TEST_DIR/.meta-plugins/meta-git"
     META_DATA="$(mktemp -d)"
     export META_DATA_DIR="$META_DATA"
 

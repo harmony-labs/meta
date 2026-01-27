@@ -938,6 +938,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "clap",
+ "colored",
  "console",
  "dialoguer",
  "indicatif",
@@ -962,8 +964,13 @@ dependencies = [
  "console",
  "dirs",
  "indicatif",
+ "log",
+ "loop_lib",
+ "meta",
+ "meta_core",
  "serde",
  "serde_json",
+ "serde_yaml",
  "tempfile",
 ]
 
