@@ -182,3 +182,59 @@ assert 'permissionDecisionReason' in hso
 assert len(hso['permissionDecisionReason']) > 0
 "
 }
+
+# ============ Pipe delimiter (bug fix) ============
+
+@test "guard denies force push piped to tee" {
+    run bash -c 'echo '"'"'{"tool_input":{"command":"git push --force origin main | tee output.log"}}'"'"' | '"$META_BIN"' agent guard'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"deny"* ]]
+}
+
+@test "guard denies reset hard piped" {
+    run bash -c 'echo '"'"'{"tool_input":{"command":"git reset --hard | cat"}}'"'"' | '"$META_BIN"' agent guard'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"deny"* ]]
+}
+
+# ============ Separate flags (bug fix) ============
+
+@test "guard denies git clean -f -d (separate flags)" {
+    run bash -c 'echo '"'"'{"tool_input":{"command":"git clean -f -d"}}'"'"' | '"$META_BIN"' agent guard'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"deny"* ]]
+}
+
+@test "guard denies git clean -d -f (separate flags reversed)" {
+    run bash -c 'echo '"'"'{"tool_input":{"command":"git clean -d -f"}}'"'"' | '"$META_BIN"' agent guard'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"deny"* ]]
+}
+
+@test "guard allows git clean -f only (no -d)" {
+    run bash -c 'echo '"'"'{"tool_input":{"command":"git clean -f"}}'"'"' | '"$META_BIN"' agent guard'
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
+# ============ rm -rf edge cases ============
+
+@test "guard denies rm -rf .meta.yaml" {
+    run bash -c 'echo '"'"'{"tool_input":{"command":"rm -rf .meta.yaml"}}'"'"' | '"$META_BIN"' agent guard'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"deny"* ]]
+}
+
+@test "guard denies rm -rf with dangerous target among safe ones" {
+    run bash -c 'echo '"'"'{"tool_input":{"command":"rm -rf node_modules .meta target"}}'"'"' | '"$META_BIN"' agent guard'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"deny"* ]]
+}
+
+# ============ Full hook input format ============
+
+@test "guard handles full hook input with extra fields" {
+    run bash -c 'echo '"'"'{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status","description":"check status"},"session_id":"abc123","cwd":"/tmp"}'"'"' | '"$META_BIN"' agent guard'
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
