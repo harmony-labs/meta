@@ -1,0 +1,86 @@
+# Agent Guard Configuration
+# Location: .claude/agent-guard.toml (project) or ~/.claude/agent-guard.toml (user)
+#
+# This file configures which destructive command patterns are detected by the
+# Claude Code agent guard. Each pattern can be enabled/disabled and have custom
+# denial messages.
+#
+# Configuration hierarchy:
+# 1. ./.claude/agent-guard.toml (project-level overrides)
+# 2. ~/.claude/agent-guard.toml (user-level defaults)
+# 3. Embedded defaults (built into meta binary)
+
+[patterns.git_force_push]
+enabled = true
+message = """
+git push --force in a multi-repo workspace can overwrite history across \
+multiple repos. Safer alternatives:
+- git push --force-with-lease (checks for upstream changes)
+- meta --include <repo> exec -- git push --force (target one repo)
+- meta git snapshot create <name> before force pushing
+"""
+
+[patterns.git_reset_hard]
+enabled = true
+message = """
+git reset --hard destroys uncommitted work. In a multi-repo workspace, \
+this can silently discard changes across repos. Safer alternatives:
+- meta git snapshot create <name> (save state first)
+- meta git snapshot restore <name> (reversible reset)
+- Target a specific repo: cd <repo> && git reset --hard
+"""
+
+[patterns.git_clean_force]
+enabled = true
+message = """
+git clean -fd removes untracked files and directories permanently. \
+In a multi-repo workspace, this affects all repos. Safer alternatives:
+- git clean -nd (dry run — preview what would be removed)
+- meta --include <repo> exec -- git clean -fd (target specific repos)
+- meta git snapshot create <name> before cleaning
+"""
+
+[patterns.git_checkout_dot]
+enabled = true
+message = """
+git checkout . reverts all modified files. In a multi-repo workspace, \
+ensure you are in the correct repo directory. Safer alternatives:
+- git checkout -- <specific-file> (target specific files)
+- meta --include <repo> exec -- git checkout . (target one repo)
+- meta git snapshot create <name> before reverting
+"""
+
+[patterns.git_branch_force_delete]
+enabled = true
+message = """
+git branch -D force-deletes branches, potentially losing unmerged work. \
+In a multi-repo workspace, this can affect coordination between repos. Safer alternatives:
+- git branch -d <branch> (safe delete — only works if merged)
+- git branch -v to check merge status first
+- meta git snapshot create <name> before deleting
+- meta --include <repo> exec -- git branch -D <branch> (target specific repos)
+"""
+
+[patterns.git_stash_destructive]
+enabled = true
+# Note: This pattern covers both 'git stash drop' and 'git stash clear'
+# The check function provides specific messages for each case
+# Setting a custom message here will override both cases
+
+[patterns.rm_rf_root]
+enabled = true
+message = """
+rm -rf on dangerous paths could destroy repo roots or workspace data. \
+In a multi-repo workspace, this is especially dangerous. Safer alternatives:
+- Remove specific files instead of entire directories
+- meta --dry-run exec -- <cmd> to preview operations
+- meta git snapshot create <name> before destructive operations
+"""
+
+# Example: Disable a specific pattern for this project
+# [patterns.git_checkout_dot]
+# enabled = false
+
+# Example: Custom message for a pattern
+# [patterns.git_force_push]
+# message = "Our team policy: never force push to shared branches!"
