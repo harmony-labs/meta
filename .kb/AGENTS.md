@@ -268,7 +268,7 @@ GitKB is a database-first knowledge base with a git-like CLI. All project contex
 |---------|---------|
 | `git kb list` | List all documents |
 | `git kb list --slug tasks` | List tasks by slug pattern match |
-| `git kb list --type task` | List tasks by type |
+| `git kb list task` | List tasks by type |
 | `git kb show <slug>` | View document content |
 | `git kb board` | Kanban view of tasks |
 | `git kb checkout <slug>` | Materialize for editing |
@@ -382,8 +382,8 @@ Steps to implement.
 
 ```bash
 git kb board                    # Kanban view
-git kb list --type task         # List all tasks
-git kb list --type task --status active   # Filter by status
+git kb list task         # List all tasks
+git kb list task --status active   # Filter by status
 ```
 
 ---
