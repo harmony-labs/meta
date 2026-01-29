@@ -1,17 +1,33 @@
 # Agent Guard Configuration
+# Schema Version: 1.0
 # Location: .claude/agent-guard.toml (project) or ~/.claude/agent-guard.toml (user)
 #
 # This file configures which destructive command patterns are detected by the
-# Claude Code agent guard. Each pattern can be enabled/disabled and have custom
+# agent guard system. Each pattern can be enabled/disabled and have custom
 # denial messages.
 #
 # Configuration hierarchy:
 # 1. ./.claude/agent-guard.toml (project-level overrides)
 # 2. ~/.claude/agent-guard.toml (user-level defaults)
-# 3. Embedded defaults (built into meta binary)
+# 3. Embedded defaults (built into binary)
 
-[patterns.git_force_push]
+schema_version = "1.0"
+
+[metadata]
+source = "meta"
+version = "0.1.0"
+description = "Default agent guard patterns for meta CLI"
+
+# Pattern Definitions
+# Each pattern uses a namespaced ID (source.category.name) for forward compatibility
+# with multi-tool pattern registration.
+
+[[patterns]]
+id = "meta.git.force_push"
+priority = 100
 enabled = true
+matcher = { type = "regex", pattern = 'git\s+push.*(--force|-f)\b' }
+validator = { type = "not_contains", value = "--force-with-lease" }
 message = """
 git push --force in a multi-repo workspace can overwrite history across \
 multiple repos. Safer alternatives:
@@ -20,8 +36,11 @@ multiple repos. Safer alternatives:
 - meta git snapshot create <name> before force pushing
 """
 
-[patterns.git_reset_hard]
+[[patterns]]
+id = "meta.git.reset_hard"
+priority = 100
 enabled = true
+matcher = { type = "regex", pattern = 'git\s+reset.*--hard\b' }
 message = """
 git reset --hard destroys uncommitted work. In a multi-repo workspace, \
 this can silently discard changes across repos. Safer alternatives:
@@ -30,8 +49,12 @@ this can silently discard changes across repos. Safer alternatives:
 - Target a specific repo: cd <repo> && git reset --hard
 """
 
-[patterns.git_clean_force]
+[[patterns]]
+id = "meta.git.clean_force"
+priority = 100
 enabled = true
+matcher = { type = "regex", pattern = 'git\s+clean' }
+validator = { type = "flags_present", command = "clean", flags = ["f", "d"] }
 message = """
 git clean -fd removes untracked files and directories permanently. \
 In a multi-repo workspace, this affects all repos. Safer alternatives:
@@ -40,8 +63,12 @@ In a multi-repo workspace, this affects all repos. Safer alternatives:
 - meta git snapshot create <name> before cleaning
 """
 
-[patterns.git_checkout_dot]
+[[patterns]]
+id = "meta.git.checkout_dot"
+priority = 100
 enabled = true
+# Matches "git checkout ." or "git checkout -- ."
+matcher = { type = "regex", pattern = 'git\s+checkout\s+(--\s+)?\.(\s|$)' }
 message = """
 git checkout . reverts all modified files. In a multi-repo workspace, \
 ensure you are in the correct repo directory. Safer alternatives:
@@ -50,8 +77,11 @@ ensure you are in the correct repo directory. Safer alternatives:
 - meta git snapshot create <name> before reverting
 """
 
-[patterns.git_branch_force_delete]
+[[patterns]]
+id = "meta.git.branch_force_delete"
+priority = 100
 enabled = true
+matcher = { type = "regex", pattern = 'git\s+branch.*\s+-D\b' }
 message = """
 git branch -D force-deletes branches, potentially losing unmerged work. \
 In a multi-repo workspace, this can affect coordination between repos. Safer alternatives:
@@ -61,14 +91,40 @@ In a multi-repo workspace, this can affect coordination between repos. Safer alt
 - meta --include <repo> exec -- git branch -D <branch> (target specific repos)
 """
 
-[patterns.git_stash_destructive]
+[[patterns]]
+id = "meta.git.stash_drop"
+priority = 100
 enabled = true
-# Note: This pattern covers both 'git stash drop' and 'git stash clear'
-# The check function provides specific messages for each case
-# Setting a custom message here will override both cases
+matcher = { type = "regex", pattern = 'git\s+stash\s+drop\b' }
+message = """
+git stash drop permanently removes a stash entry. \
+For AI agents working across repos, this could discard important work. Safer alternatives:
+- git stash list to review what will be dropped
+- git stash show <stash> to inspect contents first
+- git stash apply <stash> instead of pop (preserves the stash)
+- meta git snapshot create <name> captures all stashes
+"""
 
-[patterns.rm_rf_root]
+[[patterns]]
+id = "meta.git.stash_clear"
+priority = 100
 enabled = true
+matcher = { type = "regex", pattern = 'git\s+stash\s+clear\b' }
+message = """
+git stash clear removes ALL stash entries permanently. \
+In a multi-repo workspace, this could discard important work across repos. Safer alternatives:
+- git stash list to review what will be cleared
+- git stash drop <stash> to remove specific entries one at a time
+- meta git snapshot create <name> before clearing (captures all stashes)
+- meta --include <repo> exec -- git stash clear (target specific repos)
+"""
+
+[[patterns]]
+id = "meta.rm.dangerous_paths"
+priority = 100
+enabled = true
+matcher = { type = "regex", pattern = 'rm\s+' }
+validator = { type = "all_of", validators = [{ type = "flags_present", command = "rm", flags = ["r", "f"] }, { type = "args_match_any", command = "rm", values = [".", "..", "/", "~", "$HOME", ".meta", ".meta.yaml", ".meta.yml", "*", "./*", "../*", "./"] }] }
 message = """
 rm -rf on dangerous paths could destroy repo roots or workspace data. \
 In a multi-repo workspace, this is especially dangerous. Safer alternatives:
@@ -77,10 +133,16 @@ In a multi-repo workspace, this is especially dangerous. Safer alternatives:
 - meta git snapshot create <name> before destructive operations
 """
 
-# Example: Disable a specific pattern for this project
-# [patterns.git_checkout_dot]
+# Examples: Project-specific overrides
+#
+# Disable a pattern:
+# [[patterns]]
+# id = "meta.git.checkout_dot"
 # enabled = false
-
-# Example: Custom message for a pattern
-# [patterns.git_force_push]
+#
+# Custom message:
+# [[patterns]]
+# id = "meta.git.force_push"
+# enabled = true
+# matcher = { type = "regex", pattern = 'git\s+push.*\s+(--force|-f)\b(?!-with-lease)' }
 # message = "Our team policy: never force push to shared branches!"
