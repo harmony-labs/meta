@@ -61,6 +61,28 @@ The `meta_query_repos` MCP tool filters repos by state:
 | `dirty:true AND tag:backend` | Combine filters |
 | `branch:feature-x` | Repos on a specific branch |
 
+## Worktree Strict Mode
+
+When creating worktrees from a specific ref (tag/SHA/branch), use `--strict` in CI/automation contexts where you need all-or-nothing behavior:
+
+```bash
+# Without --strict: warns but continues if some repos lack the ref
+meta worktree create feature-test --from-ref v2.0.0 --all
+
+# With --strict: fails immediately if ANY repo lacks the ref
+meta worktree create feature-test --from-ref v2.0.0 --all --strict
+```
+
+**When to use --strict:**
+- CI pipelines testing a specific release tag across all repos
+- Automated scripts that require consistent state
+- Debugging scenarios where partial worktrees would be misleading
+
+**When NOT to use --strict:**
+- Interactive development (warnings are usually sufficient)
+- Working with repos that legitimately don't have the ref
+- Exploratory work where partial context is acceptable
+
 ## Efficiency Tips
 
 - One `meta git status` replaces N individual `git status` calls
