@@ -490,6 +490,9 @@ Contributions welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 MIT License. See [LICENSE](LICENSE).
-# Sync Protocol Implementation
+
+---
+
+## Sync Protocol Implementation
 
 This branch explores sync protocol patterns across meta repos.
