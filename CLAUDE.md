@@ -22,6 +22,34 @@ This is a **meta-repo** — a workspace of independent git repositories managed 
 
 **What `meta` does:** Clones all child repos, runs commands across them in parallel (`meta exec`), manages git worktrees across the entire workspace (`meta worktree`), and provides project-level coordination.
 
+## Logging & Debugging
+
+The meta CLI uses the `log` crate with `env_logger`. Use `RUST_LOG` to control debug output:
+
+```bash
+# Debug the host CLI
+RUST_LOG=meta=debug meta git push
+
+# Debug the git plugin (subprocess)
+RUST_LOG=meta_git_cli=debug meta git push
+
+# Debug everything
+RUST_LOG=debug meta git push
+
+# Debug specific modules
+RUST_LOG=meta_git_cli::ssh_setup=debug meta git push
+```
+
+**Crate names for RUST_LOG:**
+- `meta` - Host CLI (meta_cli)
+- `meta_git_cli` - Git plugin
+- `meta_project_cli` - Project plugin
+- `meta_rust_cli` - Rust plugin
+- `meta_git_lib` - Git library
+- `loop_lib` - Command execution library
+
+**Architecture:** Subprocess plugins initialize their own logger via `meta_plugin_protocol::run_plugin()`, inheriting `RUST_LOG` from the parent process.
+
 ## GitKB
 
 This project uses GitKB for knowledge management.
