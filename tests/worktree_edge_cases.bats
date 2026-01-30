@@ -16,6 +16,10 @@ setup() {
     cp "$META_GIT_BIN" "$TEST_DIR/.meta-plugins/meta-git"
     chmod +x "$TEST_DIR/.meta-plugins/meta-git"
 
+    # Isolate worktree store per test to prevent cross-test interference
+    META_DATA="$(mktemp -d)"
+    export META_DATA_DIR="$META_DATA"
+
     # Create .meta config with three projects
     cat > "$TEST_DIR/.meta" <<'EOF'
 {
@@ -51,6 +55,8 @@ EOF
 teardown() {
     cd /
     rm -rf "$TEST_DIR"
+    rm -rf "$META_DATA"
+    unset META_DATA_DIR
 }
 
 # ============ Strict Mode (Phase 2) ============
@@ -311,7 +317,7 @@ assert backend['branch'] == 'cache-test-branch', f'expected cache-test-branch, g
 
 @test "context cache respects 30s TTL" {
     # Clear cache by removing it
-    rm -f ~/.meta/context_cache.json
+    rm -f "$META_DATA/context_cache.json"
 
     # First call creates cache
     run "$META_BIN" context --json
@@ -323,12 +329,12 @@ assert backend['branch'] == 'cache-test-branch', f'expected cache-test-branch, g
 
     # Note: We can't easily test TTL expiration without waiting 30s,
     # but we can verify cache file exists
-    [ -f ~/.meta/context_cache.json ]
+    [ -f "$META_DATA/context_cache.json" ]
 }
 
 @test "context --verbose shows cache operations" {
     # Clear cache
-    rm -f ~/.meta/context_cache.json
+    rm -f "$META_DATA/context_cache.json"
 
     # Run with verbose flag
     run "$META_BIN" context --verbose 2>&1
@@ -468,7 +474,7 @@ assert any(r['name'] == 'json-prune' for r in data['removed'])
 
 @test "context cache handles corrupted cache file gracefully" {
     # Create invalid cache file
-    echo "invalid json" > ~/.meta/context_cache.json
+    echo "invalid json" > "$META_DATA/context_cache.json"
 
     # Should still work (rebuild cache)
     run "$META_BIN" context --json
