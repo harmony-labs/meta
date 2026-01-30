@@ -61,27 +61,55 @@ The `meta_query_repos` MCP tool filters repos by state:
 | `dirty:true AND tag:backend` | Combine filters |
 | `branch:feature-x` | Repos on a specific branch |
 
-## Worktree Strict Mode
+## Global Strict Mode
 
-When creating worktrees from a specific ref (tag/SHA/branch), use `--strict` in CI/automation contexts where you need all-or-nothing behavior:
+Use `meta --strict` to convert all warnings to errors across any command. This provides all-or-nothing behavior for CI/automation contexts:
 
 ```bash
-# Without --strict: warns but continues if some repos lack the ref
-meta worktree create feature-test --from-ref v2.0.0 --all
-
-# With --strict: fails immediately if ANY repo lacks the ref
-meta worktree create feature-test --from-ref v2.0.0 --all --strict
+# Global strict mode: fails on ANY warning across all commands
+meta --strict worktree create feature-test --from-ref v2.0.0 --all
+meta --strict worktree prune
+meta --strict exec -- cargo build
 ```
+
+**What becomes an error in strict mode:**
+- Missing refs when using `--from-ref` (worktree create)
+- Failed PR branch fetches (worktree create)
+- Invalid `--meta` format values (worktree create)
+- Failed directory removal (worktree prune)
+- Store update failures (all worktree commands)
 
 **When to use --strict:**
 - CI pipelines testing a specific release tag across all repos
 - Automated scripts that require consistent state
-- Debugging scenarios where partial worktrees would be misleading
+- Debugging scenarios where partial state would be misleading
+- Any context where silent warnings could mask failures
 
 **When NOT to use --strict:**
 - Interactive development (warnings are usually sufficient)
-- Working with repos that legitimately don't have the ref
+- Working with repos that legitimately don't have a ref
 - Exploratory work where partial context is acceptable
+
+### Ephemeral Cleanup Behavior
+
+When using `meta worktree exec --ephemeral`, the automatic cleanup after command execution intentionally uses best-effort mode (`strict=false`), even if you specified `--strict`. This ensures:
+
+- The command result (success/failure) reflects the actual executed command, not cleanup issues
+- Cleanup failures are logged as warnings, not errors
+- Partial cleanup succeeds even if some repos have open file handles or permissions issues
+
+If you need to ensure cleanup completed fully, follow up with `meta worktree list` to verify.
+
+### Worktree-specific --strict
+
+The `worktree create` command also has a local `--strict` flag that can be used independently:
+
+```bash
+# Local --strict on worktree create only
+meta worktree create feature-test --from-ref v2.0.0 --all --strict
+```
+
+Both flags work together - if either global `--strict` or local `--strict` is set, strict mode is enabled.
 
 ## Efficiency Tips
 

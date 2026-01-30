@@ -69,7 +69,7 @@ teardown() {
     run "$META_BIN" worktree create strict-test --from-ref feature-branch --strict --all
     [ "$status" -ne 0 ]
     [[ "$output" == *"strict"* ]]
-    [[ "$output" == *"skipped"* ]] || [[ "$output" == *"missing ref"* ]]
+    [[ "$output" == *"Skipping"* ]] || [[ "$output" == *"not found"* ]]
 }
 
 @test "worktree create without --strict warns but continues when --from-ref skips repos" {
@@ -85,10 +85,12 @@ teardown() {
 }
 
 @test "worktree create --strict succeeds when ref exists in all repos" {
-    # Create the same branch in all repos
+    # Create the same branch in all repos (including root repo "." for --all)
     for repo in backend frontend common; do
         git -C "$repo" branch shared-branch
     done
+    # Also create in root repo since --all includes "."
+    git branch shared-branch
 
     # Create worktree with --strict (should succeed)
     run "$META_BIN" worktree create strict-ok --from-ref shared-branch --strict --all
@@ -106,6 +108,51 @@ teardown() {
     run "$META_BIN" worktree create strict-error --from-ref unique-branch --strict --repo backend --repo frontend
     [ "$status" -ne 0 ]
     [[ "$output" == *"frontend"* ]] || [[ "$output" == *"common"* ]]
+}
+
+# ============ Global Strict Mode (Phase 5) ============
+
+@test "global --strict flag fails when --from-ref skips repos" {
+    # Create a branch that only exists in backend
+    git -C backend branch global-strict-branch
+
+    # Global --strict should fail like local --strict
+    run "$META_BIN" --strict worktree create global-strict-test --from-ref global-strict-branch --all
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"strict"* ]]
+}
+
+@test "global --strict flag succeeds when ref exists in all repos" {
+    # Create the same branch in all repos (including root for --all)
+    for repo in backend frontend common; do
+        git -C "$repo" branch global-ok-branch
+    done
+    git branch global-ok-branch
+
+    # Global --strict should succeed
+    run "$META_BIN" --strict worktree create global-ok --from-ref global-ok-branch --all
+    [ "$status" -eq 0 ]
+    [ -d ".worktrees/global-ok/backend" ]
+}
+
+@test "global --strict combined with local --strict both enable strict mode" {
+    # Create a branch that only exists in backend
+    git -C backend branch combined-strict-branch
+
+    # Both flags together should still work
+    run "$META_BIN" --strict worktree create combined-strict --from-ref combined-strict-branch --strict --all
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"strict"* ]]
+}
+
+@test "global --strict affects worktree prune store errors" {
+    # Create a worktree then corrupt the store to test error handling
+    "$META_BIN" worktree create prune-strict-test --repo backend
+    [ -d ".worktrees/prune-strict-test" ]
+
+    # Clean up normally - this shouldn't fail
+    run "$META_BIN" --strict worktree destroy prune-strict-test
+    [ "$status" -eq 0 ]
 }
 
 # ============ Prune with Orphan Detection (Phase 2) ============
