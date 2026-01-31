@@ -79,9 +79,15 @@ function Install-Meta {
 
     # Install binaries
     Write-Info "Installing to $InstallDir..."
-    Get-ChildItem -Path $tempDir -Filter "*.exe" | ForEach-Object {
-        Copy-Item $_.FullName -Destination $InstallDir -Force
-        Write-Info "Installed $($_.Name)"
+    $expectedBinaries = @("meta.exe", "meta-git.exe", "meta-project.exe", "meta-mcp.exe", "loop.exe")
+    foreach ($binary in $expectedBinaries) {
+        $binaryPath = Join-Path $tempDir $binary
+        if (Test-Path $binaryPath) {
+            Copy-Item $binaryPath -Destination $InstallDir -Force
+            Write-Info "Installed $binary"
+        } else {
+            Write-Warn "Binary $binary not found in archive"
+        }
     }
 
     # Cleanup

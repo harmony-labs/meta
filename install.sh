@@ -86,11 +86,15 @@ install_meta() {
 
     # Install binaries
     info "Installing to ${INSTALL_DIR}..."
-    for binary in "$tmp_dir"/meta*; do
-        if [ -f "$binary" ] && [ -x "$binary" ]; then
+    local expected_binaries=("meta" "meta-git" "meta-project" "meta-mcp" "loop")
+    for binary_name in "${expected_binaries[@]}"; do
+        local binary="$tmp_dir/$binary_name"
+        if [ -f "$binary" ]; then
             cp "$binary" "$INSTALL_DIR/"
-            chmod +x "$INSTALL_DIR/$(basename $binary)"
-            info "Installed $(basename $binary)"
+            chmod +x "$INSTALL_DIR/$binary_name"
+            info "Installed $binary_name"
+        else
+            warn "Binary $binary_name not found in archive"
         fi
     done
 

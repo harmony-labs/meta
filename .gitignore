@@ -69,3 +69,5 @@ claude-plugins/
 .kb/.cache/
 .kb/workspace/
 .worktrees/
+
+.env

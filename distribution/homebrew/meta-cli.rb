@@ -31,13 +31,10 @@ class MetaCli < Formula
 
   def install
     bin.install "meta"
-    bin.install "meta-mcp" if File.exist?("meta-mcp")
-
-    # Install plugins if present
-    Dir["meta-*"].each do |plugin|
-      next if plugin == "meta-mcp"
-      bin.install plugin
-    end
+    bin.install "meta-git"
+    bin.install "meta-project"
+    bin.install "meta-mcp"
+    bin.install "loop"
   end
 
   test do
