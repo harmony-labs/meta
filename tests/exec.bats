@@ -288,10 +288,10 @@ teardown() {
 }
 
 @test "loop sequential mode runs commands in order" {
-    # Create files with timestamps to verify sequential execution
-    run "$META_BIN" --include api,worker,frontend exec -- sh -c "echo \$(basename \$(pwd))"
+    # Run commands across all three projects
+    run "$META_BIN" --include api,worker,frontend exec -- pwd
     [ "$status" -eq 0 ]
-    # All three should appear in output
+    # All three directories should appear in output
     [[ "$output" == *"api"* ]]
     [[ "$output" == *"worker"* ]]
     [[ "$output" == *"frontend"* ]]
