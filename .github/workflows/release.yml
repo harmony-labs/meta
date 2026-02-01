@@ -125,7 +125,18 @@ jobs:
     name: Create Release
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.get-tag.outputs.tag }}
     steps:
+      - name: Get tag name
+        id: get-tag
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "tag=${{ github.event.client_payload.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout
         uses: actions/checkout@v6
 
@@ -141,13 +152,12 @@ jobs:
           cd release
           cat *.sha256 > checksums.txt
 
-      - name: Create GitHub Release
+      - name: Upload to existing release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.get-tag.outputs.tag }}
           files: release/*
-          generate_release_notes: true
-          draft: false
-          prerelease: ${{ contains(github.ref, '-') }}
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -156,7 +166,7 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     # Only publish on non-prerelease tags
-    if: ${{ !contains(github.ref, '-') }}
+    if: ${{ !contains(needs.release.outputs.tag, '-') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -223,7 +233,7 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     # Only update on non-prerelease tags
-    if: ${{ !contains(github.ref, '-') }}
+    if: ${{ !contains(needs.release.outputs.tag, '-') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -235,7 +245,9 @@ jobs:
 
       - name: Extract version
         id: version
-        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
 
       - name: Calculate checksums
         id: checksums
