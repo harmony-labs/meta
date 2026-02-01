@@ -27,8 +27,9 @@ jobs:
         id: release
         uses: googleapis/release-please-action@v4
         with:
-          # Use simple-release for meta-repo (individual crates manage their own versions)
-          release-type: simple
+          # Use manifest mode to track version in VERSION file
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   # Trigger release workflow after successful release
   trigger-release:
