@@ -27,7 +27,11 @@ jobs:
         id: release
         uses: googleapis/release-please-action@v4
         with:
-          release-type: rust
+          # Use simple-release for meta-repo (individual crates manage their own versions)
+          release-type: simple
+          # Put version in a simple VERSION file to avoid Cargo.toml complexity
+          extra-files: |
+            VERSION
 
   # Trigger release workflow after successful release
   trigger-release:
