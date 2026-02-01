@@ -1,0 +1,40 @@
+name: On Push to Main, Version and Tag
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  # Run quality checks first
+  quality:
+    uses: ./.github/workflows/ci.yml
+
+  # Determine next version from conventional commits and create tag
+  # Note: chore: commits don't trigger version bumps (by design)
+  version-and-tag:
+    name: Version and Tag
+    needs: quality
+    uses: unbounded-tech/workflow-vnext-tag/.github/workflows/workflow.yaml@v1.21.0
+    secrets: inherit
+    with:
+      useDeployKey: true
+      rust: true
+
+  # Trigger release workflow after successful tagging
+  # Uses PAT because deploy key tags don't trigger other workflows
+  trigger-release:
+    name: Trigger Release
+    needs: version-and-tag
+    if: needs.version-and-tag.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.REPO_WRITE_PACKAGES_PAT }}
+          event-type: release-tagged
+          client-payload: '{"triggered_by": "version-and-tag-workflow"}'
