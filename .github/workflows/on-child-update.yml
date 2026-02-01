@@ -3,6 +3,28 @@ name: On Child Repo Update
 on:
   repository_dispatch:
     types: [child-repo-updated]
+  workflow_dispatch:
+    inputs:
+      repo_name:
+        description: 'Child repo name'
+        required: true
+        default: 'test-repo'
+      short_sha:
+        description: 'Short SHA'
+        required: true
+        default: 'abc1234'
+      message:
+        description: 'Commit message'
+        required: true
+        default: 'feat: test commit'
+      type:
+        description: 'Commit type'
+        required: true
+        default: 'feat'
+      actor:
+        description: 'Actor'
+        required: true
+        default: 'test-user'
 
 permissions:
   contents: write
@@ -11,39 +33,69 @@ permissions:
 jobs:
   create-sync-commit:
     runs-on: ubuntu-latest
-    # Only create commits for feat/fix changes that would trigger a release
-    if: ${{ github.event.client_payload.type == 'feat' || github.event.client_payload.type == 'fix' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create sync commit
+      - name: Extract payload
+        id: payload
         run: |
-          # Configure git
+          # Handle both repository_dispatch and workflow_dispatch
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "repo_name=${{ github.event.client_payload.repo_name }}" >> $GITHUB_OUTPUT
+            echo "short_sha=${{ github.event.client_payload.short_sha }}" >> $GITHUB_OUTPUT
+            echo "message=${{ github.event.client_payload.message }}" >> $GITHUB_OUTPUT
+            echo "type=${{ github.event.client_payload.type }}" >> $GITHUB_OUTPUT
+            echo "actor=${{ github.event.client_payload.actor }}" >> $GITHUB_OUTPUT
+          else
+            echo "repo_name=${{ github.event.inputs.repo_name }}" >> $GITHUB_OUTPUT
+            echo "short_sha=${{ github.event.inputs.short_sha }}" >> $GITHUB_OUTPUT
+            echo "message=${{ github.event.inputs.message }}" >> $GITHUB_OUTPUT
+            echo "type=${{ github.event.inputs.type }}" >> $GITHUB_OUTPUT
+            echo "actor=${{ github.event.inputs.actor }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if release-worthy
+        id: check
+        run: |
+          TYPE="${{ steps.payload.outputs.type }}"
+          if [ "$TYPE" = "feat" ] || [ "$TYPE" = "fix" ]; then
+            echo "should_commit=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_commit=false" >> $GITHUB_OUTPUT
+            echo "Skipping: commit type '$TYPE' does not trigger release"
+          fi
+
+      - name: Create sync commit
+        if: steps.check.outputs.should_commit == 'true'
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Extract payload
-          REPO_NAME="${{ github.event.client_payload.repo_name }}"
-          SHORT_SHA="${{ github.event.client_payload.short_sha }}"
-          MESSAGE="${{ github.event.client_payload.message }}"
-          TYPE="${{ github.event.client_payload.type }}"
-          ACTOR="${{ github.event.client_payload.actor }}"
+          REPO_NAME="${{ steps.payload.outputs.repo_name }}"
+          SHORT_SHA="${{ steps.payload.outputs.short_sha }}"
+          MESSAGE="${{ steps.payload.outputs.message }}"
+          TYPE="${{ steps.payload.outputs.type }}"
+          ACTOR="${{ steps.payload.outputs.actor }}"
 
-          # Create commit with same conventional commit type
-          # This ensures release-please sees the correct type
-          git commit --allow-empty -m "${TYPE}(${REPO_NAME}): ${MESSAGE#*: }
+          # Strip the "type: " prefix from the message if present
+          CLEAN_MSG="${MESSAGE#*: }"
 
-Synced from ${REPO_NAME}@${SHORT_SHA}
+          git commit --allow-empty -m "${TYPE}(${REPO_NAME}): ${CLEAN_MSG}
 
-Co-authored-by: ${ACTOR} <${ACTOR}@users.noreply.github.com>"
+          Synced from ${REPO_NAME}@${SHORT_SHA}
+
+          Co-authored-by: ${ACTOR} <${ACTOR}@users.noreply.github.com>"
 
           git push
 
       - name: Log sync
         run: |
-          echo "Synced commit from ${{ github.event.client_payload.repo }} @ ${{ github.event.client_payload.short_sha }}"
-          echo "Type: ${{ github.event.client_payload.type }}"
-          echo "Message: ${{ github.event.client_payload.message }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Repo: ${{ steps.payload.outputs.repo_name }}"
+          echo "SHA: ${{ steps.payload.outputs.short_sha }}"
+          echo "Type: ${{ steps.payload.outputs.type }}"
+          echo "Message: ${{ steps.payload.outputs.message }}"
+          echo "Should commit: ${{ steps.check.outputs.should_commit }}"
