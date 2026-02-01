@@ -1,3 +1,6 @@
+defaults:
+  parallel: true
+
 projects:
   # Foundation crates (no workspace deps)
   loop_lib:
