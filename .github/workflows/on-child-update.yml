@@ -1,0 +1,49 @@
+name: On Child Repo Update
+
+on:
+  repository_dispatch:
+    types: [child-repo-updated]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-sync-commit:
+    runs-on: ubuntu-latest
+    # Only create commits for feat/fix changes that would trigger a release
+    if: ${{ github.event.client_payload.type == 'feat' || github.event.client_payload.type == 'fix' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create sync commit
+        run: |
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Extract payload
+          REPO_NAME="${{ github.event.client_payload.repo_name }}"
+          SHORT_SHA="${{ github.event.client_payload.short_sha }}"
+          MESSAGE="${{ github.event.client_payload.message }}"
+          TYPE="${{ github.event.client_payload.type }}"
+          ACTOR="${{ github.event.client_payload.actor }}"
+
+          # Create commit with same conventional commit type
+          # This ensures release-please sees the correct type
+          git commit --allow-empty -m "${TYPE}(${REPO_NAME}): ${MESSAGE#*: }
+
+Synced from ${REPO_NAME}@${SHORT_SHA}
+
+Co-authored-by: ${ACTOR} <${ACTOR}@users.noreply.github.com>"
+
+          git push
+
+      - name: Log sync
+        run: |
+          echo "Synced commit from ${{ github.event.client_payload.repo }} @ ${{ github.event.client_payload.short_sha }}"
+          echo "Type: ${{ github.event.client_payload.type }}"
+          echo "Message: ${{ github.event.client_payload.message }}"
