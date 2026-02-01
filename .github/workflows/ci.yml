@@ -81,6 +81,54 @@ jobs:
       - name: Run clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
+  integration:
+    name: Integration Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Clone child repos
+        run: |
+          git clone --depth 1 https://github.com/harmony-labs/loop_lib.git
+          git clone --depth 1 https://github.com/harmony-labs/loop_cli.git
+          git clone --depth 1 https://github.com/harmony-labs/meta_cli.git
+          git clone --depth 1 https://github.com/harmony-labs/meta_core.git
+          git clone --depth 1 https://github.com/harmony-labs/meta_git_cli.git
+          git clone --depth 1 https://github.com/harmony-labs/meta_git_lib.git
+          git clone --depth 1 https://github.com/harmony-labs/meta_mcp.git
+          git clone --depth 1 https://github.com/harmony-labs/meta_plugin_protocol.git
+          git clone --depth 1 https://github.com/harmony-labs/meta_rust_cli.git
+          git clone --depth 1 https://github.com/harmony-labs/meta_project_cli.git
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "integration-${{ matrix.os }}"
+
+      - name: Build workspace
+        run: cargo build --workspace
+
+      - name: Install bats
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y bats
+          else
+            brew install bats-core
+          fi
+        shell: bash
+
+      - name: Run integration tests
+        run: bats tests/*.bats
+        shell: bash
+
   format:
     name: Format
     runs-on: ubuntu-latest
