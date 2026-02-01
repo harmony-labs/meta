@@ -27,9 +27,10 @@ setup() {
 EOF
 
     # Initialize git repos with at least one commit (required for worktrees)
+    # Use 'main' as the default branch for consistent test behavior
     for repo in backend frontend; do
         mkdir -p "$TEST_DIR/$repo"
-        git -C "$TEST_DIR/$repo" init --quiet
+        git -C "$TEST_DIR/$repo" init --quiet --initial-branch=main
         git -C "$TEST_DIR/$repo" config user.email "test@test.com"
         git -C "$TEST_DIR/$repo" config user.name "Test"
         echo "# $repo" > "$TEST_DIR/$repo/README.md"
@@ -38,7 +39,7 @@ EOF
     done
 
     # Initialize the meta repo itself (for . alias tests)
-    git -C "$TEST_DIR" init --quiet
+    git -C "$TEST_DIR" init --quiet --initial-branch=main
     git -C "$TEST_DIR" config user.email "test@test.com"
     git -C "$TEST_DIR" config user.name "Test"
     git -C "$TEST_DIR" add .meta
