@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/harmony-labs/meta/compare/v0.2.1...v0.2.2) (2026-02-02)
+
+
+### Features
+
+* add bats integration tests to CI ([8daf83d](https://github.com/harmony-labs/meta/commit/8daf83d6d67fc0613450559b5db74225696197b8))
+
 ## [0.2.1](https://github.com/harmony-labs/meta/compare/v0.2.0...v0.2.1) (2026-02-01)
 
 
