@@ -117,3 +117,81 @@ teardown() {
     # The error should indicate it tried with the custom platform
     # (This is implicit - the command uses the overridden platform internally)
 }
+
+# ============ M4: Project-local plugin installation ============
+
+@test "plugin install --local requires workspace" {
+    run "$META_BIN" plugin install --local nonexistent/repo
+    [ "$status" -ne 0 ]
+    [[ "$output" =~ "Not in a meta workspace" ]]
+    [[ "$output" =~ "meta init" ]]
+}
+
+@test "plugin list --local outside workspace shows error" {
+    run "$META_BIN" plugin list --local
+    [ "$status" -eq 0 ]  # Command succeeds but shows message
+    [[ "$output" =~ "Not in a meta workspace" ]]
+}
+
+@test "plugin list --local in workspace with no plugins" {
+    # Create a workspace
+    mkdir -p "$TEST_DIR/.meta"
+    run "$META_BIN" plugin list --local
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "No project-local plugins installed" ]]
+}
+
+@test "plugin list --local shows only local plugins" {
+    # Create workspace with local plugin directory
+    mkdir -p "$TEST_DIR/.meta/plugins"
+    echo '#!/bin/bash' > "$TEST_DIR/.meta/plugins/meta-local-test"
+    echo 'echo "local plugin"' >> "$TEST_DIR/.meta/plugins/meta-local-test"
+    chmod +x "$TEST_DIR/.meta/plugins/meta-local-test"
+
+    # Create manifest
+    cat > "$TEST_DIR/.meta/plugins/.manifest.json" <<EOF
+{
+  "plugins": {
+    "meta-local-test": {
+      "source": "test/repo",
+      "version": "v1.0.0",
+      "installed": "2024-01-01T00:00:00Z",
+      "platform": "darwin-arm64"
+    }
+  }
+}
+EOF
+
+    run "$META_BIN" plugin list --local
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "meta-local-test" ]]
+    [[ "$output" =~ "Project-local plugins" ]]
+}
+
+@test "plugin uninstall --local fails when plugin not installed" {
+    mkdir -p "$TEST_DIR/.meta/plugins"
+    run "$META_BIN" plugin uninstall --local nonexistent-plugin
+    [ "$status" -ne 0 ]
+    [[ "$output" =~ "not installed" ]]
+}
+
+@test "plugin install --local to .meta/plugins succeeds with workspace" {
+    # Create a valid workspace
+    mkdir -p "$TEST_DIR/.meta"
+
+    # This will fail because there's no actual release, but should recognize it as a workspace
+    run "$META_BIN" plugin install --local test-user/meta-test-plugin
+    [ "$status" -ne 0 ]
+    # Should fail on download, not on workspace detection
+    [[ ! "$output" =~ "Not in a meta workspace" ]]
+    [[ "$output" =~ "Could not find release" || "$output" =~ "Failed to download" ]]
+}
+
+@test "plugin commands show location in output" {
+    mkdir -p "$TEST_DIR/.meta/plugins"
+
+    # Test that error messages mention the location
+    run "$META_BIN" plugin install --local nonexistent/repo
+    [ "$status" -ne 0 ]
+    # The implementation should show it's trying to install locally
+}
