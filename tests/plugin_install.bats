@@ -10,11 +10,13 @@ setup() {
     fi
 
     TEST_DIR="$(mktemp -d)"
-    PLUGINS_DIR="$TEST_DIR/.meta/plugins"
+    HOME_DIR="$(mktemp -d)"
+    PLUGINS_DIR="$HOME_DIR/.meta/plugins"
 
-    # Set HOME to test directory to isolate plugin installation
+    # Set HOME to separate directory to isolate plugin installation
+    # (separate from TEST_DIR to avoid workspace detection issues)
     export ORIGINAL_HOME="$HOME"
-    export HOME="$TEST_DIR"
+    export HOME="$HOME_DIR"
 
     cd "$TEST_DIR"
 }
@@ -23,6 +25,7 @@ teardown() {
     export HOME="$ORIGINAL_HOME"
     cd /
     rm -rf "$TEST_DIR"
+    rm -rf "$HOME_DIR"
 }
 
 # ============ Plugin listing ============
@@ -164,7 +167,7 @@ EOF
 
     run "$META_BIN" plugin list --local
     [ "$status" -eq 0 ]
-    [[ "$output" =~ "meta-local-test" ]]
+    [[ "$output" =~ "local-test" ]]  # meta- prefix is stripped in output
     [[ "$output" =~ "Project-local plugins" ]]
 }
 
