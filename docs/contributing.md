@@ -46,7 +46,7 @@ Thank you for your interest in contributing to the `meta` CLI platform! This gui
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/yourusername/meta/issues) for bugs, feature requests, and questions.
+- Use [GitHub Issues](https://github.com/harmony-labs/meta/issues) for bugs, feature requests, and questions.
 - Provide detailed steps to reproduce issues.
 
 ## Contributing Plugins

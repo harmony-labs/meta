@@ -20,13 +20,15 @@ This guide provides a comprehensive overview of developing plugins for the `meta
 
 ## Introduction
 
-Plugins extend the functionality of `meta` by adding, overriding, or enhancing commands. They are discovered automatically and communicate with meta via a JSON protocol over stdin/stdout.
+Plugins extend the functionality of `meta` by adding new commands. They are discovered automatically and communicate with meta via a JSON protocol over stdin/stdout.
+
+**Important:** Only plugin commands and `meta exec` are supported. Bare commands like `meta npm install` do **not** work—there is no automatic fallback to loop. Users must either use a plugin command (`meta git status`) or explicitly use `meta exec -- npm install`.
 
 Key benefits:
 - **Language agnostic** - Write in any language that can read/write JSON
 - **Isolated** - Plugins run as subprocesses
 - **Discoverable** - Auto-found from standard locations
-- **Extensible** - Can intercept any command pattern
+- **Command ownership** - Plugins fully own their command namespace
 
 ## Plugin Types
 

@@ -123,14 +123,14 @@ projects:
 **A:** Use filtering options:
 
 ```bash
-# By tag
+# By tag (plugin commands)
 meta --tag backend git status
 
-# By directory name
+# By directory name (plugin commands)
 meta git status --include api,web
 
-# Exclude specific repos
-meta npm install --exclude legacy-service
+# Exclude specific repos (use exec for non-plugin commands)
+meta exec --exclude legacy-service -- npm install
 ```
 
 ### Q: Commands are running slowly. How can I speed them up?
@@ -139,7 +139,7 @@ meta npm install --exclude legacy-service
 
 ```bash
 meta git status --parallel
-meta exec -- npm install --parallel
+meta exec --parallel -- npm install
 ```
 
 ### Q: How do I see what would happen without executing?
@@ -147,8 +147,8 @@ meta exec -- npm install --parallel
 **A:** Use dry-run mode:
 
 ```bash
-meta --dry-run git pull
-meta --dry-run exec -- rm -rf node_modules
+meta git pull --dry-run
+meta exec --dry-run -- rm -rf node_modules
 ```
 
 ### Q: How do I get JSON output for scripting?

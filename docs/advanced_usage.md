@@ -222,21 +222,21 @@ If any repo fails, all repos are rolled back to pre-execution state.
 ### By Tag
 
 ```bash
-# Single tag
+# Single tag (plugin commands work directly)
 meta git pull --tag backend
 
-# Multiple tags (OR logic)
-meta npm test --tag frontend,shared
+# Multiple tags (OR logic) - use exec for non-plugin commands
+meta exec --tag frontend,shared -- npm test
 ```
 
 ### By Directory
 
 ```bash
-# Include only specific directories
+# Include only specific directories (plugin commands)
 meta git status --include api-service,web-app
 
-# Exclude directories
-meta npm install --exclude legacy-app
+# Exclude directories - use exec for non-plugin commands
+meta exec --exclude legacy-app -- npm install
 ```
 
 ### Combined Filtering
@@ -244,6 +244,9 @@ meta npm install --exclude legacy-app
 ```bash
 # Tag filter + directory filter
 meta --tag backend git status --include api
+
+# For non-plugin commands, use exec
+meta exec --tag backend --include api -- cargo test
 ```
 
 **Filter precedence:**
@@ -258,7 +261,8 @@ meta --tag backend git status --include api
 ### Chaining Commands
 
 ```bash
-meta git pull && meta npm install && meta npm test
+# Chain plugin commands and exec commands
+meta git pull && meta exec -- npm install && meta exec -- npm test
 ```
 
 ### Capturing Output
@@ -280,7 +284,7 @@ meta project list | xargs -I{} echo "Project: {}"
 Meta propagates exit codes from failed commands, making it suitable for CI/CD:
 
 ```bash
-meta npm test || echo "Tests failed in at least one repo"
+meta exec -- npm test || echo "Tests failed in at least one repo"
 ```
 
 ---
@@ -334,7 +338,7 @@ By default, commands run sequentially with live output. Use `--parallel` for con
 
 ```bash
 meta git status --parallel
-meta exec -- cargo test --parallel
+meta exec --parallel -- cargo test
 ```
 
 ### Parallel Mode Behavior

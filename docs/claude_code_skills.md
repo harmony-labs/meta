@@ -55,8 +55,9 @@ Skills are installed to `.claude/skills/` in your meta repository and are automa
 **Purpose:** How commands run across repos, filtering options, and output modes.
 
 **Key concepts covered:**
-- Direct command passthrough (`meta npm install`)
-- `meta exec -- <cmd>` syntax
+- `meta exec -- <cmd>` syntax for running arbitrary commands
+- Plugin commands work directly (e.g., `meta git status`)
+- Bare commands like `meta npm install` are **not supported**—use `meta exec -- npm install`
 - Parallel vs sequential execution
 - `--include`, `--exclude`, `--tag` filtering
 - `--dry-run` for previewing operations
@@ -74,10 +75,11 @@ Skills are installed to `.claude/skills/` in your meta repository and are automa
 
 **Key concepts covered:**
 - Plugin discovery locations
-- How command routing works (plugin vs exec fallback)
+- Command routing: plugin → exec → error (no automatic fallback for bare commands)
 - Built-in plugins (git, project, rust)
 - Plugin management commands
 - Why some commands behave "magically" (e.g., `meta git clone`)
+- Understanding "unrecognized command" errors—use `meta exec --` for non-plugin commands
 
 **When Claude should reference this skill:**
 - When a command behaves unexpectedly
