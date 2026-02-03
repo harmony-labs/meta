@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.4](https://github.com/harmony-labs/meta/compare/v0.2.3...v0.2.4) (2026-02-03)
+
+
+### Features
+
+* automate VERSION file sync after release creation ([9b02426](https://github.com/harmony-labs/meta/commit/9b02426897a1669c35f51eb2b67d967da0d4a912))
+
+
+### Bug Fixes
+
+* add checkout step before release-please ([b66d78a](https://github.com/harmony-labs/meta/commit/b66d78ad39cae89963dff70354a085d5a046af73))
+* add root package to Cargo.toml for rust release type ([6e3bdfa](https://github.com/harmony-labs/meta/commit/6e3bdfac8a4c73215b03ea0f0969b373ac7e75db))
+* create Cargo.toml dynamically in CI instead of tracking in repo ([0c85eb9](https://github.com/harmony-labs/meta/commit/0c85eb99572c6c7431f90740388a45349b8bf2eb))
+* remove workspace Cargo.toml and use meta exec in CI ([91b39a0](https://github.com/harmony-labs/meta/commit/91b39a03e289a99d718fb239fed374f30a430805))
+* restore workspace Cargo.toml and CI to working state ([4f539c9](https://github.com/harmony-labs/meta/commit/4f539c903e71851284ecc3b59a034aa2b00dad68))
+* restore workspace Cargo.toml and revert to simple release type ([f989639](https://github.com/harmony-labs/meta/commit/f989639d534acf25ad6b262313c53ccecd5585eb))
+* use explicit type for VERSION in extra-files ([c3e479a](https://github.com/harmony-labs/meta/commit/c3e479ac4f15a96d1aefc837a9730be5c3f27b1a))
+
 ## [0.2.3](https://github.com/harmony-labs/meta/compare/v0.2.2...v0.2.3) (2026-02-03)
 
 
