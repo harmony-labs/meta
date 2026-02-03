@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.7](https://github.com/harmony-labs/meta/compare/v0.2.6...v0.2.7) (2026-02-03)
+
+
+### Bug Fixes
+
+* improve VERSION sync comment formatting ([4357697](https://github.com/harmony-labs/meta/commit/435769711d39d09dd903b2e8b56063248f3c3e81))
+
 ## [0.2.6](https://github.com/harmony-labs/meta/compare/v0.2.5...v0.2.6) (2026-02-03)
 
 
