@@ -12,7 +12,7 @@ setup() {
     TEST_DIR="$(mktemp -d)"
 
     # Create .meta config
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": "git@github.com:org/backend.git"

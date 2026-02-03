@@ -12,9 +12,9 @@ setup() {
     fi
 
     TEST_DIR="$(mktemp -d)"
-    mkdir -p "$TEST_DIR/.meta-plugins"
-    cp "$META_GIT_BIN" "$TEST_DIR/.meta-plugins/meta-git"
-    chmod +x "$TEST_DIR/.meta-plugins/meta-git"
+    mkdir -p "$TEST_DIR/.meta/plugins"
+    cp "$META_GIT_BIN" "$TEST_DIR/.meta/plugins/meta-git"
+    chmod +x "$TEST_DIR/.meta/plugins/meta-git"
 
     # Create project directories
     for repo in api worker frontend; do
@@ -23,7 +23,7 @@ setup() {
     done
 
     # Default .meta config with tags
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "api": {
@@ -407,8 +407,8 @@ SCRIPT
 
 @test "unrecognized plugin subcommand shows plugin help" {
     # Copy meta-project plugin to test dir
-    cp "$BATS_TEST_DIRNAME/../target/debug/meta-project" "$TEST_DIR/.meta-plugins/meta-project"
-    chmod +x "$TEST_DIR/.meta-plugins/meta-project"
+    cp "$BATS_TEST_DIRNAME/../target/debug/meta-project" "$TEST_DIR/.meta/plugins/meta-project"
+    chmod +x "$TEST_DIR/.meta/plugins/meta-project"
 
     run "$META_BIN" project blablabla
     [ "$status" -eq 1 ]

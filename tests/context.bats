@@ -12,7 +12,7 @@ setup() {
     TEST_DIR="$(mktemp -d)"
 
     # Create .meta config with two projects
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",
@@ -147,7 +147,7 @@ for r in data['repos']:
 # ============ Tags ============
 
 @test "context shows tags when present" {
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": {
@@ -169,7 +169,7 @@ EOF
 # ============ Dependencies ============
 
 @test "context shows dependencies when present" {
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": {
@@ -187,7 +187,7 @@ EOF
 }
 
 @test "context --json includes dependencies when present" {
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": {

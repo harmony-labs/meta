@@ -13,12 +13,12 @@ setup() {
 
     # Create a temp directory for each test
     TEST_DIR="$(mktemp -d)"
-    mkdir -p "$TEST_DIR/.meta-plugins"
-    cp "$META_PROJECT_BIN" "$TEST_DIR/.meta-plugins/meta-project"
-    chmod +x "$TEST_DIR/.meta-plugins/meta-project"
+    mkdir -p "$TEST_DIR/.meta/plugins"
+    cp "$META_PROJECT_BIN" "$TEST_DIR/.meta/plugins/meta-project"
+    chmod +x "$TEST_DIR/.meta/plugins/meta-project"
 
     # Default .meta config
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "frontend": "git@github.com:org/frontend.git",
@@ -130,7 +130,7 @@ assert child['name'] == 'frontend-lib'
 }
 
 @test "meta project list with extended format shows tags" {
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "frontend": {
@@ -159,13 +159,13 @@ assert 'api' in backend['tags']
 }
 
 @test "meta project list with no .meta file shows error" {
-    rm "$TEST_DIR/.meta"
+    rm "$TEST_DIR/.meta.json"
     run "$META_BIN" project list
     [ "$status" -ne 0 ] || [[ "$output" == *"No .meta"* ]] || [[ "$output" == *"error"* ]]
 }
 
 @test "meta project list with YAML config" {
-    rm "$TEST_DIR/.meta"
+    rm "$TEST_DIR/.meta.json"
     cat > "$TEST_DIR/.meta.yaml" <<'EOF'
 projects:
   frontend:

@@ -12,12 +12,12 @@ setup() {
     fi
 
     TEST_DIR="$(mktemp -d)"
-    mkdir -p "$TEST_DIR/.meta-plugins"
-    cp "$META_GIT_BIN" "$TEST_DIR/.meta-plugins/meta-git"
-    chmod +x "$TEST_DIR/.meta-plugins/meta-git"
+    mkdir -p "$TEST_DIR/.meta/plugins"
+    cp "$META_GIT_BIN" "$TEST_DIR/.meta/plugins/meta-git"
+    chmod +x "$TEST_DIR/.meta/plugins/meta-git"
 
     # Create .meta config with two projects
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",
@@ -42,7 +42,7 @@ EOF
     git -C "$TEST_DIR" init --quiet --initial-branch=main
     git -C "$TEST_DIR" config user.email "test@test.com"
     git -C "$TEST_DIR" config user.name "Test"
-    git -C "$TEST_DIR" add .meta
+    git -C "$TEST_DIR" add .meta.json
     git -C "$TEST_DIR" commit --quiet -m "init meta"
 
     cd "$TEST_DIR"
@@ -576,7 +576,7 @@ assert repos['frontend']['dirty'] == False, f'frontend should be clean: {repos[\
 @test "worktrees_dir config option overrides default location" {
     CUSTOM_DIR="$TEST_DIR/custom-wt-dir"
 
-    cat > "$TEST_DIR/.meta" <<EOF
+    cat > "$TEST_DIR/.meta.json" <<EOF
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",

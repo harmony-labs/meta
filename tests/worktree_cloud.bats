@@ -13,14 +13,14 @@ setup() {
     fi
 
     TEST_DIR="$(mktemp -d)"
-    mkdir -p "$TEST_DIR/.meta-plugins"
-    cp "$META_GIT_BIN" "$TEST_DIR/.meta-plugins/meta-git"
-    chmod +x "$TEST_DIR/.meta-plugins/meta-git"
+    mkdir -p "$TEST_DIR/.meta/plugins"
+    cp "$META_GIT_BIN" "$TEST_DIR/.meta/plugins/meta-git"
+    chmod +x "$TEST_DIR/.meta/plugins/meta-git"
     META_DATA="$(mktemp -d)"
     export META_DATA_DIR="$META_DATA"
 
     # Create .meta config with two projects
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",
@@ -44,7 +44,7 @@ EOF
     git -C "$TEST_DIR" init --quiet
     git -C "$TEST_DIR" config user.email "test@test.com"
     git -C "$TEST_DIR" config user.name "Test"
-    git -C "$TEST_DIR" add .meta
+    git -C "$TEST_DIR" add .meta.json
     git -C "$TEST_DIR" commit --quiet -m "init meta"
 
     cd "$TEST_DIR"
@@ -321,7 +321,7 @@ assert wt.get('custom', {}).get('env') == 'staging'
     HOOK_LOG="$TEST_DIR/hook-create.json"
 
     # Configure hook in .meta
-    cat > "$TEST_DIR/.meta" <<EOF
+    cat > "$TEST_DIR/.meta.json" <<EOF
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",
@@ -352,7 +352,7 @@ assert 'repos' in payload
 @test "post-destroy hook receives payload on stdin" {
     HOOK_LOG="$TEST_DIR/hook-destroy.json"
 
-    cat > "$TEST_DIR/.meta" <<EOF
+    cat > "$TEST_DIR/.meta.json" <<EOF
 {
     "projects": {
         "backend": "git@github.com:org/backend.git"
@@ -380,7 +380,7 @@ assert payload['name'] == 'hook-destroy'
 }
 
 @test "hook failure does not block main operation" {
-    cat > "$TEST_DIR/.meta" <<EOF
+    cat > "$TEST_DIR/.meta.json" <<EOF
 {
     "projects": {
         "backend": "git@github.com:org/backend.git"
@@ -410,7 +410,7 @@ EOF
     HOOK_LOG="$TEST_DIR/hook-yaml.json"
 
     # Create YAML config with hook
-    rm -f "$TEST_DIR/.meta"
+    rm -f "$TEST_DIR/.meta.json"
     cat > "$TEST_DIR/.meta.yaml" <<EOF
 projects:
   backend: "git@github.com:org/backend.git"
@@ -435,7 +435,7 @@ assert payload['custom']['env'] == 'yaml'
 "
 
     # Restore JSON config for other tests
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",
@@ -554,7 +554,7 @@ assert any(e['name'] == 'prune-dj' for e in d['removed'])
 
 @test "worktree prune post-prune hook fires" {
     HOOK_LOG="$TEST_DIR/hook-prune.json"
-    cat > "$TEST_DIR/.meta" <<EOF
+    cat > "$TEST_DIR/.meta.json" <<EOF
 {
     "projects": {
         "backend": "git@github.com:org/backend.git"
@@ -773,7 +773,7 @@ assert not any(v['name'] == 'lifecycle-meta' for v in data['worktrees'].values()
     HOOK_OUTPUT="$TEST_DIR/hook-stdin-test.json"
 
     # Configure hook that reads ALL of stdin (tests EOF delivery)
-    cat > "$TEST_DIR/.meta" <<EOF
+    cat > "$TEST_DIR/.meta.json" <<EOF
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",

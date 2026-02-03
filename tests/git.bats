@@ -14,9 +14,9 @@ setup() {
 
     # Create a temp directory for each test
     TEST_DIR="$(mktemp -d)"
-    mkdir -p "$TEST_DIR/.meta-plugins"
-    cp "$META_GIT_BIN" "$TEST_DIR/.meta-plugins/meta-git"
-    chmod +x "$TEST_DIR/.meta-plugins/meta-git"
+    mkdir -p "$TEST_DIR/.meta/plugins"
+    cp "$META_GIT_BIN" "$TEST_DIR/.meta/plugins/meta-git"
+    chmod +x "$TEST_DIR/.meta/plugins/meta-git"
 
     # Create project directories as git repos with initial commits
     for repo in frontend backend shared; do
@@ -35,7 +35,7 @@ setup() {
     git -C "$TEST_DIR" config user.name "Test"
 
     # Default .meta config
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "frontend": "git@github.com:org/frontend.git",
@@ -45,7 +45,7 @@ setup() {
 }
 EOF
 
-    git -C "$TEST_DIR" add .meta
+    git -C "$TEST_DIR" add .meta.json
     git -C "$TEST_DIR" commit --quiet -m "Initial meta commit"
 
     cd "$TEST_DIR"
@@ -458,7 +458,7 @@ EOF
 @test "meta git status with non-git project directory" {
     # Add a non-git directory to projects
     mkdir -p "$TEST_DIR/not-a-repo"
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "frontend": "git@github.com:org/frontend.git",

@@ -12,16 +12,16 @@ setup() {
     fi
 
     TEST_DIR="$(mktemp -d)"
-    mkdir -p "$TEST_DIR/.meta-plugins"
-    cp "$META_GIT_BIN" "$TEST_DIR/.meta-plugins/meta-git"
-    chmod +x "$TEST_DIR/.meta-plugins/meta-git"
+    mkdir -p "$TEST_DIR/.meta/plugins"
+    cp "$META_GIT_BIN" "$TEST_DIR/.meta/plugins/meta-git"
+    chmod +x "$TEST_DIR/.meta/plugins/meta-git"
 
     # Isolate worktree store per test to prevent cross-test interference
     META_DATA="$(mktemp -d)"
     export META_DATA_DIR="$META_DATA"
 
     # Create .meta config with three projects
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",
@@ -47,7 +47,7 @@ EOF
     git -C "$TEST_DIR" init --quiet --initial-branch=main
     git -C "$TEST_DIR" config user.email "test@test.com"
     git -C "$TEST_DIR" config user.name "Test"
-    git -C "$TEST_DIR" add .meta
+    git -C "$TEST_DIR" add .meta.json
     git -C "$TEST_DIR" commit --quiet -m "init meta"
 
     cd "$TEST_DIR"
@@ -216,7 +216,7 @@ EOF
     [ -d ".worktrees/removed-repos" ]
 
     # Update .meta to remove backend and frontend (simulating repo removal)
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "common": "git@github.com:org/common.git"
@@ -231,7 +231,7 @@ EOF
     [[ "$output" == *"removed-repos"* ]]
 
     # Restore original .meta for other tests
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",
@@ -277,7 +277,7 @@ EOF
     [ -d ".worktrees/partial-orphan" ]
 
     # Remove backend from .meta (but keep frontend)
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "frontend": "git@github.com:org/frontend.git",
@@ -293,7 +293,7 @@ EOF
     [ -d ".worktrees/partial-orphan" ]
 
     # Restore original .meta
-    cat > "$TEST_DIR/.meta" <<'EOF'
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
 {
     "projects": {
         "backend": "git@github.com:org/backend.git",
