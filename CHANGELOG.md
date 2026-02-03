@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/harmony-labs/meta/compare/v0.2.5...v0.2.6) (2026-02-03)
+
+
+### Bug Fixes
+
+* pull before pushing VERSION sync to avoid race condition ([acfca5f](https://github.com/harmony-labs/meta/commit/acfca5ffc2cd7fb4cef865249506163bb62cc197))
+
 ## [0.2.5](https://github.com/harmony-labs/meta/compare/v0.2.4...v0.2.5) (2026-02-03)
 
 
