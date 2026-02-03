@@ -56,6 +56,10 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Pull latest changes (release commit) before committing
+          git pull --rebase origin main
+
           git add VERSION
           git commit -m "chore: sync VERSION file with release $VERSION"
           git push
