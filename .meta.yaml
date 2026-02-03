@@ -49,3 +49,6 @@ projects:
   # Non-code repos
   claude-plugins:
     repo: git@github.com:harmony-labs/claude-plugins.git
+
+  meta-plugins:
+    repo: git@github.com:harmony-labs/meta-plugins.git
