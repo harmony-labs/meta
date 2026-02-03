@@ -45,8 +45,11 @@ jobs:
         with:
           shared-key: "test-${{ matrix.os }}"
 
+      - name: Build meta CLI
+        run: (cd meta_cli && cargo build)
+
       - name: Run tests
-        run: cargo test --workspace
+        run: ./meta_cli/target/debug/meta exec -- cargo test
 
   clippy:
     name: Clippy
@@ -78,8 +81,11 @@ jobs:
         with:
           shared-key: "clippy"
 
+      - name: Install meta CLI
+        run: cargo binstall -y meta-cli
+
       - name: Run clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: meta exec -- cargo clippy --all-targets -- -D warnings
 
   integration:
     name: Integration Tests
@@ -113,14 +119,18 @@ jobs:
         with:
           shared-key: "integration-${{ matrix.os }}"
 
-      - name: Build workspace
-        run: cargo build --workspace
+      - name: Build binaries
+        run: |
+          echo "Building meta CLI..."
+          (cd meta_cli && cargo build)
+          echo "Building meta-git plugin..."
+          (cd meta_git_cli && cargo build)
 
       - name: Verify binaries
         run: |
-          ls -lh target/debug/meta target/debug/meta-git
-          ./target/debug/meta --version
-          ./target/debug/meta-git --meta-plugin-info | jq .name
+          ls -lh meta_cli/target/debug/meta meta_git_cli/target/debug/meta-git
+          ./meta_cli/target/debug/meta --version
+          ./meta_git_cli/target/debug/meta-git --meta-plugin-info | jq .name
         shell: bash
 
       - name: Install bats
@@ -161,6 +171,12 @@ jobs:
         with:
           components: rustfmt
 
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
+
+      - name: Install meta CLI
+        run: cargo binstall -y meta-cli
+
       - name: Check formatting
-        run: cargo fmt --all -- --check
+        run: meta exec -- cargo fmt -- --check
 # Testing CI with config fix
