@@ -968,10 +968,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "meta-workspace"
-version = "0.2.3"
-
-[[package]]
 name = "meta_core"
 version = "0.1.0"
 dependencies = [

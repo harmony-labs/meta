@@ -1,0 +1,20 @@
+[workspace]
+members = [
+    "loop_cli",
+    "loop_lib",
+    "meta_cli",
+    "meta_core",
+    "meta_git_cli",
+    "meta_git_lib",
+    "meta_mcp",
+    "meta_plugin_protocol",
+    "meta_rust_cli",
+    "meta_project_cli",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/harmony-labs/meta"
