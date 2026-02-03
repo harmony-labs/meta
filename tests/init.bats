@@ -310,7 +310,7 @@ EOF
 # ============ Warning without .meta config ============
 
 @test "init claude warns when not in meta repo" {
-    rm .meta
+    rm .meta.json
 
     run "$META_BIN" init claude
     [ "$status" -eq 0 ]
