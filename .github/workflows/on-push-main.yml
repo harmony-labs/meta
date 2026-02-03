@@ -23,26 +23,6 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Create temporary Cargo.toml for release-please
-        run: |
-          VERSION=$(cat VERSION)
-          cat > Cargo.toml << EOF
-          [package]
-          name = "meta"
-          version = "${VERSION}"
-          edition = "2021"
-          publish = false
-
-          # This file exists solely for release-please version tracking.
-          # It is created dynamically in CI and should not be committed.
-
-          [workspace]
-          members = []
-          EOF
-
       - name: Release Please
         id: release
         uses: googleapis/release-please-action@v4

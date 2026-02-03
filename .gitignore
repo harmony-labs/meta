@@ -72,6 +72,3 @@ meta-plugins/
 .worktrees/
 
 .env
-
-# Root Cargo.toml is created dynamically in CI for release-please only
-/Cargo.toml
