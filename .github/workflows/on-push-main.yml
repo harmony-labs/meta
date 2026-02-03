@@ -34,6 +34,30 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
+  # Sync VERSION file with release tag
+  sync-version:
+    name: Sync VERSION File
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_WRITE_PACKAGES_PAT }}
+
+      - name: Update VERSION file
+        run: |
+          VERSION="${{ needs.release-please.outputs.tag_name }}"
+          VERSION="${VERSION#v}"  # Strip 'v' prefix
+          echo "$VERSION" > VERSION
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "chore: sync VERSION file with release $VERSION"
+          git push
+
   # Trigger release workflow after successful release
   trigger-release:
     name: Trigger Release Build
