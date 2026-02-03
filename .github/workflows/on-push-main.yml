@@ -34,7 +34,7 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  # Sync VERSION file with release tag
+  # Sync VERSION file with release tag.
   # This ensures the VERSION file is updated before the release build is triggered,
   # so binaries built from the release have the correct version number.
   sync-version:
