@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.5](https://github.com/harmony-labs/meta/compare/v0.2.4...v0.2.5) (2026-02-03)
+
+
+### Bug Fixes
+
+* ensure VERSION file ends with newline ([8f80d55](https://github.com/harmony-labs/meta/commit/8f80d5585433f7de2e0f66e0b6028ba446ad48af))
+* trigger release build after VERSION sync completes ([90948fc](https://github.com/harmony-labs/meta/commit/90948fcfe3aacc779d37146822c7df8affe3f171))
+
 ## [0.2.4](https://github.com/harmony-labs/meta/compare/v0.2.3...v0.2.4) (2026-02-03)
 
 
