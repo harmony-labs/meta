@@ -1,3 +1,12 @@
+[package]
+name = "meta-workspace"
+version = "0.2.3"
+edition = "2021"
+publish = false
+
+# Meta-repo root package for version tracking only.
+# This package has no code - it exists solely for release-please to track versions.
+
 [workspace]
 members = [
     "loop_cli",
