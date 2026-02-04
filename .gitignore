@@ -63,8 +63,8 @@ meta_rust_cli/
 claude-plugins/
 meta-plugins/
 
-# plugins (build instead)
-.meta-plugins
+# plugins (built locally, not committed)
+.meta/plugins/
 
 # GitKB
 .kb/.cache/

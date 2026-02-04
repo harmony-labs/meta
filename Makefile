@@ -3,37 +3,43 @@ RUST_LOG ?= trace
 
 include Makefile.context.mk
 
-.DEFAULT_GOAL := build-all-and-install
+.DEFAULT_GOAL := build-all
 
-build-all-and-install-and-copy-plugins: build-all install copy-plugins-to-home
-
-build-all-and-install: build-all install
-
+# Build everything for development (plugins go to .meta/plugins/ for local discovery)
 build-all: build build-plugins
 
 build:
 	cargo build
 
+# Build plugins and install to project-local .meta/plugins/ (for development)
 build-plugins:
 	cargo build --release -p meta_git_cli
 	cargo build --release -p meta_project_cli
 	cargo build --release -p meta_rust_cli
-	mkdir -p .meta-plugins
-	cp target/release/meta-git .meta-plugins/meta-git
-	cp target/release/meta-project .meta-plugins/meta-project
-	cp target/release/meta-rust .meta-plugins/meta-rust
+	mkdir -p .meta/plugins
+	cp target/release/meta-git .meta/plugins/meta-git
+	cp target/release/meta-project .meta/plugins/meta-project
+	cp target/release/meta-rust .meta/plugins/meta-rust
+
+# Install meta binary globally via cargo
+install:
+	cargo install --path meta_cli
+
+# Install plugins globally to ~/.meta/plugins/
+install-plugins: build-plugins
+	mkdir -p ~/.meta/plugins
+	cp target/release/meta-git ~/.meta/plugins/meta-git
+	cp target/release/meta-project ~/.meta/plugins/meta-project
+	cp target/release/meta-rust ~/.meta/plugins/meta-rust
+
+# Install everything globally (meta binary + plugins)
+install-all: install install-plugins
 
 clean: clean-plugins
 	cargo clean
 
 clean-plugins:
-	rm -rf .meta-plugins
-
-copy-plugins-to-home:
-	cp -r .meta-plugins/ ~/.meta-plugins/
-
-install:
-	cargo install --path meta_cli
+	rm -rf .meta/plugins
 
 rebuild-plugins: clean-plugins build-plugins
 

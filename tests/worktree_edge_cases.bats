@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-# Integration tests for meta worktree edge cases (Phase 2 & 3)
+# Integration tests for meta git worktree edge cases (Phase 2 & 3)
 # Tests: strict mode, prune with orphan detection, cache invalidation, ahead/behind
 
 setup() {
@@ -67,7 +67,7 @@ teardown() {
     git -C backend branch feature-branch
 
     # Try to create worktree with --strict --from-ref (should fail because frontend/common lack the ref)
-    run "$META_BIN" worktree create strict-test --from-ref feature-branch --strict --all
+    run "$META_BIN" git worktree create strict-test --from-ref feature-branch --strict --all
     [ "$status" -ne 0 ]
     [[ "$output" == *"strict"* ]]
     [[ "$output" == *"Skipping"* ]] || [[ "$output" == *"not found"* ]]
@@ -78,7 +78,7 @@ teardown() {
     git -C backend branch partial-branch
 
     # Create worktree without --strict (should warn but succeed)
-    run "$META_BIN" worktree create warn-test --from-ref partial-branch --all
+    run "$META_BIN" git worktree create warn-test --from-ref partial-branch --all
     [ "$status" -eq 0 ]
     [[ "$output" == *"warning"* ]] || [[ "$output" == *"Skipping"* ]]
     # At least backend should have been created
@@ -94,7 +94,7 @@ teardown() {
     git branch shared-branch
 
     # Create worktree with --strict (should succeed)
-    run "$META_BIN" worktree create strict-ok --from-ref shared-branch --strict --all
+    run "$META_BIN" git worktree create strict-ok --from-ref shared-branch --strict --all
     [ "$status" -eq 0 ]
     [ -d ".worktrees/strict-ok/backend" ]
     [ -d ".worktrees/strict-ok/frontend" ]
@@ -106,7 +106,7 @@ teardown() {
     git -C backend branch unique-branch
 
     # Attempt with --strict should show which repo was skipped
-    run "$META_BIN" worktree create strict-error --from-ref unique-branch --strict --repo backend --repo frontend
+    run "$META_BIN" git worktree create strict-error --from-ref unique-branch --strict --repo backend --repo frontend
     [ "$status" -ne 0 ]
     [[ "$output" == *"frontend"* ]] || [[ "$output" == *"common"* ]]
 }
@@ -118,7 +118,7 @@ teardown() {
     git -C backend branch global-strict-branch
 
     # Global --strict should fail like local --strict
-    run "$META_BIN" --strict worktree create global-strict-test --from-ref global-strict-branch --all
+    run "$META_BIN" --strict git worktree create global-strict-test --from-ref global-strict-branch --all
     [ "$status" -ne 0 ]
     [[ "$output" == *"strict"* ]]
 }
@@ -131,7 +131,7 @@ teardown() {
     git branch global-ok-branch
 
     # Global --strict should succeed
-    run "$META_BIN" --strict worktree create global-ok --from-ref global-ok-branch --all
+    run "$META_BIN" --strict git worktree create global-ok --from-ref global-ok-branch --all
     [ "$status" -eq 0 ]
     [ -d ".worktrees/global-ok/backend" ]
 }
@@ -141,18 +141,18 @@ teardown() {
     git -C backend branch combined-strict-branch
 
     # Both flags together should still work
-    run "$META_BIN" --strict worktree create combined-strict --from-ref combined-strict-branch --strict --all
+    run "$META_BIN" --strict git worktree create combined-strict --from-ref combined-strict-branch --strict --all
     [ "$status" -ne 0 ]
     [[ "$output" == *"strict"* ]]
 }
 
 @test "global --strict affects worktree prune store errors" {
     # Create a worktree then corrupt the store to test error handling
-    "$META_BIN" worktree create prune-strict-test --repo backend
+    "$META_BIN" git worktree create prune-strict-test --repo backend
     [ -d ".worktrees/prune-strict-test" ]
 
     # Clean up normally - this shouldn't fail
-    run "$META_BIN" --strict worktree destroy prune-strict-test
+    run "$META_BIN" --strict git worktree destroy prune-strict-test
     [ "$status" -eq 0 ]
 }
 
@@ -160,14 +160,14 @@ teardown() {
 
 @test "worktree prune removes orphaned worktree (missing directory)" {
     # Create a worktree
-    "$META_BIN" worktree create orphan-missing --repo backend
+    "$META_BIN" git worktree create orphan-missing --repo backend
     [ -d ".worktrees/orphan-missing" ]
 
     # Remove the directory manually
     rm -rf ".worktrees/orphan-missing"
 
     # Prune should detect and remove the orphaned entry
-    run "$META_BIN" worktree prune
+    run "$META_BIN" git worktree prune
     [ "$status" -eq 0 ]
     [[ "$output" == *"orphan"* ]] || [[ "$output" == *"missing directory"* ]]
     [[ "$output" == *"orphan-missing"* ]]
@@ -194,7 +194,7 @@ EOF
 
     # Create worktree in temp project
     cd "$TEST_DIR/temp-project"
-    "$META_BIN" worktree create temp-wt --repo temp-repo
+    "$META_BIN" git worktree create temp-wt --repo temp-repo
     [ -d ".worktrees/temp-wt" ]
 
     # Remove the entire source project directory (not just the repo)
@@ -204,7 +204,7 @@ EOF
 
     # Prune should detect orphaned worktree (project missing)
     # Note: prune reads from global store, so it can detect worktrees from other projects
-    run "$META_BIN" worktree prune
+    run "$META_BIN" git worktree prune
     [ "$status" -eq 0 ]
     [[ "$output" == *"orphan"* ]] || [[ "$output" == *"project missing"* ]]
     [[ "$output" == *"temp-wt"* ]]
@@ -212,7 +212,7 @@ EOF
 
 @test "worktree prune removes orphaned worktree (all repos removed from project)" {
     # Create worktree with backend
-    "$META_BIN" worktree create removed-repos --repo backend --repo frontend
+    "$META_BIN" git worktree create removed-repos --repo backend --repo frontend
     [ -d ".worktrees/removed-repos" ]
 
     # Update .meta to remove backend and frontend (simulating repo removal)
@@ -225,7 +225,7 @@ EOF
 EOF
 
     # Prune should detect that all source repos are gone
-    run "$META_BIN" worktree prune
+    run "$META_BIN" git worktree prune
     [ "$status" -eq 0 ]
     [[ "$output" == *"orphan"* ]] || [[ "$output" == *"removed from project"* ]]
     [[ "$output" == *"removed-repos"* ]]
@@ -244,28 +244,28 @@ EOF
 
 @test "worktree prune --dry-run shows orphans without removing" {
     # Create and then orphan a worktree
-    "$META_BIN" worktree create dry-orphan --repo backend
+    "$META_BIN" git worktree create dry-orphan --repo backend
     rm -rf ".worktrees/dry-orphan"
 
     # Dry run should show it but not remove from store
-    run "$META_BIN" worktree prune --dry-run
+    run "$META_BIN" git worktree prune --dry-run
     [ "$status" -eq 0 ]
     [[ "$output" == *"Would prune"* ]] || [[ "$output" == *"dry"* ]]
     [[ "$output" == *"dry-orphan"* ]]
 
     # Run prune again - should still show the orphan (wasn't removed)
-    run "$META_BIN" worktree prune --dry-run
+    run "$META_BIN" git worktree prune --dry-run
     [ "$status" -eq 0 ]
     [[ "$output" == *"dry-orphan"* ]]
 }
 
 @test "worktree prune preserves valid worktrees" {
     # Create a valid worktree
-    "$META_BIN" worktree create valid-wt --repo backend
+    "$META_BIN" git worktree create valid-wt --repo backend
     [ -d ".worktrees/valid-wt" ]
 
     # Prune should not touch it
-    run "$META_BIN" worktree prune
+    run "$META_BIN" git worktree prune
     [ "$status" -eq 0 ]
     [[ "$output" != *"valid-wt"* ]] || [[ "$output" == *"Nothing to prune"* ]]
     [ -d ".worktrees/valid-wt" ]
@@ -273,7 +273,7 @@ EOF
 
 @test "worktree prune handles partial orphan (some repos missing)" {
     # Create worktree with multiple repos
-    "$META_BIN" worktree create partial-orphan --repo backend --repo frontend
+    "$META_BIN" git worktree create partial-orphan --repo backend --repo frontend
     [ -d ".worktrees/partial-orphan" ]
 
     # Remove backend from .meta (but keep frontend)
@@ -287,7 +287,7 @@ EOF
 EOF
 
     # Prune should NOT remove (one repo still valid)
-    run "$META_BIN" worktree prune
+    run "$META_BIN" git worktree prune
     [ "$status" -eq 0 ]
     [[ "$output" != *"partial-orphan"* ]] || [[ "$output" == *"Nothing to prune"* ]]
     [ -d ".worktrees/partial-orphan" ]
@@ -474,14 +474,14 @@ for repo in data['repos']:
     done
 
     # Create with strict mode
-    "$META_BIN" worktree create strict-prune --from-ref strict-prune-branch --strict --repo backend --repo frontend
+    "$META_BIN" git worktree create strict-prune --from-ref strict-prune-branch --strict --repo backend --repo frontend
     [ -d ".worktrees/strict-prune" ]
 
     # Remove directory
     rm -rf ".worktrees/strict-prune"
 
     # Prune should clean it up
-    run "$META_BIN" worktree prune
+    run "$META_BIN" git worktree prune
     [ "$status" -eq 0 ]
     [[ "$output" == *"strict-prune"* ]] || [[ "$output" == *"Pruned"* ]]
 }
@@ -490,10 +490,10 @@ for repo in data['repos']:
 
 @test "worktree prune --json outputs valid JSON" {
     # Create and orphan a worktree
-    "$META_BIN" worktree create json-prune --repo backend
+    "$META_BIN" git worktree create json-prune --repo backend
     rm -rf ".worktrees/json-prune"
 
-    run "$META_BIN" worktree prune --json
+    run "$META_BIN" git worktree prune --json
     [ "$status" -eq 0 ]
     echo "$output" | python3 -c "
 import sys, json
@@ -505,19 +505,19 @@ assert any(r['name'] == 'json-prune' for r in data['removed'])
 
 @test "worktree prune with no orphans shows clean output" {
     # Create a valid worktree to ensure store is not empty
-    "$META_BIN" worktree create valid-for-prune --repo backend
+    "$META_BIN" git worktree create valid-for-prune --repo backend
     [ -d ".worktrees/valid-for-prune" ]
 
     # Prune should succeed and not remove the valid worktree
     # (May find and remove orphans from previous tests, which is OK)
-    run "$META_BIN" worktree prune
+    run "$META_BIN" git worktree prune
     [ "$status" -eq 0 ]
 
     # The valid worktree should still exist after prune
     [ -d ".worktrees/valid-for-prune" ]
 
     # Cleanup
-    "$META_BIN" worktree destroy valid-for-prune
+    "$META_BIN" git worktree destroy valid-for-prune
 }
 
 @test "context cache handles corrupted cache file gracefully" {
