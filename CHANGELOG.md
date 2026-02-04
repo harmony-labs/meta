@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.8](https://github.com/harmony-labs/meta/compare/v0.2.7...v0.2.8) (2026-02-04)
+
+
+### Features
+
+* **meta_cli:** pass spawn_stagger_ms from ExecutionPlan to LoopConfig ([55d103e](https://github.com/harmony-labs/meta/commit/55d103e431d0b278b11b75b6ff5cb778715d97c7))
+
+
+### Bug Fixes
+
+* **meta_cli:** resolve clippy print_literal warnings ([491a845](https://github.com/harmony-labs/meta/commit/491a84592edf25381545d579eb97e04082885633))
+* pull before writing VERSION file in sync workflow ([00de90b](https://github.com/harmony-labs/meta/commit/00de90b7635d9a7e9d290e0432fc5c7836e341ef))
+
 ## [0.2.7](https://github.com/harmony-labs/meta/compare/v0.2.6...v0.2.7) (2026-02-03)
 
 
