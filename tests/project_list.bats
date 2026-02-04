@@ -185,3 +185,102 @@ assert 'frontend' in names
 assert 'backend' in names
 "
 }
+
+@test "meta project list handles nested meta repos" {
+    # Verify nested meta repo entries (repo + meta: true) are handled correctly
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
+{
+    "projects": {
+        "backend": "git@github.com:org/backend.git",
+        "vendor": {"repo": "git@github.com:org/vendor.git", "meta": true}
+    }
+}
+EOF
+    mkdir -p "$TEST_DIR/vendor"
+
+    run "$META_BIN" project list
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"vendor"* ]]
+    [[ "$output" == *"backend"* ]]
+}
+
+@test "meta project list --json includes nested meta repos" {
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
+{
+    "projects": {
+        "backend": "git@github.com:org/backend.git",
+        "vendor": {"repo": "git@github.com:org/vendor.git", "meta": true}
+    }
+}
+EOF
+    mkdir -p "$TEST_DIR/vendor"
+
+    run "$META_BIN" project list --json
+    [ "$status" -eq 0 ]
+    echo "$output" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+names = [p['name'] for p in data['projects']]
+assert 'vendor' in names, f'vendor not in {names}'
+assert 'backend' in names, f'backend not in {names}'
+# vendor should have a repo (nested meta repos are regular repos that happen to contain .meta)
+vendor = next(p for p in data['projects'] if p['name'] == 'vendor')
+assert vendor.get('repo') == 'git@github.com:org/vendor.git', f'vendor should have repo: {vendor}'
+"
+}
+
+@test "meta project list --recursive shows nested meta repo children" {
+    # Setup: vendor is a nested meta repo with nested-lib inside
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
+{
+    "projects": {
+        "backend": "git@github.com:org/backend.git",
+        "vendor": {"repo": "git@github.com:org/vendor.git", "meta": true}
+    }
+}
+EOF
+    mkdir -p "$TEST_DIR/vendor/nested-lib"
+    cat > "$TEST_DIR/vendor/.meta" <<'EOF'
+{"projects": {"nested-lib": "git@github.com:org/nested-lib.git"}}
+EOF
+
+    run "$META_BIN" project list --recursive
+    [ "$status" -eq 0 ]
+    # Should show vendor's child project
+    [[ "$output" == *"nested-lib"* ]]
+    [[ "$output" == *"vendor"* ]]
+    [[ "$output" == *"backend"* ]]
+}
+
+@test "meta project list --recursive --json shows nested paths" {
+    # Setup: vendor is a nested meta repo with nested-lib inside
+    cat > "$TEST_DIR/.meta.json" <<'EOF'
+{
+    "projects": {
+        "backend": "git@github.com:org/backend.git",
+        "vendor": {"repo": "git@github.com:org/vendor.git", "meta": true}
+    }
+}
+EOF
+    mkdir -p "$TEST_DIR/vendor/nested-lib"
+    cat > "$TEST_DIR/vendor/.meta" <<'EOF'
+{"projects": {"nested-lib": "git@github.com:org/nested-lib.git"}}
+EOF
+
+    run "$META_BIN" project list --recursive --json
+    [ "$status" -eq 0 ]
+    echo "$output" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+# Find vendor node
+vendor = next((p for p in data['projects'] if p['name'] == 'vendor'), None)
+assert vendor is not None, 'vendor not found'
+# Verify vendor has nested projects
+assert 'projects' in vendor, f'vendor should have projects: {vendor}'
+nested = vendor['projects']
+assert len(nested) > 0, f'vendor should have nested projects: {vendor}'
+# Verify nested-lib is in the nested projects
+nested_lib = next((p for p in nested if p['name'] == 'nested-lib'), None)
+assert nested_lib is not None, f'nested-lib not found in vendor projects: {nested}'
+"
+}

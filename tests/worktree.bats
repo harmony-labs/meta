@@ -53,6 +53,39 @@ teardown() {
     rm -rf "$TEST_DIR"
 }
 
+# Helper: Set up a nested meta repo structure
+# Creates vendor/ with its own .meta file containing nested-lib
+# Args: $1 = nested lib name (default: nested-lib)
+setup_nested_meta() {
+    local nested_name="${1:-nested-lib}"
+
+    mkdir -p "$TEST_DIR/vendor/$nested_name"
+
+    # Update root config to include vendor as nested meta repo
+    cat > "$TEST_DIR/.meta.json" <<EOF
+{
+    "projects": {
+        "backend": "git@github.com:org/backend.git",
+        "frontend": "git@github.com:org/frontend.git",
+        "vendor": {"repo": "git@github.com:org/vendor.git", "meta": true}
+    }
+}
+EOF
+
+    # Create nested .meta inside vendor
+    cat > "$TEST_DIR/vendor/.meta" <<EOF
+{"projects": {"$nested_name": "git@github.com:org/$nested_name.git"}}
+EOF
+
+    # Initialize the nested git repo
+    git -C "$TEST_DIR/vendor/$nested_name" init --quiet --initial-branch=main
+    git -C "$TEST_DIR/vendor/$nested_name" config user.email "test@test.com"
+    git -C "$TEST_DIR/vendor/$nested_name" config user.name "Test"
+    echo "# $nested_name" > "$TEST_DIR/vendor/$nested_name/README.md"
+    git -C "$TEST_DIR/vendor/$nested_name" add README.md
+    git -C "$TEST_DIR/vendor/$nested_name" commit --quiet -m "init $nested_name"
+}
+
 # ============ Create ============
 
 @test "worktree create makes isolated git worktree" {
@@ -591,4 +624,98 @@ EOF
     [ -d "$CUSTOM_DIR/cfg-dir/backend" ]
     # Default location should NOT have it
     [ ! -d ".worktrees/cfg-dir" ]
+}
+
+# ============ Nested Repo (meta-53) ============
+
+@test "worktree create with nested repo alias succeeds" {
+    setup_nested_meta
+
+    # Create worktree with nested repo path
+    run "$META_BIN" worktree create nested-test --repo vendor/nested-lib
+    [ "$status" -eq 0 ]
+
+    # The worktree should be created with just the last component as directory name
+    [ -d ".worktrees/nested-test/nested-lib" ]
+
+    # Verify it's on the expected branch
+    BRANCH=$(git -C ".worktrees/nested-test/nested-lib" branch --show-current)
+    [ "$BRANCH" = "nested-test" ]
+}
+
+@test "worktree add with nested repo alias succeeds" {
+    setup_nested_meta
+
+    # First create worktree with backend
+    "$META_BIN" worktree create add-nested --repo backend
+
+    # Then add nested repo
+    run "$META_BIN" worktree add add-nested --repo vendor/nested-lib
+    [ "$status" -eq 0 ]
+    [ -d ".worktrees/add-nested/nested-lib" ]
+}
+
+@test "worktree create with invalid nested repo path fails" {
+    # Setup nested meta structure with other-lib (not nested-lib)
+    setup_nested_meta "other-lib"
+
+    # Try to create worktree with non-existent nested path
+    run "$META_BIN" worktree create bad-nested --repo vendor/nonexistent
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Unknown nested repo"* ]]
+}
+
+@test "worktree create with mixed repos: root, regular, and nested" {
+    setup_nested_meta
+
+    # Create worktree with root (.), regular (backend), and nested (vendor/nested-lib)
+    run "$META_BIN" worktree create mixed-wt --repo . --repo backend --repo vendor/nested-lib
+    [ "$status" -eq 0 ]
+
+    # All three should exist
+    [ -d ".worktrees/mixed-wt" ]
+    [ -d ".worktrees/mixed-wt/backend" ]
+    [ -d ".worktrees/mixed-wt/nested-lib" ]
+
+    # Verify branches
+    BRANCH_BACKEND=$(git -C ".worktrees/mixed-wt/backend" branch --show-current)
+    [ "$BRANCH_BACKEND" = "mixed-wt" ]
+    BRANCH_NESTED=$(git -C ".worktrees/mixed-wt/nested-lib" branch --show-current)
+    [ "$BRANCH_NESTED" = "mixed-wt" ]
+}
+
+@test "worktree exec works with nested repos" {
+    setup_nested_meta
+
+    # Create worktree with backend and nested repo
+    "$META_BIN" worktree create exec-nested --repo backend --repo vendor/nested-lib
+
+    # Run a command across all repos in the worktree
+    run "$META_BIN" worktree exec exec-nested -- git branch --show-current
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"exec-nested"* ]]
+}
+
+@test "worktree status shows nested repos" {
+    setup_nested_meta
+
+    # Create worktree with nested repo
+    "$META_BIN" worktree create status-nested --repo vendor/nested-lib
+
+    # Check status
+    run "$META_BIN" worktree status status-nested
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nested-lib"* ]]
+}
+
+@test "worktree list shows worktrees with nested repos" {
+    setup_nested_meta
+
+    # Create worktree with nested repo
+    "$META_BIN" worktree create list-nested --repo vendor/nested-lib
+
+    # Check list
+    run "$META_BIN" worktree list
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"list-nested"* ]]
 }
