@@ -50,15 +50,15 @@ jobs:
 
       - name: Update VERSION file
         run: |
-          VERSION="${{ needs.release-please.outputs.tag_name }}"
-          VERSION="${VERSION#v}"  # Strip 'v' prefix
-          echo "$VERSION" > VERSION
-
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Pull latest changes (release commit) before committing
+          # Pull latest changes (release commit) before modifying VERSION
           git pull --rebase origin main
+
+          VERSION="${{ needs.release-please.outputs.tag_name }}"
+          VERSION="${VERSION#v}"  # Strip 'v' prefix
+          echo "$VERSION" > VERSION
 
           git add VERSION
           git commit -m "chore: sync VERSION file with release $VERSION"
