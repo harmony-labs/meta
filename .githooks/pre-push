@@ -1,0 +1,64 @@
+#!/bin/sh
+# Git pre-push hook for meta workspace
+# Runs the same checks as CI to catch issues before push
+#
+# Install in each repo: git config core.hooksPath /path/to/meta/.githooks
+# Or symlink: ln -sf ../../../.githooks/pre-push .git/hooks/pre-push
+
+set -e
+
+# Find workspace root (directory containing workspace Cargo.toml)
+find_workspace_root() {
+    local dir="$PWD"
+    while [ "$dir" != "/" ]; do
+        if [ -f "$dir/Cargo.toml" ] && grep -q '^\[workspace\]' "$dir/Cargo.toml" 2>/dev/null; then
+            echo "$dir"
+            return 0
+        fi
+        dir=$(dirname "$dir")
+    done
+    return 1
+}
+
+# Check if cargo is available
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "Warning: cargo not found, skipping pre-push checks"
+    exit 0
+fi
+
+WORKSPACE_ROOT=$(find_workspace_root)
+if [ -z "$WORKSPACE_ROOT" ]; then
+    echo "Warning: Could not find workspace root, skipping pre-push checks"
+    exit 0
+fi
+
+cd "$WORKSPACE_ROOT"
+
+echo "Running pre-push checks from $WORKSPACE_ROOT..."
+echo ""
+
+echo "==> Checking formatting..."
+if ! cargo fmt --all -- --check; then
+    echo ""
+    echo "Format check failed! Run 'cargo fmt --all' to fix."
+    exit 1
+fi
+echo ""
+
+echo "==> Running clippy..."
+if ! cargo clippy --all-targets --all-features -- -D warnings; then
+    echo ""
+    echo "Clippy check failed! Fix the warnings above."
+    exit 1
+fi
+echo ""
+
+echo "==> Running tests..."
+if ! cargo test --workspace; then
+    echo ""
+    echo "Tests failed! Fix the failing tests above."
+    exit 1
+fi
+echo ""
+
+echo "All pre-push checks passed!"

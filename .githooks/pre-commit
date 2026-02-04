@@ -1,0 +1,52 @@
+#!/bin/sh
+# Git pre-commit hook for meta workspace
+# Runs cargo fmt --check before commit
+#
+# Install in each repo: git config core.hooksPath /path/to/meta/.githooks
+# Or symlink: ln -sf ../../../.githooks/pre-commit .git/hooks/pre-commit
+
+set -e
+
+# Find workspace root (directory containing workspace Cargo.toml)
+find_workspace_root() {
+    local dir="$PWD"
+    while [ "$dir" != "/" ]; do
+        if [ -f "$dir/Cargo.toml" ] && grep -q '^\[workspace\]' "$dir/Cargo.toml" 2>/dev/null; then
+            echo "$dir"
+            return 0
+        fi
+        dir=$(dirname "$dir")
+    done
+    return 1
+}
+
+# Check if cargo is available
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "Warning: cargo not found, skipping format check"
+    exit 0
+fi
+
+WORKSPACE_ROOT=$(find_workspace_root)
+if [ -z "$WORKSPACE_ROOT" ]; then
+    echo "Warning: Could not find workspace root, skipping format check"
+    exit 0
+fi
+
+# Only check if Rust files are staged (in any repo)
+STAGED_RS=$(git diff --cached --name-only --diff-filter=ACM | grep '\.rs$' || true)
+
+if [ -n "$STAGED_RS" ]; then
+    echo "Checking Rust formatting..."
+    if ! (cd "$WORKSPACE_ROOT" && cargo fmt --all -- --check); then
+        echo ""
+        echo "Rust formatting check failed!"
+        echo ""
+        echo "Run 'cargo fmt --all' from $WORKSPACE_ROOT to fix formatting."
+        echo "Or commit with --no-verify to bypass this check."
+        echo ""
+        exit 1
+    fi
+    echo "Formatting OK"
+fi
+
+exit 0
