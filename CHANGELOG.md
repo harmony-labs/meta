@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.9](https://github.com/harmony-labs/meta/compare/v0.2.8...v0.2.9) (2026-02-04)
+
+
+### Bug Fixes
+
+* sync all version sources to 0.2.8 ([13895f9](https://github.com/harmony-labs/meta/commit/13895f98e7aab3b168ac571d259b31810f78cf27))
+
 ## [0.2.8](https://github.com/harmony-labs/meta/compare/v0.2.7...v0.2.8) (2026-02-04)
 
 
