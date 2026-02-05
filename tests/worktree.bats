@@ -376,7 +376,7 @@ assert d['totals']['files_changed'] >= 1
 # ============ Destroy ============
 
 @test "worktree destroy removes worktree set" {
-    "$META_BIN" git worktree create temp --repo backend
+    "$META_BIN" git worktree create temp --repo backend --no-deps
     [ -d ".worktrees/temp" ]
     run "$META_BIN" git worktree destroy temp
     [ "$status" -eq 0 ]
@@ -384,7 +384,7 @@ assert d['totals']['files_changed'] >= 1
 }
 
 @test "worktree destroy preserves branches" {
-    "$META_BIN" git worktree create keep-branch --repo backend
+    "$META_BIN" git worktree create keep-branch --repo backend --no-deps
     "$META_BIN" git worktree destroy keep-branch
     git -C backend branch | grep -q "keep-branch"
 }
@@ -411,7 +411,7 @@ assert d['totals']['files_changed'] >= 1
 }
 
 @test "worktree destroy with multiple repos removes all" {
-    "$META_BIN" git worktree create multi-destroy --repo backend --repo frontend
+    "$META_BIN" git worktree create multi-destroy --repo backend --repo frontend --no-deps
     [ -d ".worktrees/multi-destroy/backend" ]
     [ -d ".worktrees/multi-destroy/frontend" ]
     run "$META_BIN" git worktree destroy multi-destroy
@@ -482,8 +482,8 @@ assert d['totals']['files_changed'] >= 1
 # ============ Full Lifecycle ============
 
 @test "full lifecycle: create, list, status, exec, destroy" {
-    # Create
-    run "$META_BIN" git worktree create lifecycle --repo backend --repo frontend
+    # Create (use --no-deps to avoid auto-including root repo which may have test changes)
+    run "$META_BIN" git worktree create lifecycle --repo backend --repo frontend --no-deps
     [ "$status" -eq 0 ]
 
     # List

@@ -105,8 +105,8 @@ teardown() {
     # Create a branch that only exists in backend
     git -C backend branch unique-branch
 
-    # Attempt with --strict should show which repo was skipped
-    run "$META_BIN" git worktree create strict-error --from-ref unique-branch --strict --repo backend --repo frontend
+    # Attempt with --strict should show which repo was skipped (use --no-deps to avoid root repo)
+    run "$META_BIN" git worktree create strict-error --from-ref unique-branch --strict --repo backend --repo frontend --no-deps
     [ "$status" -ne 0 ]
     [[ "$output" == *"frontend"* ]] || [[ "$output" == *"common"* ]]
 }
@@ -147,8 +147,8 @@ teardown() {
 }
 
 @test "global --strict affects worktree prune store errors" {
-    # Create a worktree then corrupt the store to test error handling
-    "$META_BIN" git worktree create prune-strict-test --repo backend
+    # Create a worktree then corrupt the store to test error handling (use --no-deps to avoid root)
+    "$META_BIN" git worktree create prune-strict-test --repo backend --no-deps
     [ -d ".worktrees/prune-strict-test" ]
 
     # Clean up normally - this shouldn't fail
@@ -159,8 +159,8 @@ teardown() {
 # ============ Prune with Orphan Detection (Phase 2) ============
 
 @test "worktree prune removes orphaned worktree (missing directory)" {
-    # Create a worktree
-    "$META_BIN" git worktree create orphan-missing --repo backend
+    # Create a worktree (use --no-deps to avoid root repo)
+    "$META_BIN" git worktree create orphan-missing --repo backend --no-deps
     [ -d ".worktrees/orphan-missing" ]
 
     # Remove the directory manually
@@ -473,8 +473,8 @@ for repo in data['repos']:
         git -C "$repo" branch strict-prune-branch
     done
 
-    # Create with strict mode
-    "$META_BIN" git worktree create strict-prune --from-ref strict-prune-branch --strict --repo backend --repo frontend
+    # Create with strict mode (use --no-deps to avoid root repo which doesn't have the branch)
+    "$META_BIN" git worktree create strict-prune --from-ref strict-prune-branch --strict --repo backend --repo frontend --no-deps
     [ -d ".worktrees/strict-prune" ]
 
     # Remove directory
@@ -489,8 +489,8 @@ for repo in data['repos']:
 # ============ Edge Cases ============
 
 @test "worktree prune --json outputs valid JSON" {
-    # Create and orphan a worktree
-    "$META_BIN" git worktree create json-prune --repo backend
+    # Create and orphan a worktree (use --no-deps to avoid root)
+    "$META_BIN" git worktree create json-prune --repo backend --no-deps
     rm -rf ".worktrees/json-prune"
 
     run "$META_BIN" git worktree prune --json
@@ -504,8 +504,8 @@ assert any(r['name'] == 'json-prune' for r in data['removed'])
 }
 
 @test "worktree prune with no orphans shows clean output" {
-    # Create a valid worktree to ensure store is not empty
-    "$META_BIN" git worktree create valid-for-prune --repo backend
+    # Create a valid worktree to ensure store is not empty (use --no-deps to avoid root)
+    "$META_BIN" git worktree create valid-for-prune --repo backend --no-deps
     [ -d ".worktrees/valid-for-prune" ]
 
     # Prune should succeed and not remove the valid worktree

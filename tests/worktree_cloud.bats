@@ -227,7 +227,7 @@ assert d['ttl_seconds'] == 1800, f'got: {d.get(\"ttl_seconds\")}'
 # ============ Centralized Store ============
 
 @test "worktree create writes to centralized store" {
-    run "$META_BIN" git worktree create store-test --repo backend
+    run "$META_BIN" git worktree create store-test --repo backend --no-deps
     [ "$status" -eq 0 ]
 
     STORE="$META_DATA/worktree.json"
@@ -246,7 +246,7 @@ assert entry['repos'][0]['alias'] == 'backend'
 }
 
 @test "worktree destroy removes from centralized store" {
-    "$META_BIN" git worktree create store-rm --repo backend
+    "$META_BIN" git worktree create store-rm --repo backend --no-deps
     STORE="$META_DATA/worktree.json"
 
     # Verify entry exists
@@ -271,7 +271,7 @@ assert not any(v['name'] == 'store-rm' for v in data['worktrees'].values())
 }
 
 @test "worktree destroy --json outputs structured result" {
-    "$META_BIN" git worktree create destroy-json --repo backend --repo frontend
+    "$META_BIN" git worktree create destroy-json --repo backend --repo frontend --no-deps
 
     run "$META_BIN" git worktree destroy destroy-json --json
     [ "$status" -eq 0 ]
@@ -649,7 +649,7 @@ assert not any(v['name'] == 'eph-store' for v in data['worktrees'].values())
 }
 
 @test "context detection: --primary overrides worktree context" {
-    "$META_BIN" git worktree create ctx-primary --repo backend
+    "$META_BIN" git worktree create ctx-primary --repo backend --no-deps
     [ -d ".worktrees/ctx-primary/backend" ]
 
     cd ".worktrees/ctx-primary/backend"
@@ -787,7 +787,7 @@ assert not any(v['name'] == 'lifecycle-meta' for v in data['worktrees'].values()
 }
 EOF
 
-    run "$META_BIN" git worktree create stdin-test --repo backend --meta agent=test
+    run "$META_BIN" git worktree create stdin-test --repo backend --meta agent=test --no-deps
     [ "$status" -eq 0 ]
 
     # Verify hook received valid complete JSON
