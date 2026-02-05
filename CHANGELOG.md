@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.10](https://github.com/harmony-labs/meta/compare/v0.2.9...v0.2.10) (2026-02-05)
+
+
+### Bug Fixes
+
+* **meta_git_cli:** create workspace root for workspace inheritance ([7213ffa](https://github.com/harmony-labs/meta/commit/7213ffa3a039d6eed09448c4dece9711531a510c))
+
 ## [0.2.9](https://github.com/harmony-labs/meta/compare/v0.2.8...v0.2.9) (2026-02-04)
 
 
