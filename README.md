@@ -190,10 +190,41 @@ projects:
 | `repo` | Yes | Git repository URL |
 | `path` | No | Custom clone path (defaults to project name) |
 | `tags` | No | Array of tags for filtering |
+| `meta` | No | Set `true` if this project contains a nested `.meta.yaml` |
+| `provides` | No | Array of capabilities this project provides |
+| `depends_on` | No | Array of project names or provided capabilities this depends on |
 
 **File priority:** `.meta.yaml` > `.meta.yml` > `.meta`
 
 You can mix simple and extended formats in the same file.
+
+### Nested Meta Repos
+
+Meta repos can contain other meta repos, enabling hierarchical organization of large codebases:
+
+```yaml
+projects:
+  infrastructure:
+    repo: git@github.com:org/infrastructure.git
+    meta: true  # This directory has its own .meta.yaml
+
+  apps:
+    repo: git@github.com:org/apps.git
+    meta: true
+```
+
+When `meta: true` is set, commands with `--recursive` will descend into the nested meta repo and process its children too:
+
+```bash
+# Clone everything, including nested meta repos
+meta git clone https://github.com/org/top-level.git
+
+# Update all repos recursively
+meta git update --recursive
+
+# List entire tree
+meta project list --recursive
+```
 
 ### Dependency Tracking
 
