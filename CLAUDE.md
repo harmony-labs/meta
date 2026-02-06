@@ -9,15 +9,28 @@ This is a **meta-repo** — a workspace of independent git repositories managed 
 - The root `Cargo.toml` defines a Rust workspace for local development convenience, but each member builds and publishes independently.
 - When creating a new crate/package, it MUST be initialized as a separate git repo, pushed to GitHub under `harmony-labs/`, and added to both `.meta` (projects config) and `.gitignore`.
 
-**Project config (`.meta`):**
-```json
-{
-  "projects": {
-    "meta_cli": "git@github.com:harmony-labs/meta_cli.git",
-    "meta_core": "git@github.com:harmony-labs/meta_core.git",
-    ...
-  }
-}
+**Project config (`.meta.yaml`):**
+```yaml
+projects:
+  meta_cli:
+    repo: git@github.com:harmony-labs/meta_cli.git
+  meta_core:
+    repo: git@github.com:harmony-labs/meta_core.git
+```
+
+**Nested meta repos:** Use `meta: true` when a child project contains its own `.meta.yaml`:
+```yaml
+projects:
+  open-source:
+    repo: git@github.com:org/open-source.git
+    meta: true  # This directory has its own .meta.yaml
+```
+
+This enables recursive operations:
+```bash
+meta git update          # Clones nested meta repos automatically
+meta project list -r     # Shows full tree
+meta exec -r cargo test  # Runs across all nested repos
 ```
 
 **What `meta` does:** Clones all child repos, runs commands across them in parallel (`meta exec`), manages git worktrees across the entire workspace (`meta worktree`), and provides project-level coordination.
