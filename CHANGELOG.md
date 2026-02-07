@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.11](https://github.com/harmony-labs/meta/compare/v0.2.10...v0.2.11) (2026-02-07)
+
+
+### Bug Fixes
+
+* **meta_cli:** create VERSION file for standalone builds ([36b5515](https://github.com/harmony-labs/meta/commit/36b5515ed151c7d91dce40329b4acc352b45833e))
+* **meta_cli:** set up workspace for auto-format workflow ([98da90e](https://github.com/harmony-labs/meta/commit/98da90ebc940db26be409d292456b0c2e8aca341))
+* **meta_git_cli:** add workspace root for format job ([811376a](https://github.com/harmony-labs/meta/commit/811376af17c25fc29279f9657c89fcc067b14c45))
+* **meta_git_cli:** use rustfmt directly to avoid dependency resolution ([43da75b](https://github.com/harmony-labs/meta/commit/43da75b72d64f17a8dbf547fe9da40b97044e7d9))
+* **meta_git_cli:** use TTY input for remote URL mismatch prompt ([ea27fea](https://github.com/harmony-labs/meta/commit/ea27fea87af46ff7b2e1f91231e7f7750b5eaf4d))
+* **tests:** set default branch for bare repos in git clone tests ([e42d10f](https://github.com/harmony-labs/meta/commit/e42d10f130ee3c59b9fa9ac9774e19866cbe5839))
+* **tests:** use explicit branch for git clone tests ([4fd35aa](https://github.com/harmony-labs/meta/commit/4fd35aaf1c0887cfe528e1b6738a7497ef8d53c0))
+
 ## [0.2.10](https://github.com/harmony-labs/meta/compare/v0.2.9...v0.2.10) (2026-02-05)
 
 
