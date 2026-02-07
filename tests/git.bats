@@ -407,6 +407,127 @@ EOF
     rm -rf "$REMOTE_DIR" "$WORK_DIR" "$CLONE_TARGET"
 }
 
+@test "meta git clone with custom directory name for meta repo" {
+    # Custom directory only applies to the meta repo itself
+    # Child repos clone to paths according to .meta config files
+
+    # Create a "remote" bare repo
+    REMOTE_DIR="$(mktemp -d)"
+    git -C "$REMOTE_DIR" init --bare --quiet
+
+    # Create a temp working copy to push initial content
+    WORK_DIR="$(mktemp -d)"
+    git clone --quiet "$REMOTE_DIR" "$WORK_DIR/meta-repo"
+    cd "$WORK_DIR/meta-repo"
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    cat > .meta <<'EOF'
+{
+    "projects": {}
+}
+EOF
+    git add .meta
+    git commit --quiet -m "Add .meta"
+    git push --quiet origin HEAD
+
+    # Clone with custom directory name
+    CLONE_DIR="$(mktemp -d)"
+    rm -rf "$CLONE_DIR"
+    CUSTOM_NAME="my-custom-clone-name"
+
+    cd "$TEST_DIR"
+    run "$META_BIN" git clone "$REMOTE_DIR" "$CLONE_DIR/$CUSTOM_NAME"
+    [ "$status" -eq 0 ]
+
+    # Verify the custom directory was used for the meta repo
+    [ -d "$CLONE_DIR/$CUSTOM_NAME" ]
+    [ -f "$CLONE_DIR/$CUSTOM_NAME/.meta" ]
+
+    # Clean up
+    rm -rf "$REMOTE_DIR" "$WORK_DIR" "$CLONE_DIR"
+}
+
+@test "meta git clone passes URL correctly to git" {
+    # This test verifies the fix for the argument passing bug
+    # where the URL was being lost due to double-stripping of args
+
+    # Create a "remote" bare repo
+    REMOTE_DIR="$(mktemp -d)"
+    git -C "$REMOTE_DIR" init --bare --quiet
+
+    # Push minimal content
+    WORK_DIR="$(mktemp -d)"
+    git clone --quiet "$REMOTE_DIR" "$WORK_DIR/meta-repo"
+    cd "$WORK_DIR/meta-repo"
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    echo '{"projects": {}}' > .meta
+    git add .meta
+    git commit --quiet -m "Init"
+    git push --quiet origin HEAD
+
+    CLONE_TARGET="$(mktemp -d)/test-clone"
+
+    cd "$TEST_DIR"
+    run "$META_BIN" git clone "$REMOTE_DIR" "$CLONE_TARGET"
+
+    # Should succeed, not fail with "No repository URL provided"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"No repository URL provided"* ]]
+    [ -d "$CLONE_TARGET/.git" ]
+
+    # Clean up
+    rm -rf "$REMOTE_DIR" "$WORK_DIR" "$CLONE_TARGET"
+}
+
+@test "meta git clone with --depth option" {
+    # Create a "remote" bare repo with multiple commits
+    REMOTE_DIR="$(mktemp -d)"
+    git -C "$REMOTE_DIR" init --bare --quiet
+
+    WORK_DIR="$(mktemp -d)"
+    git clone --quiet "$REMOTE_DIR" "$WORK_DIR/meta-repo"
+    cd "$WORK_DIR/meta-repo"
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    # Set default branch name explicitly
+    git checkout -b main --quiet 2>/dev/null || true
+    echo '{"projects": {}}' > .meta
+    git add .meta
+    git commit --quiet -m "Commit 1"
+    # Create additional commits by adding new files (keep .meta valid JSON)
+    echo "readme 1" > README.md
+    git add README.md
+    git commit --quiet -m "Commit 2"
+    echo "readme 2" >> README.md
+    git add README.md
+    git commit --quiet -m "Commit 3"
+    git push --quiet -u origin main
+
+    CLONE_TARGET="$(mktemp -d)/shallow-clone"
+
+    cd "$TEST_DIR"
+    # Use file:// protocol for --depth to work with local repos
+    run "$META_BIN" git clone --depth 1 "file://$REMOTE_DIR" "$CLONE_TARGET"
+    [ "$status" -eq 0 ]
+    [ -d "$CLONE_TARGET/.git" ]
+
+    # Verify it's a shallow clone (only 1 commit)
+    COMMIT_COUNT=$(git -C "$CLONE_TARGET" rev-list --count HEAD)
+    [ "$COMMIT_COUNT" -eq 1 ]
+
+    # Clean up
+    rm -rf "$REMOTE_DIR" "$WORK_DIR" "$CLONE_TARGET"
+}
+
+@test "meta git clone --dry-run shows what would be cloned" {
+    cd "$TEST_DIR"
+    run "$META_BIN" --dry-run git clone "git@github.com:example/repo.git"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"DRY RUN"* ]] || [[ "$output" == *"Would clone"* ]]
+    [[ "$output" == *"git@github.com:example/repo.git"* ]]
+}
+
 # ============ meta git snapshot with --recursive ============
 
 @test "meta git snapshot create with nested meta repos" {
