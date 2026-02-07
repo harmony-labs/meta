@@ -377,6 +377,7 @@ assert backend['dirty'] == True, f'backend should be dirty, got {backend}'
     # Create a "remote" bare repo that IS a meta repo
     REMOTE_DIR="$(mktemp -d)"
     git -C "$REMOTE_DIR" init --bare --quiet
+    git -C "$REMOTE_DIR" symbolic-ref HEAD refs/heads/main
 
     # Create a temp working copy to push initial meta content
     WORK_DIR="$(mktemp -d)"
@@ -412,9 +413,10 @@ EOF
     # Custom directory only applies to the meta repo itself
     # Child repos clone to paths according to .meta config files
 
-    # Create a "remote" bare repo
+    # Create a "remote" bare repo with main as default branch
     REMOTE_DIR="$(mktemp -d)"
     git -C "$REMOTE_DIR" init --bare --quiet
+    git -C "$REMOTE_DIR" symbolic-ref HEAD refs/heads/main
 
     # Create a temp working copy to push initial content
     WORK_DIR="$(mktemp -d)"
@@ -453,9 +455,10 @@ EOF
     # This test verifies the fix for the argument passing bug
     # where the URL was being lost due to double-stripping of args
 
-    # Create a "remote" bare repo
+    # Create a "remote" bare repo with main as default branch
     REMOTE_DIR="$(mktemp -d)"
     git -C "$REMOTE_DIR" init --bare --quiet
+    git -C "$REMOTE_DIR" symbolic-ref HEAD refs/heads/main
 
     # Push minimal content
     WORK_DIR="$(mktemp -d)"
@@ -484,9 +487,10 @@ EOF
 }
 
 @test "meta git clone with --depth option" {
-    # Create a "remote" bare repo with multiple commits
+    # Create a "remote" bare repo with main as default branch
     REMOTE_DIR="$(mktemp -d)"
     git -C "$REMOTE_DIR" init --bare --quiet
+    git -C "$REMOTE_DIR" symbolic-ref HEAD refs/heads/main
 
     WORK_DIR="$(mktemp -d)"
     git clone --quiet "$REMOTE_DIR" "$WORK_DIR/meta-repo"
