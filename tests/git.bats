@@ -384,6 +384,7 @@ assert backend['dirty'] == True, f'backend should be dirty, got {backend}'
     cd "$WORK_DIR/meta-repo"
     git config user.email "test@test.com"
     git config user.name "Test"
+    git checkout -b main --quiet 2>/dev/null || true
     cat > .meta <<'EOF'
 {
     "projects": {
@@ -393,7 +394,7 @@ assert backend['dirty'] == True, f'backend should be dirty, got {backend}'
 EOF
     git add .meta
     git commit --quiet -m "Add .meta"
-    git push --quiet origin HEAD
+    git push --quiet -u origin main
 
     # Now test cloning
     CLONE_TARGET="$(mktemp -d)"
@@ -421,6 +422,7 @@ EOF
     cd "$WORK_DIR/meta-repo"
     git config user.email "test@test.com"
     git config user.name "Test"
+    git checkout -b main --quiet 2>/dev/null || true
     cat > .meta <<'EOF'
 {
     "projects": {}
@@ -428,7 +430,7 @@ EOF
 EOF
     git add .meta
     git commit --quiet -m "Add .meta"
-    git push --quiet origin HEAD
+    git push --quiet -u origin main
 
     # Clone with custom directory name
     CLONE_DIR="$(mktemp -d)"
@@ -461,10 +463,11 @@ EOF
     cd "$WORK_DIR/meta-repo"
     git config user.email "test@test.com"
     git config user.name "Test"
+    git checkout -b main --quiet 2>/dev/null || true
     echo '{"projects": {}}' > .meta
     git add .meta
     git commit --quiet -m "Init"
-    git push --quiet origin HEAD
+    git push --quiet -u origin main
 
     CLONE_TARGET="$(mktemp -d)/test-clone"
 
