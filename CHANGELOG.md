@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.12](https://github.com/harmony-labs/meta/compare/v0.2.11...v0.2.12) (2026-02-07)
+
+
+### Bug Fixes
+
+* **meta_cli:** pass --recursive and --depth options to plugin ([2f8680e](https://github.com/harmony-labs/meta/commit/2f8680ef68eb8492a2141c74e3db94edb6df6cad))
+
 ## [0.2.11](https://github.com/harmony-labs/meta/compare/v0.2.10...v0.2.11) (2026-02-07)
 
 
