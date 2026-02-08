@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "agent",
     "loop_cli",
     "loop_lib",
     "meta_cli",
