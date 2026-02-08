@@ -15,7 +15,7 @@
       {
         "hooks": [
           {
-            "command": "meta agent guard",
+            "command": "./target/debug/agent guard",
             "timeout": 5,
             "type": "command"
           }

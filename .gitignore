@@ -50,6 +50,7 @@ imported/
 .aider*
 
 # child repositories
+agent/
 loop_cli/
 loop_lib/
 meta_cli/
