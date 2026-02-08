@@ -221,7 +221,54 @@ assert d['ttl_seconds'] == 1800, f'got: {d.get(\"ttl_seconds\")}'
 @test "worktree create --from-ref and --from-pr mutual exclusion" {
     run "$META_BIN" git worktree create bad-combo --repo backend --from-ref v1.0.0 --from-pr org/repo#123
     [ "$status" -ne 0 ]
-    [[ "$output" == *"mutually exclusive"* ]]
+    [[ "$output" == *"cannot be used with"* ]] || [[ "$output" == *"Cannot specify both"* ]]
+}
+
+# ============ Positional <commit-ish> ============
+
+@test "worktree create positional commit-ish creates branch from tag" {
+    git -C backend tag v2.0.0
+
+    run "$META_BIN" git worktree create pos-tag v2.0.0 --repo backend
+    [ "$status" -eq 0 ]
+    [ -d ".worktrees/pos-tag/backend" ]
+
+    TAG_SHA=$(git -C backend rev-parse v2.0.0)
+    WT_SHA=$(git -C ".worktrees/pos-tag/backend" rev-parse HEAD)
+    [ "$TAG_SHA" = "$WT_SHA" ]
+}
+
+@test "worktree create positional commit-ish with commit hash" {
+    HASH=$(git -C backend rev-parse HEAD)
+
+    run "$META_BIN" git worktree create pos-hash "$HASH" --repo backend
+    [ "$status" -eq 0 ]
+    [ -d ".worktrees/pos-hash/backend" ]
+
+    WT_SHA=$(git -C ".worktrees/pos-hash/backend" rev-parse HEAD)
+    [ "$HASH" = "$WT_SHA" ]
+}
+
+@test "worktree create positional commit-ish multi-repo" {
+    git -C backend tag pos-shared
+    git -C frontend tag pos-shared
+
+    run "$META_BIN" git worktree create pos-multi pos-shared --repo backend --repo frontend
+    [ "$status" -eq 0 ]
+    [ -d ".worktrees/pos-multi/backend" ]
+    [ -d ".worktrees/pos-multi/frontend" ]
+}
+
+@test "worktree create positional and --from-ref conflict" {
+    run "$META_BIN" git worktree create pos-conflict v1.0.0 --from-ref v1.0.0 --repo backend
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"cannot be used with"* ]]
+}
+
+@test "worktree create positional and --from-pr conflict" {
+    run "$META_BIN" git worktree create pos-pr-conflict v1.0.0 --from-pr org/repo#123 --repo backend
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"cannot be used with"* ]]
 }
 
 # ============ Centralized Store ============
