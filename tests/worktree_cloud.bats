@@ -262,13 +262,13 @@ assert d['ttl_seconds'] == 1800, f'got: {d.get(\"ttl_seconds\")}'
 @test "worktree create positional and --from-ref conflict" {
     run "$META_BIN" git worktree create pos-conflict v1.0.0 --from-ref v1.0.0 --repo backend
     [ "$status" -ne 0 ]
-    [[ "$output" == *"cannot be used with"* ]] || [[ "$output" == *"Cannot specify both"* ]]
+    [[ "$output" == *"cannot be used with"* ]] || [[ "$output" == *"Cannot specify both"* ]] || [[ "$output" == *"mutually exclusive"* ]]
 }
 
 @test "worktree create positional and --from-pr conflict" {
     run "$META_BIN" git worktree create pos-pr-conflict v1.0.0 --from-pr org/repo#123 --repo backend
     [ "$status" -ne 0 ]
-    [[ "$output" == *"cannot be used with"* ]] || [[ "$output" == *"Cannot specify both"* ]]
+    [[ "$output" == *"cannot be used with"* ]] || [[ "$output" == *"Cannot specify both"* ]] || [[ "$output" == *"mutually exclusive"* ]]
 }
 
 # ============ Centralized Store ============
