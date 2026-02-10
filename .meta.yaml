@@ -46,6 +46,10 @@ projects:
     repo: git@github.com:harmony-labs/meta_mcp.git
     depends_on: [meta-cli]
 
+  # Standalone tools
+  agent:
+    repo: git@github.com:harmony-labs/agent.git
+
   # Non-code repos
   claude-plugins:
     repo: git@github.com:harmony-labs/claude-plugins.git

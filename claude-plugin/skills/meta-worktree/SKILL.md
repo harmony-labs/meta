@@ -17,7 +17,7 @@ Manage isolated git worktree sets for multi-repo tasks. Each worktree set create
 - Working on a feature that spans multiple repos and you need isolation
 - Running CI checks or tests that shouldn't affect the primary workspace
 - Reviewing a PR in a clean environment
-- Investigating an incident at a specific version (`--from-ref`)
+- Investigating an incident at a specific version (tag, SHA, branch)
 - Multiple tasks need to proceed in parallel without branch conflicts
 
 **Skip worktrees for:**
@@ -51,8 +51,8 @@ meta worktree create my-task --repo api --branch feature/my-feature
 # Per-repo branch override
 meta worktree create review --repo api:main --repo worker:develop
 
-# Start from a specific tag/SHA
-meta worktree create incident-42 --from-ref v2.3.1 --repo api
+# Start from a specific tag/SHA/branch
+meta worktree create incident-42 v2.3.1 --repo api
 
 # Start from a GitHub PR's head branch
 meta worktree create review --from-pr org/api#42 --repo api
@@ -197,7 +197,7 @@ steps:
 
 | Command | Description |
 |---------|-------------|
-| `create <name>` | Create a new worktree set |
+| `create <name> [<commit-ish>]` | Create a new worktree set |
 | `add <name>` | Add repo(s) to existing worktree |
 | `list` | List all worktree sets |
 | `status <name>` | Show detailed status |
@@ -210,10 +210,10 @@ steps:
 
 | Option | Description |
 |--------|-------------|
+| `[<commit-ish>]` | Start from tag/SHA/branch (positional) |
 | `--repo <alias>[:<branch>]` | Add specific repo(s) |
 | `--all` | Add all repos |
 | `--branch <name>` | Override default branch name |
-| `--from-ref <ref>` | Start from tag/SHA |
 | `--from-pr <owner/repo#N>` | Start from PR head branch |
 | `--ephemeral` | Mark for automatic cleanup |
 | `--ttl <duration>` | Time-to-live |
