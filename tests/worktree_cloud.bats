@@ -221,7 +221,7 @@ assert d['ttl_seconds'] == 1800, f'got: {d.get(\"ttl_seconds\")}'
 @test "worktree create --from-ref and --from-pr mutual exclusion" {
     run "$META_BIN" git worktree create bad-combo --repo backend --from-ref v1.0.0 --from-pr org/repo#123
     [ "$status" -ne 0 ]
-    [[ "$output" == *"cannot be used with"* ]] || [[ "$output" == *"Cannot specify both"* ]]
+    [[ "$output" == *"cannot be used with"* ]] || [[ "$output" == *"Cannot specify both"* ]] || [[ "$output" == *"mutually exclusive"* ]]
 }
 
 # ============ Positional <commit-ish> ============
