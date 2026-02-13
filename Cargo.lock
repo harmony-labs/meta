@@ -20,20 +20,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "agent"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "dirs",
- "regex",
- "serde",
- "serde_json",
- "tempfile",
- "toml",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -881,6 +867,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "libyml"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3302702afa434ffa30847a83305f0a69d6abd74293b6554c18ec85c7ef30c980"
+dependencies = [
+ "anyhow",
+ "version_check",
+]
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -909,7 +905,7 @@ checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 
 [[package]]
 name = "loop_cli"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "clap",
@@ -922,7 +918,7 @@ dependencies = [
 
 [[package]]
 name = "loop_lib"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "colored",
@@ -943,7 +939,7 @@ checksum = "f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273"
 
 [[package]]
 name = "meta"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -975,18 +971,19 @@ dependencies = [
 
 [[package]]
 name = "meta-mcp"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "chrono",
  "meta",
+ "meta_core",
  "serde",
  "serde_json",
 ]
 
 [[package]]
 name = "meta_core"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "chrono",
@@ -994,12 +991,13 @@ dependencies = [
  "libc",
  "serde",
  "serde_json",
+ "serde_yml",
  "tempfile",
 ]
 
 [[package]]
 name = "meta_git_cli"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1012,6 +1010,7 @@ dependencies = [
  "log",
  "loop_lib",
  "meta",
+ "meta_core",
  "meta_git_lib",
  "meta_plugin_protocol",
  "rayon",
@@ -1024,7 +1023,7 @@ dependencies = [
 
 [[package]]
 name = "meta_git_lib"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1037,14 +1036,14 @@ dependencies = [
  "meta_core",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_yml",
  "serial_test",
  "tempfile",
 ]
 
 [[package]]
 name = "meta_plugin_protocol"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "env_logger",
@@ -1056,7 +1055,7 @@ dependencies = [
 
 [[package]]
 name = "meta_project_cli"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "colored",
@@ -1071,12 +1070,12 @@ dependencies = [
 
 [[package]]
 name = "meta_rust_cli"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "anyhow",
  "colored",
  "indexmap",
- "meta",
+ "meta_core",
  "meta_plugin_protocol",
  "serde_json",
  "tempfile",
@@ -1544,6 +1543,21 @@ dependencies = [
  "ryu",
  "serde",
  "unsafe-libyaml",
+]
+
+[[package]]
+name = "serde_yml"
+version = "0.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59e2dd588bf1597a252c3b920e0143eb99b0f76e4e082f4c92ce34fbc9e71ddd"
+dependencies = [
+ "indexmap",
+ "itoa",
+ "libyml",
+ "memchr",
+ "ryu",
+ "serde",
+ "version_check",
 ]
 
 [[package]]
