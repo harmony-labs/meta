@@ -328,14 +328,18 @@ jobs:
           if ! git diff --cached --quiet; then
             git checkout -b "$BRANCH"
             git commit -m "Update meta-cli to v${VERSION}"
-            git push -u origin "$BRANCH"
-            gh pr create \
-              --title "Update meta-cli to v${VERSION}" \
-              --body "Automated formula update from meta release v${VERSION}." \
-              --repo harmony-labs/homebrew-tap
+            # Force push in case branch exists from a previous failed run
+            git push -f -u origin "$BRANCH"
+            # Create PR only if one doesn't already exist
+            if ! gh pr view "$BRANCH" --repo harmony-labs/homebrew-tap &>/dev/null; then
+              gh pr create \
+                --title "Update meta-cli to v${VERSION}" \
+                --body "Automated formula update from meta release v${VERSION}." \
+                --repo harmony-labs/homebrew-tap
+            fi
             gh pr merge "$BRANCH" \
               --auto --squash \
-              --repo harmony-labs/homebrew-tap
+              --repo harmony-labs/homebrew-tap || echo "Auto-merge setup failed (may require approvals)"
           else
             echo "Formula unchanged, skipping commit"
           fi
