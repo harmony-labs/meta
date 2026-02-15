@@ -829,3 +829,146 @@ EOF
     [[ "$output" == *"backend"* ]]
     [[ "$output" != *"sub-service"* ]]
 }
+
+# ============ meta git clone --recursive ============
+
+# Helper: create a bare repo containing a .meta config with given projects.
+# Usage: create_meta_bare_repo <bare_dir> <projects_json>
+# Returns the file:// URL suitable for cloning.
+create_meta_bare_repo() {
+    local bare_dir="$1"
+    local meta_content="$2"
+    local meta_format="${3:-.meta}"  # default to JSON .meta
+
+    local work_dir="$(mktemp -d)"
+    git init --bare --quiet "$bare_dir"
+    git -C "$bare_dir" symbolic-ref HEAD refs/heads/main
+
+    git clone --quiet "$bare_dir" "$work_dir/checkout"
+    cd "$work_dir/checkout"
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    git checkout -b main --quiet 2>/dev/null || true
+    echo "$meta_content" > "$meta_format"
+    git add "$meta_format"
+    git commit --quiet -m "Add meta config"
+    git push --quiet -u origin main
+
+    rm -rf "$work_dir"
+    cd "$TEST_DIR"
+}
+
+@test "meta git clone --recursive clones 2 levels deep" {
+    # Setup: root -> child (meta:true) -> grandchild
+    GRANDCHILD_BARE="$(mktemp -d)/grandchild.git"
+    create_meta_bare_repo "$GRANDCHILD_BARE" '{"projects": {}}'
+
+    CHILD_BARE="$(mktemp -d)/child.git"
+    create_meta_bare_repo "$CHILD_BARE" "{\"projects\": {\"grandchild\": \"file://$GRANDCHILD_BARE\"}}"
+
+    ROOT_BARE="$(mktemp -d)/root.git"
+    create_meta_bare_repo "$ROOT_BARE" "{\"projects\": {\"child\": {\"repo\": \"file://$CHILD_BARE\", \"meta\": true}}}"
+
+    CLONE_TARGET="$(mktemp -d)/clone-2level"
+    rm -rf "$CLONE_TARGET"
+
+    cd "$TEST_DIR"
+    run "$META_BIN" git clone --recursive "file://$ROOT_BARE" "$CLONE_TARGET"
+    [ "$status" -eq 0 ]
+
+    # Root was cloned
+    [ -d "$CLONE_TARGET/.git" ]
+    # Child was cloned
+    [ -d "$CLONE_TARGET/child/.git" ]
+    # Grandchild was cloned (recursive discovered child's .meta)
+    [ -d "$CLONE_TARGET/child/grandchild/.git" ]
+
+    rm -rf "$GRANDCHILD_BARE" "$CHILD_BARE" "$ROOT_BARE" "$CLONE_TARGET"
+}
+
+@test "meta git clone --recursive clones 3 levels deep" {
+    # Setup: root -> l1 (meta:true) -> l2 (meta:true) -> l3
+    L3_BARE="$(mktemp -d)/l3.git"
+    create_meta_bare_repo "$L3_BARE" '{"projects": {}}'
+
+    L2_BARE="$(mktemp -d)/l2.git"
+    create_meta_bare_repo "$L2_BARE" "{\"projects\": {\"l3\": \"file://$L3_BARE\"}}"
+
+    L1_BARE="$(mktemp -d)/l1.git"
+    create_meta_bare_repo "$L1_BARE" "{\"projects\": {\"l2\": {\"repo\": \"file://$L2_BARE\", \"meta\": true}}}"
+
+    ROOT_BARE="$(mktemp -d)/root.git"
+    create_meta_bare_repo "$ROOT_BARE" "{\"projects\": {\"l1\": {\"repo\": \"file://$L1_BARE\", \"meta\": true}}}"
+
+    CLONE_TARGET="$(mktemp -d)/clone-3level"
+    rm -rf "$CLONE_TARGET"
+
+    cd "$TEST_DIR"
+    run "$META_BIN" git clone --recursive "file://$ROOT_BARE" "$CLONE_TARGET"
+    [ "$status" -eq 0 ]
+
+    [ -d "$CLONE_TARGET/l1/.git" ]
+    [ -d "$CLONE_TARGET/l1/l2/.git" ]
+    [ -d "$CLONE_TARGET/l1/l2/l3/.git" ]
+
+    rm -rf "$L3_BARE" "$L2_BARE" "$L1_BARE" "$ROOT_BARE" "$CLONE_TARGET"
+}
+
+@test "meta git clone --recursive --meta-depth limits recursion" {
+    # Setup: root -> l1 (meta:true) -> l2 (meta:true) -> l3
+    L3_BARE="$(mktemp -d)/l3.git"
+    create_meta_bare_repo "$L3_BARE" '{"projects": {}}'
+
+    L2_BARE="$(mktemp -d)/l2.git"
+    create_meta_bare_repo "$L2_BARE" "{\"projects\": {\"l3\": \"file://$L3_BARE\"}}"
+
+    L1_BARE="$(mktemp -d)/l1.git"
+    create_meta_bare_repo "$L1_BARE" "{\"projects\": {\"l2\": {\"repo\": \"file://$L2_BARE\", \"meta\": true}}}"
+
+    ROOT_BARE="$(mktemp -d)/root.git"
+    create_meta_bare_repo "$ROOT_BARE" "{\"projects\": {\"l1\": {\"repo\": \"file://$L1_BARE\", \"meta\": true}}}"
+
+    CLONE_TARGET="$(mktemp -d)/clone-depth-limit"
+    rm -rf "$CLONE_TARGET"
+
+    cd "$TEST_DIR"
+    # --meta-depth 1 means: level 0 (root's children) + level 1 (l1's children)
+    # l2's children (l3) should NOT be cloned
+    run "$META_BIN" git clone --recursive --meta-depth 1 "file://$ROOT_BARE" "$CLONE_TARGET"
+    [ "$status" -eq 0 ]
+
+    [ -d "$CLONE_TARGET/l1/.git" ]
+    [ -d "$CLONE_TARGET/l1/l2/.git" ]
+    # l3 should NOT be cloned (depth limit)
+    [ ! -d "$CLONE_TARGET/l1/l2/l3" ]
+
+    rm -rf "$L3_BARE" "$L2_BARE" "$L1_BARE" "$ROOT_BARE" "$CLONE_TARGET"
+}
+
+@test "meta git clone without --recursive clones only first level" {
+    # Setup: root -> child (meta:true) -> grandchild
+    GRANDCHILD_BARE="$(mktemp -d)/grandchild.git"
+    create_meta_bare_repo "$GRANDCHILD_BARE" '{"projects": {}}'
+
+    CHILD_BARE="$(mktemp -d)/child.git"
+    create_meta_bare_repo "$CHILD_BARE" "{\"projects\": {\"grandchild\": \"file://$GRANDCHILD_BARE\"}}"
+
+    ROOT_BARE="$(mktemp -d)/root.git"
+    create_meta_bare_repo "$ROOT_BARE" "{\"projects\": {\"child\": {\"repo\": \"file://$CHILD_BARE\", \"meta\": true}}}"
+
+    CLONE_TARGET="$(mktemp -d)/clone-no-recurse"
+    rm -rf "$CLONE_TARGET"
+
+    cd "$TEST_DIR"
+    # No --recursive flag
+    run "$META_BIN" git clone "file://$ROOT_BARE" "$CLONE_TARGET"
+    [ "$status" -eq 0 ]
+
+    # Root and child should be cloned
+    [ -d "$CLONE_TARGET/.git" ]
+    [ -d "$CLONE_TARGET/child/.git" ]
+    # Grandchild should NOT be cloned (no --recursive)
+    [ ! -d "$CLONE_TARGET/child/grandchild" ]
+
+    rm -rf "$GRANDCHILD_BARE" "$CHILD_BARE" "$ROOT_BARE" "$CLONE_TARGET"
+}

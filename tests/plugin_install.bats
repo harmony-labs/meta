@@ -13,16 +13,30 @@ setup() {
     HOME_DIR="$(mktemp -d)"
     PLUGINS_DIR="$HOME_DIR/.meta/plugins"
 
-    # Set HOME to separate directory to isolate plugin installation
-    # (separate from TEST_DIR to avoid workspace detection issues)
+    # Isolate plugin discovery so tests don't find real plugins:
+    # - META_DATA_DIR overrides ~/.meta/ (global plugin dir)
+    # - PATH is stripped to exclude dirs containing system-installed meta-* binaries
     export ORIGINAL_HOME="$HOME"
+    export ORIGINAL_PATH="$PATH"
     export HOME="$HOME_DIR"
+    export META_DATA_DIR="$HOME_DIR/.meta"
+    # Build a minimal PATH that excludes directories with meta-* plugins
+    NEW_PATH=""
+    IFS=':' read -ra DIRS <<< "$PATH"
+    for dir in "${DIRS[@]}"; do
+        if ! ls "$dir"/meta-* >/dev/null 2>&1; then
+            NEW_PATH="${NEW_PATH:+$NEW_PATH:}$dir"
+        fi
+    done
+    export PATH="$NEW_PATH"
 
     cd "$TEST_DIR"
 }
 
 teardown() {
     export HOME="$ORIGINAL_HOME"
+    export PATH="$ORIGINAL_PATH"
+    unset META_DATA_DIR
     cd /
     rm -rf "$TEST_DIR"
     rm -rf "$HOME_DIR"
