@@ -32,6 +32,15 @@
             "type": "command"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "git kb service status --quiet 2>/dev/null || git kb service start 2>/dev/null",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
       }
     ]
   }

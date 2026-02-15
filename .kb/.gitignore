@@ -1,0 +1,7 @@
+.backup/
+.cache/
+backups/
+cache/
+store/
+workspace/
+worktrees/
