@@ -845,17 +845,18 @@ create_meta_bare_repo() {
     git -C "$bare_dir" symbolic-ref HEAD refs/heads/main
 
     git clone --quiet "$bare_dir" "$work_dir/checkout"
-    cd "$work_dir/checkout"
-    git config user.email "test@test.com"
-    git config user.name "Test"
-    git checkout -b main --quiet 2>/dev/null || true
-    echo "$meta_content" > "$meta_format"
-    git add "$meta_format"
-    git commit --quiet -m "Add meta config"
-    git push --quiet -u origin main
+    (
+        cd "$work_dir/checkout"
+        git config user.email "test@test.com"
+        git config user.name "Test"
+        git checkout -b main --quiet 2>/dev/null || true
+        echo "$meta_content" > "$meta_format"
+        git add "$meta_format"
+        git commit --quiet -m "Add meta config"
+        git push --quiet -u origin main
+    )
 
     rm -rf "$work_dir"
-    cd "$TEST_DIR"
 }
 
 @test "meta git clone --recursive clones 2 levels deep" {

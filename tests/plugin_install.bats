@@ -20,13 +20,14 @@ setup() {
     export ORIGINAL_PATH="$PATH"
     export HOME="$HOME_DIR"
     export META_DATA_DIR="$HOME_DIR/.meta"
-    # Build a minimal PATH that excludes directories with meta-* plugins
+    # Build a minimal PATH that excludes the global meta plugins directory
     NEW_PATH=""
     IFS=':' read -ra DIRS <<< "$PATH"
     for dir in "${DIRS[@]}"; do
-        if ! ls "$dir"/meta-* >/dev/null 2>&1; then
-            NEW_PATH="${NEW_PATH:+$NEW_PATH:}$dir"
-        fi
+        case "$dir" in
+            */.meta/plugins) ;; # skip meta plugin dirs
+            *) NEW_PATH="${NEW_PATH:+$NEW_PATH:}$dir" ;;
+        esac
     done
     export PATH="$NEW_PATH"
 
