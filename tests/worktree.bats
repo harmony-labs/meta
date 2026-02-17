@@ -385,7 +385,8 @@ assert d['totals']['files_changed'] >= 1
 
 @test "worktree remove preserves branches" {
     "$META_BIN" git worktree create keep-branch --repo backend --no-deps
-    "$META_BIN" git worktree remove keep-branch
+    run "$META_BIN" git worktree remove keep-branch
+    [ "$status" -eq 0 ]
     git -C backend branch | grep -q "keep-branch"
 }
 
