@@ -635,11 +635,11 @@ EOF
     run "$META_BIN" git worktree create nested-test --repo vendor/nested-lib
     [ "$status" -eq 0 ]
 
-    # The worktree should be created with just the last component as directory name
-    [ -d ".worktrees/nested-test/nested-lib" ]
+    # The worktree preserves the full nested path so relative references remain valid
+    [ -d ".worktrees/nested-test/vendor/nested-lib" ]
 
     # Verify it's on the expected branch
-    BRANCH=$(git -C ".worktrees/nested-test/nested-lib" branch --show-current)
+    BRANCH=$(git -C ".worktrees/nested-test/vendor/nested-lib" branch --show-current)
     [ "$BRANCH" = "nested-test" ]
 }
 
@@ -652,7 +652,7 @@ EOF
     # Then add nested repo
     run "$META_BIN" git worktree add add-nested --repo vendor/nested-lib
     [ "$status" -eq 0 ]
-    [ -d ".worktrees/add-nested/nested-lib" ]
+    [ -d ".worktrees/add-nested/vendor/nested-lib" ]
 }
 
 @test "worktree create with invalid nested repo path fails" {
@@ -675,12 +675,12 @@ EOF
     # All three should exist
     [ -d ".worktrees/mixed-wt" ]
     [ -d ".worktrees/mixed-wt/backend" ]
-    [ -d ".worktrees/mixed-wt/nested-lib" ]
+    [ -d ".worktrees/mixed-wt/vendor/nested-lib" ]
 
     # Verify branches
     BRANCH_BACKEND=$(git -C ".worktrees/mixed-wt/backend" branch --show-current)
     [ "$BRANCH_BACKEND" = "mixed-wt" ]
-    BRANCH_NESTED=$(git -C ".worktrees/mixed-wt/nested-lib" branch --show-current)
+    BRANCH_NESTED=$(git -C ".worktrees/mixed-wt/vendor/nested-lib" branch --show-current)
     [ "$BRANCH_NESTED" = "mixed-wt" ]
 }
 
