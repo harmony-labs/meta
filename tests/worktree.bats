@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # Integration tests for `meta git worktree` subcommand
-# Tests: create, add, list, status, diff, exec, destroy, configuration, edge cases
+# Tests: create, add, list, status, diff, exec, remove, configuration, edge cases
 
 setup() {
     META_BIN="$BATS_TEST_DIRNAME/../target/debug/meta"
@@ -373,50 +373,59 @@ assert d['totals']['files_changed'] >= 1
     [ "$status" -ne 0 ] || [[ "$output" == *"Usage"* ]] || [[ "$output" == *"command"* ]]
 }
 
-# ============ Destroy ============
+# ============ Remove ============
 
-@test "worktree destroy removes worktree set" {
+@test "worktree remove removes worktree set" {
     "$META_BIN" git worktree create temp --repo backend --no-deps
     [ -d ".worktrees/temp" ]
-    run "$META_BIN" git worktree destroy temp
+    run "$META_BIN" git worktree remove temp
     [ "$status" -eq 0 ]
     [ ! -d ".worktrees/temp" ]
 }
 
-@test "worktree destroy preserves branches" {
+@test "worktree remove preserves branches" {
     "$META_BIN" git worktree create keep-branch --repo backend --no-deps
-    "$META_BIN" git worktree destroy keep-branch
+    run "$META_BIN" git worktree remove keep-branch
+    [ "$status" -eq 0 ]
     git -C backend branch | grep -q "keep-branch"
 }
 
-@test "worktree destroy refuses dirty worktree without --force" {
+@test "worktree remove refuses dirty worktree without --force" {
     "$META_BIN" git worktree create dirty-test --repo backend
     echo "uncommitted" >> ".worktrees/dirty-test/backend/README.md"
-    run "$META_BIN" git worktree destroy dirty-test
+    run "$META_BIN" git worktree remove dirty-test
     [ "$status" -ne 0 ]
     [[ "$output" == *"uncommitted"* ]] || [[ "$output" == *"dirty"* ]] || [[ "$output" == *"--force"* ]]
 }
 
-@test "worktree destroy --force removes dirty worktree" {
+@test "worktree remove --force removes dirty worktree" {
     "$META_BIN" git worktree create force-test --repo backend
     echo "uncommitted" >> ".worktrees/force-test/backend/README.md"
-    run "$META_BIN" git worktree destroy force-test --force
+    run "$META_BIN" git worktree remove force-test --force
     [ "$status" -eq 0 ]
     [ ! -d ".worktrees/force-test" ]
 }
 
-@test "worktree destroy nonexistent worktree fails" {
-    run "$META_BIN" git worktree destroy nonexistent
+@test "worktree remove nonexistent worktree fails" {
+    run "$META_BIN" git worktree remove nonexistent
     [ "$status" -ne 0 ]
 }
 
-@test "worktree destroy with multiple repos removes all" {
-    "$META_BIN" git worktree create multi-destroy --repo backend --repo frontend --no-deps
-    [ -d ".worktrees/multi-destroy/backend" ]
-    [ -d ".worktrees/multi-destroy/frontend" ]
-    run "$META_BIN" git worktree destroy multi-destroy
+@test "worktree remove with multiple repos removes all" {
+    "$META_BIN" git worktree create multi-remove --repo backend --repo frontend --no-deps
+    [ -d ".worktrees/multi-remove/backend" ]
+    [ -d ".worktrees/multi-remove/frontend" ]
+    run "$META_BIN" git worktree remove multi-remove
     [ "$status" -eq 0 ]
-    [ ! -d ".worktrees/multi-destroy" ]
+    [ ! -d ".worktrees/multi-remove" ]
+}
+
+@test "worktree destroy alias still works" {
+    "$META_BIN" git worktree create alias-test --repo backend --no-deps
+    [ -d ".worktrees/alias-test" ]
+    run "$META_BIN" git worktree destroy alias-test
+    [ "$status" -eq 0 ]
+    [ ! -d ".worktrees/alias-test" ]
 }
 
 # ============ Configuration ============
@@ -475,13 +484,13 @@ assert d['totals']['files_changed'] >= 1
     run "$META_BIN" git worktree
     [ "$status" -eq 0 ]
     [[ "$output" == *"create"* ]]
-    [[ "$output" == *"destroy"* ]]
+    [[ "$output" == *"remove"* ]]
     [[ "$output" == *"list"* ]]
 }
 
 # ============ Full Lifecycle ============
 
-@test "full lifecycle: create, list, status, exec, destroy" {
+@test "full lifecycle: create, list, status, exec, remove" {
     # Create (use --no-deps to avoid auto-including root repo which may have test changes)
     run "$META_BIN" git worktree create lifecycle --repo backend --repo frontend --no-deps
     [ "$status" -eq 0 ]
@@ -502,8 +511,8 @@ assert d['totals']['files_changed'] >= 1
     [ "$status" -eq 0 ]
     [[ "$output" == *"lifecycle-ok"* ]]
 
-    # Destroy
-    run "$META_BIN" git worktree destroy lifecycle
+    # Remove
+    run "$META_BIN" git worktree remove lifecycle
     [ "$status" -eq 0 ]
     [ ! -d ".worktrees/lifecycle" ]
 
@@ -524,33 +533,33 @@ assert d['totals']['files_changed'] >= 1
     # Must show ACTUAL help content (not just a reference to --help)
     [[ "$output" == *"USAGE"* ]]
     [[ "$output" == *"create"* ]]
-    [[ "$output" == *"destroy"* ]]
+    [[ "$output" == *"remove"* ]]
     [[ "$output" == *"list"* ]]
 }
 
-# ============ Edge Cases: Destroy with dot-alias ============
+# ============ Edge Cases: Remove with dot-alias ============
 
-@test "worktree destroy with dot-alias removes children before root" {
+@test "worktree remove with dot-alias removes children before root" {
     # Create worktree with . (meta repo) + child repos
-    run "$META_BIN" git worktree create dot-destroy --repo . --repo backend --repo frontend
+    run "$META_BIN" git worktree create dot-remove --repo . --repo backend --repo frontend
     [ "$status" -eq 0 ]
-    [ -f ".worktrees/dot-destroy/.git" ]
-    [ -d ".worktrees/dot-destroy/backend" ]
-    [ -d ".worktrees/dot-destroy/frontend" ]
+    [ -f ".worktrees/dot-remove/.git" ]
+    [ -d ".worktrees/dot-remove/backend" ]
+    [ -d ".worktrees/dot-remove/frontend" ]
 
-    # Destroy — children must be removed before "." (root)
+    # Remove — children must be removed before "." (root)
     # --force needed: the meta repo worktree is dirty (.worktrees/ + .gitignore changes)
-    run "$META_BIN" git worktree destroy dot-destroy --force
+    run "$META_BIN" git worktree remove dot-remove --force
     [ "$status" -eq 0 ]
-    [ ! -d ".worktrees/dot-destroy" ]
+    [ ! -d ".worktrees/dot-remove" ]
 
     # Original repos should be intact
     [ -d "backend" ]
     [ -d "frontend" ]
 
     # Branches should still exist in original repos
-    git -C backend branch | grep -q "dot-destroy"
-    git -C frontend branch | grep -q "dot-destroy"
+    git -C backend branch | grep -q "dot-remove"
+    git -C frontend branch | grep -q "dot-remove"
 }
 
 # ============ Edge Cases: Add duplicate repo ============
