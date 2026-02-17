@@ -4,11 +4,8 @@
       "release-type": "simple",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
+      "version-file": "VERSION",
       "extra-files": [
-        {
-          "type": "generic",
-          "path": "VERSION"
-        },
         {
           "type": "toml",
           "path": "Cargo.toml",
