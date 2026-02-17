@@ -152,14 +152,14 @@ assert d['ttl_seconds'] == 1800, f'got: {d.get(\"ttl_seconds\")}'
     [ "$status" -eq 0 ]
     echo "$output" | python3 -c "import json,sys; assert json.load(sys.stdin)['ttl_seconds'] == 30"
 
-    "$META_BIN" git worktree destroy ttl-s --force
+    "$META_BIN" git worktree remove ttl-s --force
 
     # Minutes
     run "$META_BIN" git worktree create ttl-m --repo backend --ttl 5m --json
     [ "$status" -eq 0 ]
     echo "$output" | python3 -c "import json,sys; assert json.load(sys.stdin)['ttl_seconds'] == 300"
 
-    "$META_BIN" git worktree destroy ttl-m --force
+    "$META_BIN" git worktree remove ttl-m --force
 
     # Days
     run "$META_BIN" git worktree create ttl-d --repo backend --ttl 2d --json
@@ -292,7 +292,7 @@ assert entry['repos'][0]['alias'] == 'backend'
 "
 }
 
-@test "worktree destroy removes from centralized store" {
+@test "worktree remove removes from centralized store" {
     "$META_BIN" git worktree create store-rm --repo backend --no-deps
     STORE="$META_DATA/worktree.json"
 
@@ -305,7 +305,7 @@ assert any(v['name'] == 'store-rm' for v in data['worktrees'].values())
 "
 
     # Destroy
-    run "$META_BIN" git worktree destroy store-rm
+    run "$META_BIN" git worktree remove store-rm
     [ "$status" -eq 0 ]
 
     # Verify entry removed
@@ -317,10 +317,10 @@ assert not any(v['name'] == 'store-rm' for v in data['worktrees'].values())
 "
 }
 
-@test "worktree destroy --json outputs structured result" {
+@test "worktree remove --json outputs structured result" {
     "$META_BIN" git worktree create destroy-json --repo backend --repo frontend --no-deps
 
-    run "$META_BIN" git worktree destroy destroy-json --json
+    run "$META_BIN" git worktree remove destroy-json --json
     [ "$status" -eq 0 ]
     echo "$output" | python3 -c "
 import json, sys
@@ -413,7 +413,7 @@ assert 'repos' in payload
 EOF
 
     "$META_BIN" git worktree create hook-destroy --repo backend
-    run "$META_BIN" git worktree destroy hook-destroy --force
+    run "$META_BIN" git worktree remove hook-destroy --force
     [ "$status" -eq 0 ]
     [ -f "$HOOK_LOG" ]
 
@@ -740,7 +740,7 @@ assert wt['ephemeral'] == True
 "
 
     # Destroy
-    run "$META_BIN" git worktree destroy lifecycle-meta --force
+    run "$META_BIN" git worktree remove lifecycle-meta --force
     [ "$status" -eq 0 ]
     [ ! -d ".worktrees/lifecycle-meta" ]
 
@@ -877,7 +877,7 @@ assert len(data['repos']) == 1
     [[ "$output" == *"name-after-repo"* ]]
 
     # Clean up
-    run "$META_BIN" git worktree destroy name-after-repo --force
+    run "$META_BIN" git worktree remove name-after-repo --force
     [ "$status" -eq 0 ]
 }
 
@@ -890,7 +890,7 @@ assert len(data['repos']) == 1
     [[ "$output" == *"--ephemeral"* ]] || [[ "$output" == *"ephemeral"* ]]
     [[ "$output" == *"--meta"* ]] || [[ "$output" == *"meta"* ]]
     [[ "$output" == *"--ttl"* ]] || [[ "$output" == *"ttl"* ]]
-    # Verify DESTROY OPTIONS section is present
-    [[ "$output" == *"DESTROY OPTIONS"* ]]
+    # Verify REMOVE OPTIONS section is present
+    [[ "$output" == *"REMOVE OPTIONS"* ]]
     [[ "$output" == *"--force"* ]]
 }
