@@ -41,44 +41,54 @@ jobs:
 
       - name: Extract payload
         id: payload
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_REPO_NAME: ${{ github.event.client_payload.repo_name }}
+          DISPATCH_SHORT_SHA: ${{ github.event.client_payload.short_sha }}
+          DISPATCH_MESSAGE: ${{ github.event.client_payload.message }}
+          DISPATCH_TYPE: ${{ github.event.client_payload.type }}
+          DISPATCH_ACTOR: ${{ github.event.client_payload.actor }}
+          INPUT_REPO_NAME: ${{ github.event.inputs.repo_name }}
+          INPUT_SHORT_SHA: ${{ github.event.inputs.short_sha }}
+          INPUT_MESSAGE: ${{ github.event.inputs.message }}
+          INPUT_TYPE: ${{ github.event.inputs.type }}
+          INPUT_ACTOR: ${{ github.event.inputs.actor }}
         run: |
-          # Handle both repository_dispatch and workflow_dispatch
-          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            echo "repo_name=${{ github.event.client_payload.repo_name }}" >> $GITHUB_OUTPUT
-            echo "short_sha=${{ github.event.client_payload.short_sha }}" >> $GITHUB_OUTPUT
-            echo "message=${{ github.event.client_payload.message }}" >> $GITHUB_OUTPUT
-            echo "type=${{ github.event.client_payload.type }}" >> $GITHUB_OUTPUT
-            echo "actor=${{ github.event.client_payload.actor }}" >> $GITHUB_OUTPUT
-          else
-            echo "repo_name=${{ github.event.inputs.repo_name }}" >> $GITHUB_OUTPUT
-            echo "short_sha=${{ github.event.inputs.short_sha }}" >> $GITHUB_OUTPUT
-            echo "message=${{ github.event.inputs.message }}" >> $GITHUB_OUTPUT
-            echo "type=${{ github.event.inputs.type }}" >> $GITHUB_OUTPUT
-            echo "actor=${{ github.event.inputs.actor }}" >> $GITHUB_OUTPUT
-          fi
+          write_output() {
+            local key="$1" value="$2"
+            local delim="__EOF__$(date +%s%N)_$RANDOM"
+            {
+              printf '%s<<%s\n' "$key" "$delim"
+              printf '%s\n' "$value"
+              printf '%s\n' "$delim"
+            } >> "$GITHUB_OUTPUT"
+          }
 
-      - name: Check if release-worthy
-        id: check
-        run: |
-          TYPE="${{ steps.payload.outputs.type }}"
-          if [ "$TYPE" = "feat" ] || [ "$TYPE" = "fix" ]; then
-            echo "should_commit=true" >> $GITHUB_OUTPUT
+          # Handle both repository_dispatch and workflow_dispatch
+          if [ "$EVENT_NAME" = "repository_dispatch" ]; then
+            write_output repo_name "$DISPATCH_REPO_NAME"
+            write_output short_sha "$DISPATCH_SHORT_SHA"
+            write_output message "$DISPATCH_MESSAGE"
+            write_output type "$DISPATCH_TYPE"
+            write_output actor "$DISPATCH_ACTOR"
           else
-            echo "should_commit=false" >> $GITHUB_OUTPUT
-            echo "Skipping: commit type '$TYPE' does not trigger release"
+            write_output repo_name "$INPUT_REPO_NAME"
+            write_output short_sha "$INPUT_SHORT_SHA"
+            write_output message "$INPUT_MESSAGE"
+            write_output type "$INPUT_TYPE"
+            write_output actor "$INPUT_ACTOR"
           fi
 
       - name: Create sync commit
-        if: steps.check.outputs.should_commit == 'true'
+        env:
+          REPO_NAME: ${{ steps.payload.outputs.repo_name }}
+          SHORT_SHA: ${{ steps.payload.outputs.short_sha }}
+          MESSAGE: ${{ steps.payload.outputs.message }}
+          TYPE: ${{ steps.payload.outputs.type }}
+          ACTOR: ${{ steps.payload.outputs.actor }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          REPO_NAME="${{ steps.payload.outputs.repo_name }}"
-          SHORT_SHA="${{ steps.payload.outputs.short_sha }}"
-          MESSAGE="${{ steps.payload.outputs.message }}"
-          TYPE="${{ steps.payload.outputs.type }}"
-          ACTOR="${{ steps.payload.outputs.actor }}"
 
           # Strip the "type: " prefix from the message if present
           CLEAN_MSG="${MESSAGE#*: }"
@@ -92,10 +102,15 @@ jobs:
           git push
 
       - name: Log sync
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPO_NAME: ${{ steps.payload.outputs.repo_name }}
+          SHORT_SHA: ${{ steps.payload.outputs.short_sha }}
+          TYPE: ${{ steps.payload.outputs.type }}
+          MESSAGE: ${{ steps.payload.outputs.message }}
         run: |
-          echo "Event: ${{ github.event_name }}"
-          echo "Repo: ${{ steps.payload.outputs.repo_name }}"
-          echo "SHA: ${{ steps.payload.outputs.short_sha }}"
-          echo "Type: ${{ steps.payload.outputs.type }}"
-          echo "Message: ${{ steps.payload.outputs.message }}"
-          echo "Should commit: ${{ steps.check.outputs.should_commit }}"
+          echo "Event: $EVENT_NAME"
+          echo "Repo: $REPO_NAME"
+          echo "SHA: $SHORT_SHA"
+          echo "Type: $TYPE"
+          echo "Message: $MESSAGE"
