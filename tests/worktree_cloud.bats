@@ -304,7 +304,7 @@ with open('$STORE') as f:
 assert any(v['name'] == 'store-rm' for v in data['worktrees'].values())
 "
 
-    # Destroy
+    # Remove
     run "$META_BIN" git worktree remove store-rm
     [ "$status" -eq 0 ]
 
