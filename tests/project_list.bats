@@ -252,6 +252,47 @@ EOF
     [[ "$output" == *"backend"* ]]
 }
 
+@test "meta project list --recursive from nested meta-repo shows root tree" {
+    # Create a nested .meta inside frontend
+    cat > "$TEST_DIR/frontend/.meta" <<'EOF'
+{
+    "projects": {
+        "frontend-lib": "git@github.com:org/frontend-lib.git"
+    }
+}
+EOF
+    mkdir -p "$TEST_DIR/frontend/frontend-lib"
+
+    # Run from inside the nested meta-repo (frontend/)
+    cd "$TEST_DIR/frontend"
+    run "$META_BIN" --recursive project list --json
+    [ "$status" -eq 0 ]
+    echo "$output" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+# Should show ROOT's projects (frontend, backend, shared), not frontend's
+names = [p['name'] for p in data['projects']]
+assert 'frontend' in names, f'frontend not in root projects: {names}'
+assert 'backend' in names, f'backend not in root projects: {names}'
+assert 'shared' in names, f'shared not in root projects: {names}'
+# cwd field should be present and absolute
+assert 'cwd' in data, 'cwd field missing from output'
+assert data['cwd'].startswith('/'), f'cwd should be absolute: {data[\"cwd\"]}'
+"
+}
+
+@test "meta project list --json includes cwd field" {
+    run "$META_BIN" project list --json
+    [ "$status" -eq 0 ]
+    echo "$output" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+assert 'cwd' in data, 'cwd field missing from JSON output'
+cwd = data['cwd']
+assert cwd.startswith('/'), f'cwd should be absolute path: {cwd}'
+"
+}
+
 @test "meta project list --recursive --json shows nested paths" {
     # Setup: vendor is a nested meta repo with nested-lib inside
     cat > "$TEST_DIR/.meta.json" <<'EOF'
