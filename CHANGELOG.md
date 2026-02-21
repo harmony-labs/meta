@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.14](https://github.com/harmony-labs/meta/compare/v0.2.13...v0.2.14) (2026-02-21)
+
+
+### Bug Fixes
+
+* **release:** configure git credentials for homebrew tap push ([#38](https://github.com/harmony-labs/meta/issues/38)) ([5d68815](https://github.com/harmony-labs/meta/commit/5d68815e4647e7bcfa2e1f859155d315857fd9be))
+
 ## [0.2.13](https://github.com/harmony-labs/meta/compare/v0.2.12...v0.2.13) (2026-02-21)
 
 
