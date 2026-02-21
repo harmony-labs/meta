@@ -318,6 +318,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           BRANCH="update-meta-cli-${VERSION}"
 
+          gh auth setup-git
           gh repo clone harmony-labs/homebrew-tap tap
           mkdir -p tap/Formula
           cp meta-cli.rb tap/Formula/
