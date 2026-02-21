@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.13](https://github.com/harmony-labs/meta/compare/v0.2.12...v0.2.13) (2026-02-21)
+
+
+### Bug Fixes
+
+* **ci:** always create sync commit for child repo updates ([#35](https://github.com/harmony-labs/meta/issues/35)) ([1f0e06c](https://github.com/harmony-labs/meta/commit/1f0e06cb8a943ce5562f0e631673c2eb157ab5c5))
+* use PR workflow for homebrew tap updates ([#29](https://github.com/harmony-labs/meta/issues/29)) ([c5f7327](https://github.com/harmony-labs/meta/commit/c5f7327110b424041bd9ea0521c431763ed72f2f))
+* use version-file for VERSION instead of generic extra-file ([#33](https://github.com/harmony-labs/meta/issues/33)) ([949db93](https://github.com/harmony-labs/meta/commit/949db93e00084427dd65953b0ac4d6c25af088b2))
+
 ## [0.2.12](https://github.com/harmony-labs/meta/compare/v0.2.11...v0.2.12) (2026-02-07)
 
 
