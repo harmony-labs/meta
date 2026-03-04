@@ -11,6 +11,7 @@ members = [
     "meta_rust_cli",
     "meta_project_cli",
 ]
+exclude = ["agent"]
 resolver = "2"
 
 [workspace.package]
