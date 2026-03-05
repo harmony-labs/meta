@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.15](https://github.com/harmony-labs/meta/compare/v0.2.14...v0.2.15) (2026-03-05)
+
+
+### Bug Fixes
+
+* use org-level PARENT_REPO_PAT for sync commits to protected main ([#42](https://github.com/harmony-labs/meta/issues/42)) ([dc5c190](https://github.com/harmony-labs/meta/commit/dc5c1901a28a36ea23504274957995a64b00b1fb))
+
 ## [0.2.14](https://github.com/harmony-labs/meta/compare/v0.2.13...v0.2.14) (2026-02-21)
 
 
