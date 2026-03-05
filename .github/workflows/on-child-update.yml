@@ -99,14 +99,26 @@ jobs:
 
           Co-authored-by: ${ACTOR} <${ACTOR}@users.noreply.github.com>"
 
+          # Helper: find existing PR for this branch
+          find_existing_pr() {
+            gh pr list --head "$BRANCH" --base main --json url --jq '.[0].url // empty'
+          }
+
+          # Helper: ensure auto-merge is enabled on a PR
+          enable_auto_merge() {
+            local pr_url="$1"
+            echo "Enabling auto-merge on: $pr_url"
+            gh pr merge "$pr_url" --auto --squash --delete-branch
+          }
+
           # Idempotency: if branch already exists, a previous run partially completed.
           # Check for an existing PR and just ensure auto-merge is enabled.
           if git ls-remote --exit-code origin "refs/heads/$BRANCH" >/dev/null 2>&1; then
             echo "Branch $BRANCH already exists — checking for existing PR"
-            EXISTING_PR=$(gh pr list --head "$BRANCH" --base main --json url --jq '.[0].url // empty')
+            EXISTING_PR=$(find_existing_pr)
             if [[ -n "$EXISTING_PR" ]]; then
               echo "PR already exists: $EXISTING_PR"
-              gh pr merge "$EXISTING_PR" --auto --squash --delete-branch
+              enable_auto_merge "$EXISTING_PR"
               exit 0
             fi
             # Branch exists but no PR — fetch it and create PR below
@@ -119,19 +131,39 @@ jobs:
           Synced from ${REPO_NAME}@${SHORT_SHA}
 
           Co-authored-by: ${ACTOR} <${ACTOR}@users.noreply.github.com>"
-            git push -u origin "$BRANCH"
+
+            # Push may fail if a concurrent run pushed the same branch first
+            if ! git push -u origin "$BRANCH" 2>&1; then
+              echo "Push failed (likely race condition) — recovering"
+              git fetch origin "$BRANCH"
+              git checkout "$BRANCH"
+              # Check if the concurrent run already created a PR
+              EXISTING_PR=$(find_existing_pr)
+              if [[ -n "$EXISTING_PR" ]]; then
+                echo "PR already exists: $EXISTING_PR"
+                enable_auto_merge "$EXISTING_PR"
+                exit 0
+              fi
+              # Branch exists remotely but no PR yet — fall through to create PR
+            fi
           fi
 
-          # Create PR with Co-authored-by in body (survives squash merge)
-          PR_URL=$(gh pr create \
+          # Create PR (may fail if a concurrent run created it between our check and now)
+          if ! PR_URL=$(gh pr create \
             --title "$PR_TITLE" \
             --body "$PR_BODY" \
             --head "$BRANCH" \
-            --base main)
+            --base main 2>&1); then
+            echo "PR creation failed — checking for existing PR"
+            PR_URL=$(find_existing_pr)
+            if [[ -z "$PR_URL" ]]; then
+              echo "::error::Failed to create PR and no existing PR found"
+              exit 1
+            fi
+          fi
 
-          gh pr merge "$PR_URL" --auto --squash --delete-branch
-
-          echo "Created PR: $PR_URL"
+          enable_auto_merge "$PR_URL"
+          echo "PR ready: $PR_URL"
 
       - name: Log sync
         env:
