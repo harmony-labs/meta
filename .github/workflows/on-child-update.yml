@@ -103,10 +103,10 @@ jobs:
           # Check for an existing PR and just ensure auto-merge is enabled.
           if git ls-remote --exit-code origin "refs/heads/$BRANCH" >/dev/null 2>&1; then
             echo "Branch $BRANCH already exists — checking for existing PR"
-            EXISTING_PR=$(gh pr list --head "$BRANCH" --json url --jq '.[0].url // empty')
+            EXISTING_PR=$(gh pr list --head "$BRANCH" --base main --json url --jq '.[0].url // empty')
             if [[ -n "$EXISTING_PR" ]]; then
               echo "PR already exists: $EXISTING_PR"
-              gh pr merge "$EXISTING_PR" --auto --squash --delete-branch || true
+              gh pr merge "$EXISTING_PR" --auto --squash --delete-branch
               exit 0
             fi
             # Branch exists but no PR — fetch it and create PR below
