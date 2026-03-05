@@ -37,7 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.REPO_WRITE_PACKAGES_PAT }}
+          token: ${{ secrets.PARENT_REPO_PAT }}
 
       - name: Extract payload
         id: payload
