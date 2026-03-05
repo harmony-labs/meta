@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.16](https://github.com/harmony-labs/meta/compare/v0.2.15...v0.2.16) (2026-03-05)
+
+
+### Bug Fixes
+
+* use PR-based sync instead of direct push to protected main ([#44](https://github.com/harmony-labs/meta/issues/44)) ([e65ce03](https://github.com/harmony-labs/meta/commit/e65ce03487a2598250eabb6fd2887f82b2da61ff))
+
 ## [0.2.15](https://github.com/harmony-labs/meta/compare/v0.2.14...v0.2.15) (2026-03-05)
 
 
