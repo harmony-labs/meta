@@ -133,7 +133,7 @@ jobs:
           Co-authored-by: ${ACTOR} <${ACTOR}@users.noreply.github.com>"
 
             # Push may fail if a concurrent run pushed the same branch first
-            if ! git push -u origin "$BRANCH" 2>&1; then
+            if ! git push -u origin "$BRANCH"; then
               echo "Push failed (likely race condition) — recovering"
               git fetch origin "$BRANCH"
               git checkout "$BRANCH"
@@ -153,7 +153,7 @@ jobs:
             --title "$PR_TITLE" \
             --body "$PR_BODY" \
             --head "$BRANCH" \
-            --base main 2>&1); then
+            --base main); then
             echo "PR creation failed — checking for existing PR"
             PR_URL=$(find_existing_pr)
             if [[ -z "$PR_URL" ]]; then
