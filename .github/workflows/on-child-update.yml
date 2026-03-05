@@ -94,24 +94,42 @@ jobs:
           # Strip the "type: " prefix from the message if present
           CLEAN_MSG="${MESSAGE#*: }"
           BRANCH="sync/${REPO_NAME}/${SHORT_SHA}"
-          COMMIT_MSG="${TYPE}(${REPO_NAME}): ${CLEAN_MSG}
+          PR_TITLE="${TYPE}(${REPO_NAME}): ${CLEAN_MSG}"
+          PR_BODY="Synced from \`${REPO_NAME}@${SHORT_SHA}\`
+
+          Co-authored-by: ${ACTOR} <${ACTOR}@users.noreply.github.com>"
+
+          # Idempotency: if branch already exists, a previous run partially completed.
+          # Check for an existing PR and just ensure auto-merge is enabled.
+          if git ls-remote --exit-code origin "refs/heads/$BRANCH" >/dev/null 2>&1; then
+            echo "Branch $BRANCH already exists — checking for existing PR"
+            EXISTING_PR=$(gh pr list --head "$BRANCH" --json url --jq '.[0].url // empty')
+            if [[ -n "$EXISTING_PR" ]]; then
+              echo "PR already exists: $EXISTING_PR"
+              gh pr merge "$EXISTING_PR" --auto --squash --delete-branch || true
+              exit 0
+            fi
+            # Branch exists but no PR — fetch it and create PR below
+            git fetch origin "$BRANCH"
+            git checkout "$BRANCH"
+          else
+            git checkout -b "$BRANCH"
+            git commit --allow-empty -m "$PR_TITLE
 
           Synced from ${REPO_NAME}@${SHORT_SHA}
 
           Co-authored-by: ${ACTOR} <${ACTOR}@users.noreply.github.com>"
+            git push -u origin "$BRANCH"
+          fi
 
-          git checkout -b "$BRANCH"
-          git commit --allow-empty -m "$COMMIT_MSG"
-          git push -u origin "$BRANCH"
-
-          # Create PR and enable auto-merge
+          # Create PR with Co-authored-by in body (survives squash merge)
           PR_URL=$(gh pr create \
-            --title "${TYPE}(${REPO_NAME}): ${CLEAN_MSG}" \
-            --body "Synced from \`${REPO_NAME}@${SHORT_SHA}\`" \
+            --title "$PR_TITLE" \
+            --body "$PR_BODY" \
             --head "$BRANCH" \
             --base main)
 
-          gh pr merge "$PR_URL" --auto --squash
+          gh pr merge "$PR_URL" --auto --squash --delete-branch
 
           echo "Created PR: $PR_URL"
 
