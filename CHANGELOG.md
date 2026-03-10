@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.17](https://github.com/harmony-labs/meta/compare/v0.2.16...v0.2.17) (2026-03-10)
+
+
+### Features
+
+* **meta_project_cli:** add absolute root field to --json output ([#9](https://github.com/harmony-labs/meta/issues/9)) ([#46](https://github.com/harmony-labs/meta/issues/46)) ([c80637d](https://github.com/harmony-labs/meta/commit/c80637d22ba31c74c05a96b4127be68579685a13))
+
 ## [0.2.16](https://github.com/harmony-labs/meta/compare/v0.2.15...v0.2.16) (2026-03-05)
 
 
