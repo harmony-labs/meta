@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.18](https://github.com/harmony-labs/meta/compare/v0.2.17...v0.2.18) (2026-03-25)
+
+
+### Features
+
+* **meta_git_cli:** all SSH operations just work, remove meta git setup-ssh ([#20](https://github.com/harmony-labs/meta/issues/20)) ([#48](https://github.com/harmony-labs/meta/issues/48)) ([2b9b64a](https://github.com/harmony-labs/meta/commit/2b9b64aa73135c440083865d71f54a838a76ae97))
+
 ## [0.2.17](https://github.com/harmony-labs/meta/compare/v0.2.16...v0.2.17) (2026-03-10)
 
 
