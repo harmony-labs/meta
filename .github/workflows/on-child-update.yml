@@ -4,6 +4,12 @@ on:
   repository_dispatch:
     types: [child-repo-updated]
   workflow_dispatch:
+
+concurrency:
+  group: child-repo-sync
+  cancel-in-progress: false
+
+
     inputs:
       repo_name:
         description: 'Child repo name'
