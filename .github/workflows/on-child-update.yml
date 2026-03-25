@@ -26,6 +26,10 @@ on:
         required: true
         default: 'test-user'
 
+concurrency:
+  group: child-repo-sync
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
