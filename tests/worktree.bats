@@ -72,10 +72,20 @@ setup_nested_meta() {
 }
 EOF
 
+    # Initialize vendor as a git repo (needed for worktree operations)
+    git -C "$TEST_DIR/vendor" init --quiet --initial-branch=main
+    git -C "$TEST_DIR/vendor" config user.email "test@test.com"
+    git -C "$TEST_DIR/vendor" config user.name "Test"
+
     # Create nested .meta inside vendor
     cat > "$TEST_DIR/vendor/.meta" <<EOF
 {"projects": {"$nested_name": "git@github.com:org/$nested_name.git"}}
 EOF
+
+    # Ignore child repos (like a real meta workspace)
+    echo "$nested_name" > "$TEST_DIR/vendor/.gitignore"
+    git -C "$TEST_DIR/vendor" add .meta .gitignore
+    git -C "$TEST_DIR/vendor" commit --quiet -m "init vendor"
 
     # Initialize the nested git repo
     git -C "$TEST_DIR/vendor/$nested_name" init --quiet --initial-branch=main
@@ -727,4 +737,74 @@ EOF
     run "$META_BIN" git worktree list
     [ "$status" -eq 0 ]
     [[ "$output" == *"list-nested"* ]]
+}
+
+# ============ Thin Spine: Intermediate Parents ============
+
+@test "worktree create with nested alias adds intermediate parent" {
+    setup_nested_meta
+
+    # Request vendor/nested-lib — vendor should be auto-added as intermediate parent
+    run "$META_BIN" git worktree create spine-test --repo vendor/nested-lib
+    [ "$status" -eq 0 ]
+
+    # Both vendor (parent) and vendor/nested-lib (target) should exist
+    [ -d ".worktrees/spine-test/vendor" ]
+    [ -d ".worktrees/spine-test/vendor/nested-lib" ]
+
+    # Both on the same branch
+    BRANCH_PARENT=$(git -C ".worktrees/spine-test/vendor" branch --show-current)
+    BRANCH_CHILD=$(git -C ".worktrees/spine-test/vendor/nested-lib" branch --show-current)
+    [ "$BRANCH_PARENT" = "spine-test" ]
+    [ "$BRANCH_CHILD" = "spine-test" ]
+}
+
+@test "worktree create meta: true repo does NOT expand siblings" {
+    setup_nested_meta
+
+    # Request just vendor — should NOT auto-expand vendor/nested-lib
+    run "$META_BIN" git worktree create no-expand --repo vendor
+    [ "$status" -eq 0 ]
+
+    [ -d ".worktrees/no-expand/vendor" ]
+    # nested-lib should NOT exist — we didn't ask for it
+    [ ! -d ".worktrees/no-expand/vendor/nested-lib" ]
+}
+
+@test "worktree create nested alias with --branch applies to parent" {
+    setup_nested_meta
+
+    run "$META_BIN" git worktree create spine-branch --repo vendor/nested-lib --branch feat/fix
+    [ "$status" -eq 0 ]
+
+    BRANCH_PARENT=$(git -C ".worktrees/spine-branch/vendor" branch --show-current)
+    [ "$BRANCH_PARENT" = "feat/fix" ]
+}
+
+@test "worktree create nested alias --json shows intermediate parent" {
+    setup_nested_meta
+
+    run "$META_BIN" git worktree create spine-json --repo vendor/nested-lib --json
+    [ "$status" -eq 0 ]
+
+    echo "$output" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+aliases = [r['alias'] for r in d['repos']]
+assert 'vendor' in aliases, f'vendor not in {aliases}'
+assert 'vendor/nested-lib' in aliases, f'vendor/nested-lib not in {aliases}'
+"
+}
+
+@test "worktree remove cleans up intermediate parents" {
+    setup_nested_meta
+
+    "$META_BIN" git worktree create spine-remove --repo vendor/nested-lib
+    [ -d ".worktrees/spine-remove/vendor" ]
+    [ -d ".worktrees/spine-remove/vendor/nested-lib" ]
+
+    # --force needed: vendor worktree has nested-lib's .git as untracked
+    run "$META_BIN" git worktree remove spine-remove --force
+    [ "$status" -eq 0 ]
+    [ ! -d ".worktrees/spine-remove" ]
 }
