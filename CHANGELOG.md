@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.19](https://github.com/harmony-labs/meta/compare/v0.2.18...v0.2.19) (2026-03-26)
+
+
+### Bug Fixes
+
+* add concurrency group to child-repo-sync workflow ([#57](https://github.com/harmony-labs/meta/issues/57)) ([d978541](https://github.com/harmony-labs/meta/commit/d9785417b30800d75da8e3f84e94ed65beab9f91))
+* **loop_lib:** simplify notify-downstream workflow ([#8](https://github.com/harmony-labs/meta/issues/8)) ([#51](https://github.com/harmony-labs/meta/issues/51)) ([4d61e39](https://github.com/harmony-labs/meta/commit/4d61e39fd4344fb0688d229b0fb3fa8577c9f419))
+* **meta_cli:** simplify notify-downstream workflow ([#19](https://github.com/harmony-labs/meta/issues/19)) ([#53](https://github.com/harmony-labs/meta/issues/53)) ([931eed0](https://github.com/harmony-labs/meta/commit/931eed0d42eaf964633666ec265d15d6136a0e10))
+* **meta_git_lib:** simplify notify-downstream workflow ([#5](https://github.com/harmony-labs/meta/issues/5)) ([#52](https://github.com/harmony-labs/meta/issues/52)) ([ce05395](https://github.com/harmony-labs/meta/commit/ce053955ccf26a6d8fb5b2408b4a01d7a165331b))
+* **meta_plugin_protocol:** simplify notify-downstream workflow ([#3](https://github.com/harmony-labs/meta/issues/3)) ([#50](https://github.com/harmony-labs/meta/issues/50)) ([c9d1481](https://github.com/harmony-labs/meta/commit/c9d1481ac2bbd54717f2d8601e844200560f6acc))
+* **meta_plugin_protocol:** simplify notify-downstream workflow ([#3](https://github.com/harmony-labs/meta/issues/3)) ([#56](https://github.com/harmony-labs/meta/issues/56)) ([edf502a](https://github.com/harmony-labs/meta/commit/edf502aa44e6d85e1cc19f69b77ebbd1da10b97a))
+
 ## [0.2.18](https://github.com/harmony-labs/meta/compare/v0.2.17...v0.2.18) (2026-03-25)
 
 
