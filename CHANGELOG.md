@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.20](https://github.com/harmony-labs/meta/compare/v0.2.19...v0.2.20) (2026-03-29)
+
+
+### Bug Fixes
+
+* propagate conventional commit type from child repo to sync PR ([#69](https://github.com/harmony-labs/meta/issues/69)) ([a0f1cb2](https://github.com/harmony-labs/meta/commit/a0f1cb21f03ce82e6edf4fa439a52f4849624ce2))
+* use feat: prefix in sync PR titles for release-please ([#67](https://github.com/harmony-labs/meta/issues/67)) ([1518fc4](https://github.com/harmony-labs/meta/commit/1518fc43954d29caa3952acf46830be206c8d852))
+
 ## [0.2.19](https://github.com/harmony-labs/meta/compare/v0.2.18...v0.2.19) (2026-03-26)
 
 
