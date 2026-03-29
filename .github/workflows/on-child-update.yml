@@ -35,7 +35,7 @@ jobs:
           SHORT_SHA="${SHORT_SHA:-$(date +%s | tail -c 8)}"
 
           BRANCH="sync/${REPO_NAME}/${SHORT_SHA}"
-          PR_TITLE="chore(${REPO_NAME}): sync ${SHORT_SHA}"
+          PR_TITLE="feat(${REPO_NAME}): sync ${SHORT_SHA}"
 
           # Check for existing branch
           if git ls-remote --exit-code origin "refs/heads/$BRANCH" >/dev/null 2>&1; then
