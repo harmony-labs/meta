@@ -36,12 +36,15 @@ jobs:
 
           # Extract conventional commit type from child commit message.
           # Falls back to "fix" if the message doesn't follow conventional commits.
+          GH_ERR=$(mktemp)
           COMMIT_MSG=$(gh api "repos/harmony-labs/${REPO_NAME}/commits/${FULL_SHA}" \
-            --jq '.commit.message' 2>&1 | head -1) || true
-          if [[ -z "$COMMIT_MSG" || "$COMMIT_MSG" == *"Not Found"* || "$COMMIT_MSG" == *"Bad credentials"* ]]; then
-            echo "Warning: could not fetch commit message for ${REPO_NAME}@${FULL_SHA}, defaulting to fix:"
+            --jq '.commit.message' 2>"$GH_ERR" | head -1)
+          GH_EXIT=$?
+          if [[ $GH_EXIT -ne 0 || -z "$COMMIT_MSG" ]]; then
+            echo "Warning: could not fetch commit message for ${REPO_NAME}@${FULL_SHA} (exit $GH_EXIT: $(head -1 "$GH_ERR")), defaulting to fix:"
             COMMIT_MSG=""
           fi
+          rm -f "$GH_ERR"
           # Match type followed by optional scope and colon: feat:, fix(scope):, etc.
           COMMIT_TYPE=$(echo "$COMMIT_MSG" | grep -oE '^(feat|fix|perf|refactor|docs|test|chore|ci|build|style)(\([^)]+\))?:' | grep -oE '^[a-z]+' | head -1)
           COMMIT_TYPE="${COMMIT_TYPE:-fix}"
