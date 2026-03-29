@@ -21,9 +21,12 @@ build-plugins:
 	cp target/release/meta-project .meta/plugins/meta-project
 	cp target/release/meta-rust .meta/plugins/meta-rust
 
-# Install meta binary globally via cargo
+# Install meta binary and all plugins globally via cargo install
 install:
 	cargo install --path meta_cli
+	cargo install --path meta_git_cli
+	cargo install --path meta_project_cli
+	cargo install --path meta_rust_cli
 
 # Install plugins globally to ~/.meta/plugins/
 install-plugins: build-plugins
@@ -32,7 +35,7 @@ install-plugins: build-plugins
 	cp target/release/meta-project ~/.meta/plugins/meta-project
 	cp target/release/meta-rust ~/.meta/plugins/meta-rust
 
-# Install everything globally (meta binary + plugins)
+# Install everything globally (meta binary + plugins to both cargo bin and ~/.meta/plugins/)
 install-all: install install-plugins
 
 clean: clean-plugins
@@ -94,6 +97,10 @@ integration-test:
 	RUST_BACKTRACE=$(RUST_BACKTRACE) RUST_LOG=$(RUST_LOG) META_CLI_PATH=target/debug/meta CARGO_BIN_EXE_meta=target/debug/meta cargo nextest run --workspace
 
 uninstall:
-	cargo uninstall -p meta
+	cargo uninstall meta 2>/dev/null || true
+	cargo uninstall meta_git_cli 2>/dev/null || true
+	cargo uninstall meta_project_cli 2>/dev/null || true
+	cargo uninstall meta_rust_cli 2>/dev/null || true
+	rm -f ~/.meta/plugins/meta-git ~/.meta/plugins/meta-project ~/.meta/plugins/meta-rust
 
 .PHONY: install build run test bats release integration-test
