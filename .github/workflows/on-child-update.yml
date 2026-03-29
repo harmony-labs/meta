@@ -34,8 +34,20 @@ jobs:
           SHORT_SHA="${FULL_SHA:0:7}"
           SHORT_SHA="${SHORT_SHA:-$(date +%s | tail -c 8)}"
 
+          # Extract conventional commit type from child commit message.
+          # Falls back to "fix" if the message doesn't follow conventional commits.
+          COMMIT_MSG=$(gh api "repos/harmony-labs/${REPO_NAME}/commits/${FULL_SHA}" \
+            --jq '.commit.message' 2>/dev/null | head -1)
+          COMMIT_TYPE=$(echo "$COMMIT_MSG" | grep -oE '^(feat|fix|perf|refactor|docs|test|chore|ci|build|style)' | head -1)
+          COMMIT_TYPE="${COMMIT_TYPE:-fix}"
+          # chore/docs/test/ci/style/build don't trigger release-please — promote to fix
+          case "$COMMIT_TYPE" in
+            feat|fix|perf) ;;
+            *) COMMIT_TYPE="fix" ;;
+          esac
+
           BRANCH="sync/${REPO_NAME}/${SHORT_SHA}"
-          PR_TITLE="feat(${REPO_NAME}): sync ${SHORT_SHA}"
+          PR_TITLE="${COMMIT_TYPE}(${REPO_NAME}): sync ${SHORT_SHA}"
 
           # Check for existing branch
           if git ls-remote --exit-code origin "refs/heads/$BRANCH" >/dev/null 2>&1; then
