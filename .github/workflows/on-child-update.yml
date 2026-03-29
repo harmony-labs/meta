@@ -36,9 +36,17 @@ jobs:
 
           # Extract conventional commit type from child commit message.
           # Falls back to "fix" if the message doesn't follow conventional commits.
-          COMMIT_MSG=$(gh api "repos/harmony-labs/${REPO_NAME}/commits/${FULL_SHA}" \
-            --jq '.commit.message' 2>/dev/null | head -1)
-          COMMIT_TYPE=$(echo "$COMMIT_MSG" | grep -oE '^(feat|fix|perf|refactor|docs|test|chore|ci|build|style)' | head -1)
+          GH_ERR=$(mktemp)
+          RAW_COMMIT_MSG=$(gh api "repos/harmony-labs/${REPO_NAME}/commits/${FULL_SHA}" \
+            --jq '.commit.message' 2>"$GH_ERR") && GH_EXIT=0 || GH_EXIT=$?
+          COMMIT_MSG=$(printf '%s\n' "$RAW_COMMIT_MSG" | head -1)
+          if [[ $GH_EXIT -ne 0 || -z "$COMMIT_MSG" ]]; then
+            echo "Warning: could not fetch commit message for ${REPO_NAME}@${FULL_SHA} (exit $GH_EXIT: $(head -1 "$GH_ERR")), defaulting to fix:"
+            COMMIT_MSG=""
+          fi
+          rm -f "$GH_ERR"
+          # Match type followed by optional scope and colon: feat:, fix(scope):, etc.
+          COMMIT_TYPE=$(echo "$COMMIT_MSG" | grep -oE '^(feat|fix|perf|refactor|docs|test|chore|ci|build|style)(\([^)]+\))?:' | grep -oE '^[a-z]+' | head -1)
           COMMIT_TYPE="${COMMIT_TYPE:-fix}"
           # chore/docs/test/ci/style/build don't trigger release-please — promote to fix
           case "$COMMIT_TYPE" in
