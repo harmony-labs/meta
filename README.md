@@ -1,7 +1,7 @@
 # meta
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/harmony-labs/meta/release.yml?branch=main)](https://github.com/harmony-labs/meta/actions)
-[![Version](https://img.shields.io/github/v/release/harmony-labs/meta)](https://github.com/harmony-labs/meta/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/gitkb/meta/release.yml?branch=main)](https://github.com/gitkb/meta/actions)
+[![Version](https://img.shields.io/github/v/release/gitkb/meta)](https://github.com/gitkb/meta/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Meta makes multi-repo architectures feel like monorepos** — without the downsides of monorepos. Keep your repositories independent (their own git history, CI, ownership boundaries), but operate on them as a cohesive unit.
@@ -117,18 +117,18 @@ Plugins communicate via JSON over stdin/stdout — language-agnostic, process-is
 
 **macOS/Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/harmony-labs/meta/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gitkb/meta/main/install.sh | bash
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/harmony-labs/meta/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/gitkb/meta/main/install.ps1 | iex
 ```
 
 ### Via Homebrew (macOS/Linux)
 
 ```bash
-brew install harmony-labs/tap/meta-cli
+brew install gitkb/tap/meta-cli
 ```
 
 ### Via cargo-binstall
@@ -140,7 +140,7 @@ cargo binstall meta-cli
 ### From Source
 
 ```bash
-cargo install --git https://github.com/harmony-labs/meta
+cargo install --git https://github.com/gitkb/meta
 ```
 
 ---
@@ -513,8 +513,8 @@ Contributions welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Community & Support
 
-- **Issues:** [GitHub Issues](https://github.com/harmony-labs/meta/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/harmony-labs/meta/discussions)
+- **Issues:** [GitHub Issues](https://github.com/gitkb/meta/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/gitkb/meta/discussions)
 
 ---
 

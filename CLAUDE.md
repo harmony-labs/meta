@@ -7,15 +7,15 @@ This is a **meta-repo** — a workspace of independent git repositories managed 
 - Each workspace member (e.g., `meta_cli/`, `meta_core/`, `loop_lib/`) is its own git repo cloned from its own GitHub remote.
 - The root `.gitignore` ignores all child repos because they are NOT part of the parent repo.
 - The root `Cargo.toml` defines a Rust workspace for local development convenience, but each member builds and publishes independently.
-- When creating a new crate/package, it MUST be initialized as a separate git repo, pushed to GitHub under `harmony-labs/`, and added to both `.meta` (projects config) and `.gitignore`.
+- When creating a new crate/package, it MUST be initialized as a separate git repo, pushed to GitHub under `gitkb/`, and added to both `.meta` (projects config) and `.gitignore`.
 
 **Project config (`.meta.yaml`):**
 ```yaml
 projects:
   meta_cli:
-    repo: git@github.com:harmony-labs/meta_cli.git
+    repo: git@github.com:gitkb/meta_cli.git
   meta_core:
-    repo: git@github.com:harmony-labs/meta_core.git
+    repo: git@github.com:gitkb/meta_core.git
 ```
 
 **Nested meta repos:** Use `meta: true` when a child project contains its own `.meta.yaml`:

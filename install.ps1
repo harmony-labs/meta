@@ -1,11 +1,11 @@
 # Meta CLI Installation Script for Windows
 # Downloads and installs meta from GitHub releases
 #
-# Usage: irm https://raw.githubusercontent.com/harmony-labs/meta/main/install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/gitkb/meta/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
-$Repo = "harmony-labs/meta"
+$Repo = "gitkb/meta"
 $InstallDir = if ($env:INSTALL_DIR) { $env:INSTALL_DIR } else { "$env:USERPROFILE\.meta\bin" }
 $Version = if ($env:VERSION) { $env:VERSION } else { "latest" }
 
