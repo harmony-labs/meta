@@ -4,7 +4,7 @@ set -e
 # Meta CLI Installation Script
 # Downloads and installs meta from GitHub releases
 
-REPO="harmony-labs/meta"
+REPO="gitkb/meta"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 VERSION="${VERSION:-latest}"
 

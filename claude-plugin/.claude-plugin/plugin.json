@@ -6,8 +6,8 @@
     "name": "Harmony Labs",
     "url": "https://github.com/harmony-labs"
   },
-  "homepage": "https://github.com/harmony-labs/meta",
-  "repository": "https://github.com/harmony-labs/meta",
+  "homepage": "https://github.com/gitkb/meta",
+  "repository": "https://github.com/gitkb/meta",
   "license": "MIT",
   "keywords": ["meta", "multi-repo", "workspace", "git", "mcp"]
 }

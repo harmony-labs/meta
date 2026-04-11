@@ -37,7 +37,7 @@ jobs:
           # Extract conventional commit type from child commit message.
           # Falls back to "fix" if the message doesn't follow conventional commits.
           GH_ERR=$(mktemp)
-          RAW_COMMIT_MSG=$(gh api "repos/harmony-labs/${REPO_NAME}/commits/${FULL_SHA}" \
+          RAW_COMMIT_MSG=$(gh api "repos/gitkb/${REPO_NAME}/commits/${FULL_SHA}" \
             --jq '.commit.message' 2>"$GH_ERR") && GH_EXIT=0 || GH_EXIT=$?
           COMMIT_MSG=$(printf '%s\n' "$RAW_COMMIT_MSG" | head -1)
           if [[ $GH_EXIT -ne 0 || -z "$COMMIT_MSG" ]]; then

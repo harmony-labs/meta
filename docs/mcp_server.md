@@ -8,10 +8,10 @@ The `meta-mcp` binary is included in the standard release package. Install via:
 
 ```bash
 # Via install script
-curl -fsSL https://raw.githubusercontent.com/harmony-labs/meta/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gitkb/meta/main/install.sh | bash
 
 # Or via Homebrew
-brew install harmony-labs/tap/meta-cli
+brew install gitkb/tap/meta-cli
 ```
 
 ## Usage

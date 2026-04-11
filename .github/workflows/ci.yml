@@ -26,16 +26,16 @@ jobs:
         shell: bash
         run: |
           # Clone all workspace member repos (meta-repo architecture)
-          git clone --depth 1 https://github.com/harmony-labs/loop_lib.git
-          git clone --depth 1 https://github.com/harmony-labs/loop_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_core.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_git_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_git_lib.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_mcp.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_plugin_protocol.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_rust_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_project_cli.git
+          git clone --depth 1 https://github.com/gitkb/loop_lib.git
+          git clone --depth 1 https://github.com/gitkb/loop_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_core.git
+          git clone --depth 1 https://github.com/gitkb/meta_git_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_git_lib.git
+          git clone --depth 1 https://github.com/gitkb/meta_mcp.git
+          git clone --depth 1 https://github.com/gitkb/meta_plugin_protocol.git
+          git clone --depth 1 https://github.com/gitkb/meta_rust_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_project_cli.git
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -57,16 +57,16 @@ jobs:
 
       - name: Clone child repos
         run: |
-          git clone --depth 1 https://github.com/harmony-labs/loop_lib.git
-          git clone --depth 1 https://github.com/harmony-labs/loop_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_core.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_git_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_git_lib.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_mcp.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_plugin_protocol.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_rust_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_project_cli.git
+          git clone --depth 1 https://github.com/gitkb/loop_lib.git
+          git clone --depth 1 https://github.com/gitkb/loop_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_core.git
+          git clone --depth 1 https://github.com/gitkb/meta_git_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_git_lib.git
+          git clone --depth 1 https://github.com/gitkb/meta_mcp.git
+          git clone --depth 1 https://github.com/gitkb/meta_plugin_protocol.git
+          git clone --depth 1 https://github.com/gitkb/meta_rust_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_project_cli.git
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -94,16 +94,16 @@ jobs:
 
       - name: Clone child repos
         run: |
-          git clone --depth 1 https://github.com/harmony-labs/loop_lib.git
-          git clone --depth 1 https://github.com/harmony-labs/loop_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_core.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_git_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_git_lib.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_mcp.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_plugin_protocol.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_rust_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_project_cli.git
+          git clone --depth 1 https://github.com/gitkb/loop_lib.git
+          git clone --depth 1 https://github.com/gitkb/loop_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_core.git
+          git clone --depth 1 https://github.com/gitkb/meta_git_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_git_lib.git
+          git clone --depth 1 https://github.com/gitkb/meta_mcp.git
+          git clone --depth 1 https://github.com/gitkb/meta_plugin_protocol.git
+          git clone --depth 1 https://github.com/gitkb/meta_rust_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_project_cli.git
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -145,16 +145,16 @@ jobs:
 
       - name: Clone child repos
         run: |
-          git clone --depth 1 https://github.com/harmony-labs/loop_lib.git
-          git clone --depth 1 https://github.com/harmony-labs/loop_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_core.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_git_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_git_lib.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_mcp.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_plugin_protocol.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_rust_cli.git
-          git clone --depth 1 https://github.com/harmony-labs/meta_project_cli.git
+          git clone --depth 1 https://github.com/gitkb/loop_lib.git
+          git clone --depth 1 https://github.com/gitkb/loop_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_core.git
+          git clone --depth 1 https://github.com/gitkb/meta_git_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_git_lib.git
+          git clone --depth 1 https://github.com/gitkb/meta_mcp.git
+          git clone --depth 1 https://github.com/gitkb/meta_plugin_protocol.git
+          git clone --depth 1 https://github.com/gitkb/meta_rust_cli.git
+          git clone --depth 1 https://github.com/gitkb/meta_project_cli.git
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable

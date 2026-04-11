@@ -3,28 +3,28 @@
 
 class MetaCli < Formula
   desc "Multi-repo management CLI with AI integration"
-  homepage "https://github.com/harmony-labs/meta"
+  homepage "https://github.com/gitkb/meta"
   version "0.1.0"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/harmony-labs/meta/releases/download/v#{version}/meta-darwin-arm64.tar.gz"
+      url "https://github.com/gitkb/meta/releases/download/v#{version}/meta-darwin-arm64.tar.gz"
       # sha256 will be filled in by release automation
     end
     on_intel do
-      url "https://github.com/harmony-labs/meta/releases/download/v#{version}/meta-darwin-x64.tar.gz"
+      url "https://github.com/gitkb/meta/releases/download/v#{version}/meta-darwin-x64.tar.gz"
       # sha256 will be filled in by release automation
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/harmony-labs/meta/releases/download/v#{version}/meta-linux-arm64.tar.gz"
+      url "https://github.com/gitkb/meta/releases/download/v#{version}/meta-linux-arm64.tar.gz"
       # sha256 will be filled in by release automation
     end
     on_intel do
-      url "https://github.com/harmony-labs/meta/releases/download/v#{version}/meta-linux-x64.tar.gz"
+      url "https://github.com/gitkb/meta/releases/download/v#{version}/meta-linux-x64.tar.gz"
       # sha256 will be filled in by release automation
     end
   end

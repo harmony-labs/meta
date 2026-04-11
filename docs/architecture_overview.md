@@ -58,7 +58,7 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/harmony-labs/meta"
+repository = "https://github.com/gitkb/meta"
 ```
 
 ## Core Components

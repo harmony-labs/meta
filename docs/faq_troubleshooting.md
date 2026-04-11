@@ -38,13 +38,13 @@ brew --prefix  # Should show installation prefix
 **A:** Use the PowerShell installer:
 
 ```powershell
-irm https://raw.githubusercontent.com/harmony-labs/meta/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/gitkb/meta/main/install.ps1 | iex
 ```
 
 Or install via cargo:
 
 ```powershell
-cargo install --git https://github.com/harmony-labs/meta
+cargo install --git https://github.com/gitkb/meta
 ```
 
 ### Q: How do I update meta?
@@ -56,10 +56,10 @@ cargo install --git https://github.com/harmony-labs/meta
 brew upgrade meta-cli
 
 # Cargo
-cargo install --git https://github.com/harmony-labs/meta --force
+cargo install --git https://github.com/gitkb/meta --force
 
 # Script install
-curl -fsSL https://raw.githubusercontent.com/harmony-labs/meta/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gitkb/meta/main/install.sh | bash
 ```
 
 ---
@@ -374,11 +374,11 @@ META_DEBUG=1 meta project list 2>&1 | grep -i config
 
 ### Q: Where can I report bugs?
 
-**A:** [GitHub Issues](https://github.com/harmony-labs/meta/issues)
+**A:** [GitHub Issues](https://github.com/gitkb/meta/issues)
 
 ### Q: Where can I ask questions?
 
-**A:** [GitHub Discussions](https://github.com/harmony-labs/meta/discussions)
+**A:** [GitHub Discussions](https://github.com/gitkb/meta/discussions)
 
 ### Q: How do I get command help?
 
