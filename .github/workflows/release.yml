@@ -161,6 +161,79 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  notify-discord:
+    name: Notify Discord
+    needs: release
+    runs-on: ubuntu-latest
+    # A failed Discord post must not block downstream consumers of the release
+    # (e.g. crates.io publish or the homebrew tap update).
+    continue-on-error: true
+    steps:
+      - name: Check webhook configured
+        id: check
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_RELEASES_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Discord webhook not configured, skipping notification"
+          fi
+
+      - name: Post to Discord
+        if: steps.check.outputs.skip != 'true'
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_RELEASES_WEBHOOK_URL }}
+        run: |
+          TAG="${{ needs.release.outputs.tag }}"
+
+          PAYLOAD=$(jq -n \
+            --arg title "meta $TAG Released" \
+            --arg desc "A new version of meta, the multi-repo workspace CLI, is available." \
+            --arg install_brew 'brew install gitkb/tap/meta-cli' \
+            --arg url "https://github.com/gitkb/meta/releases/tag/$TAG" \
+            '{
+              embeds: [{
+                title: $title,
+                url: $url,
+                description: $desc,
+                color: 3066993,
+                fields: [
+                  {
+                    name: "Install via Homebrew",
+                    value: ("```sh\n" + $install_brew + "\n```")
+                  }
+                ]
+              }]
+            }')
+
+          # Bound the request and capture curl exit code separately so
+          # pre-HTTP failures (DNS, connection refused, timeout) are logged
+          # distinctly from HTTP-level failures.
+          set +e
+          HTTP_STATUS=$(curl -sS -o /tmp/discord_response.txt -w "%{http_code}" \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 2 \
+            --retry-all-errors \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$WEBHOOK_URL")
+          CURL_EXIT=$?
+          set -e
+
+          if [ "$CURL_EXIT" -ne 0 ]; then
+            echo "::warning::Discord notification request failed before HTTP response (curl exit $CURL_EXIT)"
+            cat /tmp/discord_response.txt 2>/dev/null || true
+            exit 1
+          elif [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Discord notification sent successfully (HTTP $HTTP_STATUS)"
+          else
+            echo "::warning::Discord notification failed (HTTP $HTTP_STATUS)"
+            cat /tmp/discord_response.txt
+            exit 1
+          fi
+
   publish:
     name: Publish to crates.io
     needs: release
