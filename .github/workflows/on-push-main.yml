@@ -28,7 +28,7 @@ jobs:
 
       - name: Release Please
         id: release
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@v5
         with:
           # Use manifest mode to track version in VERSION file
           config-file: release-please-config.json
